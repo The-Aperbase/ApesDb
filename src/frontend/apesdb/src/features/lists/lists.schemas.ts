@@ -24,12 +24,19 @@ export type GamesListSummary = z.infer<typeof gamesListSummarySchema>;
 
 export const gamesListSummariesSchema = z.array(gamesListSummarySchema);
 
+export const gamesListEntryStateSchema = z
+  .enum(["todo", "in-progress", "completed"])
+  .default("todo");
+
+export type GamesListEntryState = z.infer<typeof gamesListEntryStateSchema>;
+
 export const gamesListGameSchema = z.object({
   gameId: z.number().int().nonnegative(),
   name: z.string(),
   coverSmallUrl: z.string().nullable(),
   coverLargeUrl: z.string().nullable(),
   gameType: z.string().nullable(),
+  state: gamesListEntryStateSchema,
   addedAt: z.string(),
 });
 

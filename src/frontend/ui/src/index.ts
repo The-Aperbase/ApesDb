@@ -102,6 +102,17 @@ export {
   ItemTitle,
 } from "./lib/item";
 export {
+  Kanban,
+  KanbanBoard,
+  KanbanColumn,
+  KanbanColumnContent,
+  KanbanColumnHandle,
+  KanbanItem,
+  KanbanItemHandle,
+  KanbanOverlay,
+  type KanbanMoveEvent,
+} from "./lib/kanban";
+export {
   Pagination,
   PaginationContent,
   PaginationEllipsis,

@@ -50,7 +50,7 @@ public sealed class GetGamesListEndpoint : Endpoint<GetGamesListRequest, GamesLi
             return;
         }
 
-        var games = await LoadGamesAsync(request.ListId, ct);
+        var games = await GamesListGameLoader.LoadAsync(_dbContext, request.ListId, ct);
 
         await Send.OkAsync(
             new GamesListDetailsResponse(
@@ -63,26 +63,5 @@ public sealed class GetGamesListEndpoint : Endpoint<GetGamesListRequest, GamesLi
             ),
             ct
         );
-    }
-
-    private async Task<GamesListGameResponse[]> LoadGamesAsync(Guid listId, CancellationToken ct)
-    {
-        return await _dbContext
-            .GamesListEntries.AsNoTracking()
-            .Where(entry => entry.GamesListId == listId)
-            .OrderBy(entry => entry.AddedAt)
-            .ThenBy(entry => entry.GameId)
-            .Select(entry => new GamesListGameResponse(
-                entry.GameId,
-                entry.Game.Name,
-                entry.Game.CoverSmallUrl,
-                entry.Game.CoverLargeUrl,
-                _dbContext
-                    .GameTypes.Where(gameType => gameType.Id == entry.Game.GameTypeId)
-                    .Select(gameType => gameType.Name)
-                    .FirstOrDefault(),
-                entry.AddedAt
-            ))
-            .ToArrayAsync(ct);
     }
 }

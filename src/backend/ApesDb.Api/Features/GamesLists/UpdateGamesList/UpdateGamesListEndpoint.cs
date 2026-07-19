@@ -85,23 +85,7 @@ public sealed class UpdateGamesListEndpoint : Endpoint<UpdateGamesListRequest, G
         list.UpdatedAt = _dateTimeProvider.UtcNow;
         await _dbContext.SaveChangesAsync(ct);
 
-        var games = await _dbContext
-            .GamesListEntries.AsNoTracking()
-            .Where(entry => entry.GamesListId == list.Id)
-            .OrderBy(entry => entry.AddedAt)
-            .ThenBy(entry => entry.GameId)
-            .Select(entry => new GamesListGameResponse(
-                entry.GameId,
-                entry.Game.Name,
-                entry.Game.CoverSmallUrl,
-                entry.Game.CoverLargeUrl,
-                _dbContext
-                    .GameTypes.Where(gameType => gameType.Id == entry.Game.GameTypeId)
-                    .Select(gameType => gameType.Name)
-                    .FirstOrDefault(),
-                entry.AddedAt
-            ))
-            .ToArrayAsync(ct);
+        var games = await GamesListGameLoader.LoadAsync(_dbContext, list.Id, ct);
 
         await Send.OkAsync(
             new GamesListDetailsResponse(

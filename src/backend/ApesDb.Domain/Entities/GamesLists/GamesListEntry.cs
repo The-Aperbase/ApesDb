@@ -4,6 +4,13 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace ApesDb.Domain.Entities.GamesLists;
 
+public enum GamesListEntryState
+{
+    Todo = 0,
+    InProgress = 1,
+    Completed = 2,
+}
+
 public sealed class GamesListEntry
 {
     public Guid GamesListId { get; init; }
@@ -13,6 +20,8 @@ public sealed class GamesListEntry
     public long GameId { get; init; }
 
     public Game Game { get; init; } = null!;
+
+    public GamesListEntryState State { get; set; }
 
     public DateTime AddedAt { get; init; }
 }
@@ -34,5 +43,8 @@ public sealed class GamesListEntryConfiguration : IEntityTypeConfiguration<Games
             .WithMany()
             .HasForeignKey(value => value.GameId)
             .OnDelete(DeleteBehavior.Cascade);
+        entry.ToTable(table =>
+            table.HasCheckConstraint("CK_GamesListEntries_State", "\"State\" IN (0, 1, 2)")
+        );
     }
 }

@@ -5,10 +5,6 @@ import {
   AvatarFallback,
   AvatarImage,
   Button,
-  Card,
-  CardContent,
-  CardDescription,
-  CardTitle,
   Item,
   ItemContent,
   ItemDescription,
@@ -16,15 +12,14 @@ import {
   Skeleton,
 } from "@apesdb/ui";
 import { ArrowLeft, Gamepad2, Library, Pencil, RefreshCw, Trash2 } from "lucide-react";
-import { toast } from "sonner";
 import { formatDate } from "../../../lib/date";
 import { useActiveTeam } from "../../teams/team-context";
 import { DeleteListDialog } from "../delete-list/delete-list-dialog";
 import { EditListDialog } from "../edit-list/edit-list-dialog";
 import { gameCountLabel } from "../list-labels";
-import type { GamesListDetails, GamesListGame } from "../lists.schemas";
+import type { GamesListDetails } from "../lists.schemas";
+import { ListKanbanBoard } from "./list-kanban-board";
 import { useGamesListDetails } from "./use-list-details";
-import { useRemoveGameFromList } from "./use-remove-game-from-list";
 
 type ListDetailsPageProps = {
   teamId: string;
@@ -51,72 +46,11 @@ function ListDetailsSkeleton({ teamId }: { teamId: string }) {
           <Skeleton className="h-4 w-32" />
         </div>
       </div>
-      <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
-        <Skeleton className="aspect-3/4 w-full rounded-lg" />
-        <Skeleton className="aspect-3/4 w-full rounded-lg" />
-        <Skeleton className="aspect-3/4 w-full rounded-lg" />
-        <Skeleton className="aspect-3/4 w-full rounded-lg" />
-        <Skeleton className="aspect-3/4 w-full rounded-lg" />
+      <div className="grid gap-3 md:grid-cols-3">
+        <Skeleton className="h-64 w-full rounded-lg" />
+        <Skeleton className="h-64 w-full rounded-lg" />
+        <Skeleton className="h-64 w-full rounded-lg" />
       </div>
-    </div>
-  );
-}
-
-function ListGameCard({
-  game,
-  onRemove,
-  isRemoving,
-}: {
-  game: GamesListGame;
-  onRemove: (game: GamesListGame) => void;
-  isRemoving: boolean;
-}) {
-  const coverUrl = game.coverLargeUrl ?? game.coverSmallUrl;
-
-  return (
-    <div className="group relative">
-      <Link
-        className="block rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/30"
-        params={{ gameId: game.gameId.toString() }}
-        to="/games/$gameId"
-      >
-        <Card className="h-full gap-3 py-0 transition-colors group-hover:bg-muted/40">
-          <div className="aspect-3/4 overflow-hidden bg-muted">
-            {coverUrl ? (
-              <img
-                alt=""
-                className="size-full object-cover transition-transform group-hover:scale-[1.02]"
-                loading="lazy"
-                src={coverUrl}
-              />
-            ) : (
-              <div className="flex size-full items-center justify-center text-muted-foreground">
-                <Gamepad2 className="size-8" />
-                <span className="sr-only">No cover available</span>
-              </div>
-            )}
-          </div>
-          <CardContent className="grid gap-1 px-3 pb-3">
-            <CardTitle className="line-clamp-2 text-xs leading-snug group-hover:underline group-hover:underline-offset-4">
-              {game.name}
-            </CardTitle>
-            {game.gameType !== null ? (
-              <CardDescription className="truncate">{game.gameType}</CardDescription>
-            ) : null}
-          </CardContent>
-        </Card>
-      </Link>
-      <Button
-        aria-label={`Remove ${game.name} from the list`}
-        className="absolute top-2 right-2"
-        disabled={isRemoving}
-        onClick={() => onRemove(game)}
-        size="icon-sm"
-        type="button"
-        variant="secondary"
-      >
-        <Trash2 />
-      </Button>
     </div>
   );
 }
@@ -160,7 +94,6 @@ function ListHeader({
 
 export function ListDetailsPage({ teamId, listId }: ListDetailsPageProps) {
   const listDetails = useGamesListDetails(teamId, listId);
-  const removeGame = useRemoveGameFromList(teamId, listId);
   const { setActiveTeamId } = useActiveTeam();
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
@@ -171,15 +104,6 @@ export function ListDetailsPage({ teamId, listId }: ListDetailsPageProps) {
       setActiveTeamId(teamId);
     }
   }, [listDetails.data, setActiveTeamId, teamId]);
-
-  async function handleRemoveGame(game: GamesListGame) {
-    try {
-      await removeGame.mutateAsync(game.gameId);
-      toast.success(`${game.name} removed from the list`);
-    } catch {
-      toast.error(`Could not remove ${game.name}. Try again.`);
-    }
-  }
 
   function handleDeleted() {
     void navigate({ to: "/teams/$teamId/lists", params: { teamId } });
@@ -237,16 +161,7 @@ export function ListDetailsPage({ teamId, listId }: ListDetailsPageProps) {
           </Button>
         </Item>
       ) : (
-        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
-          {list.games.map((game) => (
-            <ListGameCard
-              key={game.gameId}
-              game={game}
-              isRemoving={removeGame.isPending}
-              onRemove={handleRemoveGame}
-            />
-          ))}
-        </div>
+        <ListKanbanBoard teamId={teamId} list={list} />
       )}
       <EditListDialog
         teamId={teamId}

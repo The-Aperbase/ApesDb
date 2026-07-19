@@ -1,3 +1,5 @@
+using ApesDb.Domain.Entities.GamesLists;
+
 namespace ApesDb.Api.Features.GamesLists;
 
 public sealed record GamesListPictureResponse(string ContentType, byte[] Data);
@@ -18,6 +20,7 @@ public sealed record GamesListGameResponse(
     string? CoverSmallUrl,
     string? CoverLargeUrl,
     string? GameType,
+    string State,
     DateTime AddedAt
 );
 
@@ -40,5 +43,35 @@ public static class GamesListResponseFactory
         }
 
         return new GamesListPictureResponse("image/webp", data);
+    }
+
+    public static string CreateState(GamesListEntryState state)
+    {
+        if (state == GamesListEntryState.InProgress)
+        {
+            return "in-progress";
+        }
+
+        if (state == GamesListEntryState.Completed)
+        {
+            return "completed";
+        }
+
+        return "todo";
+    }
+
+    public static GamesListEntryState ParseState(string state)
+    {
+        if (state == "in-progress")
+        {
+            return GamesListEntryState.InProgress;
+        }
+
+        if (state == "completed")
+        {
+            return GamesListEntryState.Completed;
+        }
+
+        return GamesListEntryState.Todo;
     }
 }

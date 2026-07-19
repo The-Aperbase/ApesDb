@@ -8,6 +8,7 @@ using ApesDb.Api.Features.GamesLists.GetGamesList;
 using ApesDb.Api.Features.GamesLists.ListGamesLists;
 using ApesDb.Api.Features.GamesLists.RemoveGamesListEntry;
 using ApesDb.Api.Features.GamesLists.UpdateGamesList;
+using ApesDb.Api.Features.GamesLists.UpdateGamesListEntryState;
 using ApesDb.Domain;
 using ApesDb.Domain.Entities.Games;
 using ApesDb.Domain.Entities.GamesLists;
@@ -178,7 +179,9 @@ public sealed class GamesListEndpointTests : IClassFixture<GamesListDatabaseFixt
         Assert.Equal("https://images.example.com/1002-small.png", response.Games[0].CoverSmallUrl);
         Assert.Equal("https://images.example.com/1002-large.png", response.Games[0].CoverLargeUrl);
         Assert.Null(response.Games[0].GameType);
+        Assert.Equal("todo", response.Games[0].State);
         Assert.Equal(1001, response.Games[1].GameId);
+        Assert.Equal("todo", response.Games[1].State);
     }
 
     [Fact]
@@ -372,6 +375,44 @@ public sealed class GamesListEndpointTests : IClassFixture<GamesListDatabaseFixt
     }
 
     [Fact]
+    public async Task UpdateGamesListEntryState_ChangesStateAndTouchesList()
+    {
+        await _database.ResetAsync();
+        var owner = CreateUser("owner@example.com", "Owner");
+        var outsider = CreateUser("outsider@example.com", "Outsider");
+        var team = CreateTeam(owner.Id);
+        var list = CreateGamesList(team.Id, "Backlog");
+        await SeedAsync(
+            owner,
+            outsider,
+            team,
+            CreateAcceptedMembership(team.Id, owner.Id),
+            CreateGame(1001, "Game One"),
+            list,
+            CreateEntry(list.Id, 1001)
+        );
+
+        var status = await UpdateEntryStateAsync(owner.Id, team.Id, list.Id, 1001, "in-progress");
+
+        Assert.Equal(StatusCodes.Status204NoContent, status);
+        await using (var verifyContext = _database.CreateDbContext())
+        {
+            var entry = await verifyContext.GamesListEntries.SingleAsync();
+            Assert.Equal(GamesListEntryState.InProgress, entry.State);
+            Assert.Equal(Now, (await verifyContext.GamesLists.SingleAsync()).UpdatedAt);
+        }
+
+        var missingStatus = await UpdateEntryStateAsync(owner.Id, team.Id, list.Id, 9999, "completed");
+        Assert.Equal(StatusCodes.Status404NotFound, missingStatus);
+
+        var outsiderStatus = await UpdateEntryStateAsync(outsider.Id, team.Id, list.Id, 1001, "completed");
+        Assert.Equal(StatusCodes.Status404NotFound, outsiderStatus);
+
+        await using var dbContext = _database.CreateDbContext();
+        Assert.Equal(GamesListEntryState.InProgress, (await dbContext.GamesListEntries.SingleAsync()).State);
+    }
+
+    [Fact]
     public async Task RemoveGamesListEntry_RemovesEntryAndReturnsNotFoundWhenMissing()
     {
         await _database.ResetAsync();
@@ -456,6 +497,24 @@ public sealed class GamesListEndpointTests : IClassFixture<GamesListDatabaseFixt
         var endpoint = Factory.Create<AddGamesListEntryEndpoint>(context, dbContext, _dateTimeProvider);
         await endpoint.HandleAsync(
             new AddGamesListEntryRequest { TeamId = teamId, ListId = listId, GameId = gameId },
+            default
+        );
+        return context.Response.StatusCode;
+    }
+
+    private async Task<int> UpdateEntryStateAsync(Guid userId, Guid teamId, Guid listId, long gameId, string state)
+    {
+        await using var dbContext = _database.CreateDbContext();
+        var context = CreateHttpContext(userId);
+        var endpoint = Factory.Create<UpdateGamesListEntryStateEndpoint>(context, dbContext, _dateTimeProvider);
+        await endpoint.HandleAsync(
+            new UpdateGamesListEntryStateRequest
+            {
+                TeamId = teamId,
+                ListId = listId,
+                GameId = gameId,
+                State = state,
+            },
             default
         );
         return context.Response.StatusCode;

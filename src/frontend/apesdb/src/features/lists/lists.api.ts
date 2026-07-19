@@ -4,6 +4,7 @@ import {
   gamesListSummariesSchema,
   gamesListSummarySchema,
   type GamesListDetails,
+  type GamesListEntryState,
   type GamesListSummary,
 } from "./lists.schemas";
 
@@ -37,6 +38,10 @@ export type GamesListEntryInput = {
   teamId: string;
   listId: string;
   gameId: number;
+};
+
+export type UpdateGameStateInput = GamesListEntryInput & {
+  state: GamesListEntryState;
 };
 
 const validationErrorSchema = z.object({
@@ -244,6 +249,27 @@ export async function addGameToList(input: GamesListEntryInput): Promise<void> {
 
   if (!response.ok) {
     throw new Error(`Unable to add the game to the list (status ${response.status}).`);
+  }
+}
+
+export async function updateGameState(input: UpdateGameStateInput): Promise<void> {
+  let response: Response;
+
+  try {
+    response = await fetch(`${gamesListUrl(input.teamId, input.listId)}/entries/${input.gameId}`, {
+      method: "PUT",
+      credentials: "include",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ state: input.state }),
+    });
+  } catch {
+    throw new Error("Unable to reach the server. Check your connection and try again.");
+  }
+
+  if (!response.ok) {
+    throw new Error(`Unable to update the game state (status ${response.status}).`);
   }
 }
 
