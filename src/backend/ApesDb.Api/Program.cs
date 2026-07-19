@@ -1,4 +1,5 @@
 using ApesDb.Api;
+using ApesDb.Api.Features.GamesLists;
 using ApesDb.Api.Features.Notifications;
 using ApesDb.Auth;
 using ApesDb.Common;
@@ -18,6 +19,7 @@ builder.Services.AddApesDbAuth(builder.Configuration);
 
 builder.Services.AddFastEndpoints();
 builder.Services.AddSingleton<IPictureProcessor, PictureProcessor>();
+builder.Services.AddGamesLists();
 builder.Services.AddNotifications();
 builder.Services.AddApesDbSwagger();
 builder.Services.AddSpaStaticFiles(options =>
