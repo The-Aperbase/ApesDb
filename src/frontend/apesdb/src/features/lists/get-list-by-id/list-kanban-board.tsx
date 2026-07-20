@@ -29,10 +29,11 @@ const kanbanColumns: { state: GamesListEntryState; label: string }[] = [
   { state: "todo", label: "Todo" },
   { state: "in-progress", label: "In progress" },
   { state: "completed", label: "Completed" },
+  { state: "dnf", label: "DNF" },
 ];
 
 function groupGames(games: GamesListGame[]): BoardColumns {
-  const grouped: BoardColumns = { todo: [], "in-progress": [], completed: [] };
+  const grouped: BoardColumns = { todo: [], "in-progress": [], completed: [], dnf: [] };
 
   for (const game of games) {
     grouped[game.state].push(game);
@@ -138,6 +139,7 @@ export function ListKanbanBoard({ teamId, list }: ListKanbanBoardProps) {
       todo: value.todo ?? [],
       "in-progress": value["in-progress"] ?? [],
       completed: value.completed ?? [],
+      dnf: value.dnf ?? [],
     });
   }
 
@@ -164,24 +166,25 @@ export function ListKanbanBoard({ teamId, list }: ListKanbanBoardProps) {
 
   return (
     <Kanban
+      className="flex min-h-0 flex-1 flex-col"
       value={columns}
       onValueChange={handleValueChange}
       getItemValue={(game) => game.gameId.toString()}
       onMove={handleMove}
     >
-      <KanbanBoard className="gap-3">
+      <KanbanBoard className="min-h-0 flex-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">
         {kanbanColumns.map((column) => {
           const games = columns[column.state];
 
           return (
-            <KanbanColumn key={column.state} value={column.state}>
+            <KanbanColumn className="min-h-0" key={column.state} value={column.state}>
               <div className="mb-2 flex items-center gap-2 px-1">
                 <h2 className="text-sm font-medium">{column.label}</h2>
                 <Badge variant="secondary">{games.length}</Badge>
               </div>
               <KanbanColumnContent
                 value={column.state}
-                className="min-h-32 rounded-lg border border-dashed border-border p-2"
+                className="min-h-32 flex-1 rounded-lg border border-dashed border-border p-2"
               >
                 {games.map((game) => (
                   <GameCard

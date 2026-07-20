@@ -9,6 +9,7 @@ public sealed class UpdateGamesListEntryStateValidatorTests
     [InlineData("todo")]
     [InlineData("in-progress")]
     [InlineData("completed")]
+    [InlineData("dnf")]
     public void Validate_AcceptsKnownStates(string state)
     {
         var validator = new UpdateGamesListEntryStateValidator();

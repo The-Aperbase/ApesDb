@@ -28,7 +28,11 @@ type ListDetailsPageProps = {
 
 function BackToListsButton({ teamId }: { teamId: string }) {
   return (
-    <Button render={<Link params={{ teamId }} to="/teams/$teamId/lists" />} variant="ghost">
+    <Button
+      className="self-start"
+      render={<Link params={{ teamId }} to="/teams/$teamId/lists" />}
+      variant="ghost"
+    >
       <ArrowLeft />
       Back to lists
     </Button>
@@ -37,19 +41,21 @@ function BackToListsButton({ teamId }: { teamId: string }) {
 
 function ListDetailsSkeleton({ teamId }: { teamId: string }) {
   return (
-    <div className="mx-auto w-full max-w-5xl space-y-4">
+    <div className="flex min-h-full w-full flex-col gap-4">
       <BackToListsButton teamId={teamId} />
-      <div className="flex items-center gap-4">
-        <Skeleton className="size-20 rounded-xl" />
-        <div className="grid gap-2">
-          <Skeleton className="h-7 w-48" />
-          <Skeleton className="h-4 w-32" />
+      <div className="mx-auto w-full max-w-7xl space-y-4">
+        <div className="flex items-center gap-4">
+          <Skeleton className="size-20 rounded-xl" />
+          <div className="grid gap-2">
+            <Skeleton className="h-7 w-48" />
+            <Skeleton className="h-4 w-32" />
+          </div>
         </div>
-      </div>
-      <div className="grid gap-3 md:grid-cols-3">
-        <Skeleton className="h-64 w-full rounded-lg" />
-        <Skeleton className="h-64 w-full rounded-lg" />
-        <Skeleton className="h-64 w-full rounded-lg" />
+        <div className="grid gap-3 md:grid-cols-3">
+          <Skeleton className="h-64 w-full rounded-lg" />
+          <Skeleton className="h-64 w-full rounded-lg" />
+          <Skeleton className="h-64 w-full rounded-lg" />
+        </div>
       </div>
     </div>
   );
@@ -119,9 +125,12 @@ export function ListDetailsPage({ teamId, listId }: ListDetailsPageProps) {
 
   if (listDetails.error !== null) {
     return (
-      <div className="mx-auto w-full max-w-5xl space-y-4">
+      <div className="flex min-h-full w-full flex-col gap-4">
         <BackToListsButton teamId={teamId} />
-        <Item className="min-h-60 justify-center text-center" variant="outline">
+        <Item
+          className="mx-auto min-h-60 w-full max-w-7xl justify-center text-center"
+          variant="outline"
+        >
           <ItemContent className="items-center">
             <ItemTitle>List could not be loaded</ItemTitle>
             <ItemDescription>{listDetails.error}</ItemDescription>
@@ -142,27 +151,29 @@ export function ListDetailsPage({ teamId, listId }: ListDetailsPageProps) {
   const list = listDetails.data;
 
   return (
-    <div className="mx-auto w-full max-w-5xl space-y-4">
+    <div className="flex min-h-full w-full flex-col gap-4">
       <BackToListsButton teamId={teamId} />
-      <ListHeader
-        list={list}
-        onEdit={() => setIsEditDialogOpen(true)}
-        onDelete={() => setIsDeleteDialogOpen(true)}
-      />
-      {list.games.length === 0 ? (
-        <Item className="min-h-60 justify-center text-center" variant="outline">
-          <ItemContent className="items-center">
-            <ItemTitle>No games yet</ItemTitle>
-            <ItemDescription>Add games to this list from the games page.</ItemDescription>
-          </ItemContent>
-          <Button render={<Link to="/games" />} type="button" variant="outline">
-            <Gamepad2 data-icon="inline-start" />
-            Browse games
-          </Button>
-        </Item>
-      ) : (
-        <ListKanbanBoard teamId={teamId} list={list} />
-      )}
+      <div className="mx-auto flex min-h-0 w-full max-w-7xl flex-1 flex-col gap-4">
+        <ListHeader
+          list={list}
+          onEdit={() => setIsEditDialogOpen(true)}
+          onDelete={() => setIsDeleteDialogOpen(true)}
+        />
+        {list.games.length === 0 ? (
+          <Item className="min-h-60 justify-center text-center" variant="outline">
+            <ItemContent className="items-center">
+              <ItemTitle>No games yet</ItemTitle>
+              <ItemDescription>Add games to this list from the games page.</ItemDescription>
+            </ItemContent>
+            <Button render={<Link to="/games" />} type="button" variant="outline">
+              <Gamepad2 data-icon="inline-start" />
+              Browse games
+            </Button>
+          </Item>
+        ) : (
+          <ListKanbanBoard teamId={teamId} list={list} />
+        )}
+      </div>
       <EditListDialog
         teamId={teamId}
         list={list}

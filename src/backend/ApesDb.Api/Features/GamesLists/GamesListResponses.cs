@@ -57,6 +57,11 @@ public static class GamesListResponseFactory
             return "completed";
         }
 
+        if (state == GamesListEntryState.Dnf)
+        {
+            return "dnf";
+        }
+
         return "todo";
     }
 
@@ -70,6 +75,11 @@ public static class GamesListResponseFactory
         if (state == "completed")
         {
             return GamesListEntryState.Completed;
+        }
+
+        if (state == "dnf")
+        {
+            return GamesListEntryState.Dnf;
         }
 
         return GamesListEntryState.Todo;

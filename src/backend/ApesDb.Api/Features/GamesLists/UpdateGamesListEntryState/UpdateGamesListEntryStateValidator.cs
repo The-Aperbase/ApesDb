@@ -8,7 +8,9 @@ public sealed class UpdateGamesListEntryStateValidator : Validator<UpdateGamesLi
     public UpdateGamesListEntryStateValidator()
     {
         RuleFor(request => request.State)
-            .Must(state => state == "todo" || state == "in-progress" || state == "completed")
-            .WithMessage("State must be one of: todo, in-progress, completed.");
+            .Must(state =>
+                state == "todo" || state == "in-progress" || state == "completed" || state == "dnf"
+            )
+            .WithMessage("State must be one of: todo, in-progress, completed, dnf.");
     }
 }

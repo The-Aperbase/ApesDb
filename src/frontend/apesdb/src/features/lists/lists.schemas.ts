@@ -25,7 +25,7 @@ export type GamesListSummary = z.infer<typeof gamesListSummarySchema>;
 export const gamesListSummariesSchema = z.array(gamesListSummarySchema);
 
 export const gamesListEntryStateSchema = z
-  .enum(["todo", "in-progress", "completed"])
+  .enum(["todo", "in-progress", "completed", "dnf"])
   .default("todo");
 
 export type GamesListEntryState = z.infer<typeof gamesListEntryStateSchema>;

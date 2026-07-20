@@ -9,6 +9,7 @@ public enum GamesListEntryState
     Todo = 0,
     InProgress = 1,
     Completed = 2,
+    Dnf = 3,
 }
 
 public sealed class GamesListEntry
@@ -44,7 +45,7 @@ public sealed class GamesListEntryConfiguration : IEntityTypeConfiguration<Games
             .HasForeignKey(value => value.GameId)
             .OnDelete(DeleteBehavior.Cascade);
         entry.ToTable(table =>
-            table.HasCheckConstraint("CK_GamesListEntries_State", "\"State\" IN (0, 1, 2)")
+            table.HasCheckConstraint("CK_GamesListEntries_State", "\"State\" IN (0, 1, 2, 3)")
         );
     }
 }
