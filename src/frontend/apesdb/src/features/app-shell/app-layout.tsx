@@ -19,7 +19,7 @@ import {
   SidebarTrigger,
   TooltipProvider,
 } from "@apesdb/ui";
-import { ArrowLeft, Gamepad2, Home } from "lucide-react";
+import { ArrowLeft, Gamepad2 } from "lucide-react";
 import { useAuth } from "../../auth-context";
 import { AccountMenu } from "../../account-menu";
 import { AppBreadcrumbs } from "../../app-breadcrumbs";
@@ -108,16 +108,6 @@ function AppSidebar() {
           <SidebarGroupLabel className="text-primary">General</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
-              <SidebarMenuItem>
-                <SidebarMenuButton
-                  render={<Link to="/" />}
-                  isActive={pathname === "/"}
-                  tooltip="Home"
-                >
-                  <Home />
-                  <span>Home</span>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
               <SidebarMenuItem>
                 <SidebarMenuButton
                   render={<Link to="/games" />}

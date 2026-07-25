@@ -8,10 +8,13 @@ import {
   BreadcrumbPage,
   BreadcrumbSeparator,
 } from "@apesdb/ui";
+import { HomeIcon } from "lucide-react";
 
-type BreadcrumbDestination = "/games";
+type BreadcrumbDestination = "/" | "/games";
+type BreadcrumbIcon = "home";
 
 type BreadcrumbLabelSegment = {
+  icon?: BreadcrumbIcon;
   label: string;
   to?: BreadcrumbDestination;
 };
@@ -23,6 +26,7 @@ type BreadcrumbParamSegment = {
 type BreadcrumbSegment = BreadcrumbLabelSegment | BreadcrumbParamSegment;
 
 type ResolvedBreadcrumb = {
+  icon?: BreadcrumbIcon;
   label: string;
   to?: BreadcrumbDestination;
   truncate?: boolean;
@@ -69,13 +73,23 @@ export function AppBreadcrumbs() {
             labelClassName = "block max-w-24 truncate sm:max-w-72";
           }
 
+          let content = <>{breadcrumb.label}</>;
+          if (breadcrumb.icon === "home") {
+            content = (
+              <>
+                <HomeIcon aria-hidden className="size-4" />
+                <span className="sr-only">{breadcrumb.label}</span>
+              </>
+            );
+          }
+
           return (
             <Fragment key={`${breadcrumb.label}-${index}`}>
               {index > 0 ? <BreadcrumbSeparator className="shrink-0" /> : null}
               <BreadcrumbItem className={itemClassName}>
                 {isCurrent ? (
                   <BreadcrumbPage className={labelClassName} title={breadcrumb.label}>
-                    {breadcrumb.label}
+                    {content}
                   </BreadcrumbPage>
                 ) : breadcrumb.to ? (
                   <BreadcrumbLink
@@ -83,11 +97,11 @@ export function AppBreadcrumbs() {
                     render={<Link activeOptions={{ exact: true }} to={breadcrumb.to} />}
                     title={breadcrumb.label}
                   >
-                    {breadcrumb.label}
+                    {content}
                   </BreadcrumbLink>
                 ) : (
                   <span className={labelClassName} title={breadcrumb.label}>
-                    {breadcrumb.label}
+                    {content}
                   </span>
                 )}
               </BreadcrumbItem>
