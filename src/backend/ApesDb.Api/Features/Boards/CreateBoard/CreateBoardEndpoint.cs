@@ -1,8 +1,8 @@
 using ApesDb.Common;
+using ApesDb.Api.Features.Boards.GetBoard;
 using ApesDb.Domain;
 using ApesDb.Domain.Entities.Boards;
 using FastEndpoints;
-using Microsoft.AspNetCore.Http;
 
 namespace ApesDb.Api.Features.Boards.CreateBoard;
 
@@ -72,7 +72,6 @@ public sealed class CreateBoardEndpoint : Endpoint<CreateBoardRequest, BoardSumm
             0,
             false
         );
-        HttpContext.Response.Headers.Location = $"/{ApiRoutes.Api.Prefix}/boards/{board.Id}";
-        await Send.ResponseAsync(response, StatusCodes.Status201Created, ct);
+        await Send.CreatedAtAsync<GetBoardEndpoint>(new { boardId = board.Id }, response, cancellation: ct);
     }
 }
