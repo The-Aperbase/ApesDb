@@ -1,7 +1,8 @@
 import { useState } from "react";
 import { Link } from "@tanstack/react-router";
-import { Badge } from "@apesdb/ui";
-import { Gamepad2, Star } from "lucide-react";
+import { Badge, Button, Tooltip, TooltipContent, TooltipTrigger } from "@apesdb/ui";
+import { Copy, Gamepad2, Star } from "lucide-react";
+import { toast } from "sonner";
 import { formatDate } from "../../../lib/date";
 import { GameStoreLinks } from "./game-store-links";
 import type { GameDetails } from "./game-details.schemas";
@@ -57,6 +58,15 @@ function CompanySummary({ game }: { game: GameDetails }) {
 }
 
 export function GameDetailsHeader({ game }: GameDetailsHeaderProps) {
+  async function copyGameTitle() {
+    try {
+      await navigator.clipboard.writeText(game.name);
+      toast.success("Game title copied");
+    } catch {
+      toast.error("Game title could not be copied");
+    }
+  }
+
   return (
     <section className="grid gap-6 md:grid-cols-[14rem_minmax(0,1fr)]">
       <div className="w-full max-w-56 md:max-w-none">
@@ -68,7 +78,28 @@ export function GameDetailsHeader({ game }: GameDetailsHeaderProps) {
             {game.gameType && <Badge variant="secondary">{game.gameType.name}</Badge>}
             {game.gameStatus && <Badge variant="outline">{game.gameStatus.name}</Badge>}
           </div>
-          <h1 className="text-3xl font-semibold tracking-tight sm:text-4xl">{game.name}</h1>
+          <div className="flex items-start gap-2">
+            <h1 className="min-w-0 text-3xl font-semibold tracking-tight sm:text-4xl">
+              {game.name}
+            </h1>
+            <Tooltip>
+              <TooltipTrigger
+                render={
+                  <Button
+                    aria-label="Copy game title"
+                    className="mt-1"
+                    size="icon-lg"
+                    type="button"
+                    variant="ghost"
+                    onClick={() => void copyGameTitle()}
+                  />
+                }
+              >
+                <Copy aria-hidden="true" />
+              </TooltipTrigger>
+              <TooltipContent>Copy title</TooltipContent>
+            </Tooltip>
+          </div>
           {game.releaseDate && (
             <p className="mt-2 text-sm text-muted-foreground">
               Released {formatDate(game.releaseDate)}
