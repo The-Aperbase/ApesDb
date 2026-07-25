@@ -1,0 +1,21 @@
+﻿{
+  Response: {
+    StatusCode: 200,
+    ReasonPhrase: OK,
+    Version: 1.1,
+    ContentHeaders: {
+      Content-Type: [
+        application/json; charset=utf-8
+      ]
+    }
+  },
+  Content: [
+    {
+      Id: Guid_1,
+      Name: Oscar's board,
+      CreatedAt: DateTime_1,
+      UpdatedAt: DateTime_1,
+      ContainsGame: false
+    }
+  ]
+}

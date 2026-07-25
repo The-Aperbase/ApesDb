@@ -1,7 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import { useQueryStates } from "nuqs";
-import { AddToListDialog } from "../../lists/add-game-to-list/add-to-list-dialog";
-import { useActiveTeam } from "../../teams/team-context";
+import { AddToBoardDialog } from "../../boards/add-game-to-board/add-to-board-dialog";
 import { AdvancedFiltersSheet } from "./advanced-filters-sheet";
 import { usePageTableViewPreference } from "../../../lib/table-view-preferences";
 import {
@@ -17,7 +16,7 @@ import { useGameLookups, useGames } from "./use-games";
 
 export function GamesPage() {
   const [advancedFiltersOpen, setAdvancedFiltersOpen] = useState(false);
-  const [gameToAddToList, setGameToAddToList] = useState<Game | null>(null);
+  const [gameToAddToBoard, setGameToAddToBoard] = useState<Game | null>(null);
   const [tableView, setTableView] = usePageTableViewPreference("games");
   const [filters, setFilters] = useQueryStates(gameFilterParsers, {
     clearOnDefault: true,
@@ -25,15 +24,13 @@ export function GamesPage() {
   });
   const games = useGames(filters);
   const lookups = useGameLookups();
-  const { activeTeam } = useActiveTeam();
-
-  const openAddToList = useCallback((game: Game) => {
-    setGameToAddToList(game);
+  const openAddToBoard = useCallback((game: Game) => {
+    setGameToAddToBoard(game);
   }, []);
 
-  const closeAddToList = useCallback((open: boolean) => {
+  const closeAddToBoard = useCallback((open: boolean) => {
     if (!open) {
-      setGameToAddToList(null);
+      setGameToAddToBoard(null);
     }
   }, []);
 
@@ -81,7 +78,7 @@ export function GamesPage() {
         isLoading={games.isLoading}
         mode={tableView}
         page={Math.max(1, filters.page)}
-        onAddToList={openAddToList}
+        onAddToBoard={openAddToBoard}
         onModeChange={setTableView}
         onPageChange={updatePage}
         onRetry={games.retry}
@@ -96,14 +93,11 @@ export function GamesPage() {
         onFiltersChange={updateFilters}
         onRetryLookups={lookups.retry}
       />
-      {activeTeam !== null ? (
-        <AddToListDialog
-          teamId={activeTeam.id}
-          game={gameToAddToList}
-          open={gameToAddToList !== null}
-          onOpenChange={closeAddToList}
-        />
-      ) : null}
+      <AddToBoardDialog
+        game={gameToAddToBoard}
+        open={gameToAddToBoard !== null}
+        onOpenChange={closeAddToBoard}
+      />
     </div>
   );
 }

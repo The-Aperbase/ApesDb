@@ -26,7 +26,7 @@ type GamesTableProps = {
   isLoading: boolean;
   mode: DataViewMode;
   page: number;
-  onAddToList: (game: Game) => void;
+  onAddToBoard: (game: Game) => void;
   onModeChange: (mode: DataViewMode) => void;
   onPageChange: (page: number) => void;
   onRetry: () => void;
@@ -60,7 +60,7 @@ function GameCover({ game }: { game: Game }) {
   );
 }
 
-function createColumns(onAddToList: (game: Game) => void): ColumnDef<Game>[] {
+function createColumns(onAddToBoard: (game: Game) => void): ColumnDef<Game>[] {
   return [
     {
       id: "game",
@@ -137,8 +137,8 @@ function createColumns(onAddToList: (game: Game) => void): ColumnDef<Game>[] {
       id: "actions",
       cell: ({ row }) => (
         <Button
-          aria-label={`Add ${row.original.name} to a list`}
-          onClick={() => onAddToList(row.original)}
+          aria-label={`Add ${row.original.name} to a board`}
+          onClick={() => onAddToBoard(row.original)}
           size="icon"
           type="button"
           variant="ghost"
@@ -153,7 +153,7 @@ function createColumns(onAddToList: (game: Game) => void): ColumnDef<Game>[] {
   ];
 }
 
-function GameGridCard({ game, onAddToList }: { game: Game; onAddToList: (game: Game) => void }) {
+function GameGridCard({ game, onAddToBoard }: { game: Game; onAddToBoard: (game: Game) => void }) {
   const coverUrl = game.coverLargeUrl ?? game.coverSmallUrl;
 
   return (
@@ -197,9 +197,9 @@ function GameGridCard({ game, onAddToList }: { game: Game; onAddToList: (game: G
         </Card>
       </Link>
       <Button
-        aria-label={`Add ${game.name} to a list`}
+        aria-label={`Add ${game.name} to a board`}
         className="absolute top-2 right-2"
-        onClick={() => onAddToList(game)}
+        onClick={() => onAddToBoard(game)}
         size="icon"
         type="button"
         variant="secondary"
@@ -230,12 +230,12 @@ export function GamesTable({
   isLoading,
   mode,
   page,
-  onAddToList,
+  onAddToBoard,
   onModeChange,
   onPageChange,
   onRetry,
 }: GamesTableProps) {
-  const columns = useMemo(() => createColumns(onAddToList), [onAddToList]);
+  const columns = useMemo(() => createColumns(onAddToBoard), [onAddToBoard]);
 
   return (
     <PageableDataView
@@ -251,7 +251,7 @@ export function GamesTable({
       onModeChange={onModeChange}
       onPageChange={onPageChange}
       onRetry={onRetry}
-      renderGridItem={(game) => <GameGridCard game={game} onAddToList={onAddToList} />}
+      renderGridItem={(game) => <GameGridCard game={game} onAddToBoard={onAddToBoard} />}
       renderGridSkeleton={() => <GameGridCardSkeleton />}
       requestedPage={page}
       requestedPageSize={gamesPageSize}

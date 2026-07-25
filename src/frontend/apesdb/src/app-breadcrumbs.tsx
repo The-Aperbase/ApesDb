@@ -10,7 +10,7 @@ import {
 } from "@apesdb/ui";
 import { HomeIcon } from "lucide-react";
 
-type BreadcrumbDestination = "/" | "/games";
+type BreadcrumbDestination = "/" | "/boards" | "/games";
 type BreadcrumbIcon = "home";
 
 type BreadcrumbLabelSegment = {

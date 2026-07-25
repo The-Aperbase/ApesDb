@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Button, Item, ItemContent, ItemDescription, ItemTitle, Skeleton } from "@apesdb/ui";
 import { getRouteApi } from "@tanstack/react-router";
 import { RefreshCw } from "lucide-react";
-import { AddToListDialog } from "../../lists/add-game-to-list/add-to-list-dialog";
+import { AddToBoardDialog } from "../../boards/add-game-to-board/add-to-board-dialog";
 import { GameDetailsHeader } from "./game-details-header";
 import { GameDetailsSections } from "./game-details-sections";
 import { useGameDetails } from "./use-game-details";
@@ -45,7 +45,7 @@ function UnavailableGame({ invalid }: { invalid: boolean }) {
 export function GameDetailsPage() {
   const params = routeApi.useParams();
   const gameDetails = useGameDetails(Number(params.gameId));
-  const [addToListOpen, setAddToListOpen] = useState(false);
+  const [addToBoardOpen, setAddToBoardOpen] = useState(false);
 
   let content;
   if (gameDetails.isInvalid || gameDetails.isNotFound) {
@@ -68,7 +68,7 @@ export function GameDetailsPage() {
   } else if (gameDetails.data) {
     content = (
       <div className="space-y-6">
-        <GameDetailsHeader game={gameDetails.data} onAddToList={() => setAddToListOpen(true)} />
+        <GameDetailsHeader game={gameDetails.data} onAddToBoard={() => setAddToBoardOpen(true)} />
         <GameDetailsSections game={gameDetails.data} />
       </div>
     );
@@ -80,10 +80,10 @@ export function GameDetailsPage() {
     <div className="mx-auto w-full max-w-7xl">
       {content}
       {gameDetails.data !== null ? (
-        <AddToListDialog
+        <AddToBoardDialog
           game={{ id: gameDetails.data.id, name: gameDetails.data.name }}
-          open={addToListOpen}
-          onOpenChange={setAddToListOpen}
+          open={addToBoardOpen}
+          onOpenChange={setAddToBoardOpen}
         />
       ) : null}
     </div>

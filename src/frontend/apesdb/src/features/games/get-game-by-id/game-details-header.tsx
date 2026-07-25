@@ -9,7 +9,7 @@ import type { GameDetails } from "./game-details.schemas";
 
 type GameDetailsHeaderProps = {
   game: GameDetails;
-  onAddToList: () => void;
+  onAddToBoard: () => void;
 };
 
 function GameCover({ game }: { game: GameDetails }) {
@@ -67,7 +67,7 @@ async function copyGameUrl() {
   }
 }
 
-export function GameDetailsHeader({ game, onAddToList }: GameDetailsHeaderProps) {
+export function GameDetailsHeader({ game, onAddToBoard }: GameDetailsHeaderProps) {
   return (
     <section className="grid gap-6 md:grid-cols-[14rem_minmax(0,1fr)]">
       <div className="w-full max-w-56 md:max-w-none">
@@ -149,9 +149,9 @@ export function GameDetailsHeader({ game, onAddToList }: GameDetailsHeaderProps)
         )}
 
         <div className="flex flex-wrap items-center gap-2">
-          <Button onClick={onAddToList} type="button" variant="outline">
+          <Button onClick={onAddToBoard} type="button" variant="outline">
             <ListPlus data-icon="inline-start" />
-            Add to list
+            Add to board
           </Button>
           <GameStoreLinks storePages={game.storePages} />
         </div>

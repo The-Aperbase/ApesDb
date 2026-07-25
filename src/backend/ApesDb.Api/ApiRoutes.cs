@@ -21,13 +21,13 @@ public static class ApiRoutes
         public const string Platforms = "games/platforms";
     }
 
-    public static class GamesLists
+    public static class Boards
     {
-        public const string List = "teams/{teamId:guid}/games-lists";
-        public const string Create = "teams/{teamId:guid}/games-lists";
-        public const string ById = "teams/{teamId:guid}/games-lists/{listId:guid}";
-        public const string Entries = "teams/{teamId:guid}/games-lists/{listId:guid}/entries";
-        public const string EntryByGame = "teams/{teamId:guid}/games-lists/{listId:guid}/entries/{gameId:long}";
+        public const string List = "boards";
+        public const string Create = "boards";
+        public const string ById = "boards/{boardId:guid}";
+        public const string Entries = "boards/{boardId:guid}/entries";
+        public const string EntryByGame = "boards/{boardId:guid}/entries/{gameId:long}";
     }
 
     public static class Auth
