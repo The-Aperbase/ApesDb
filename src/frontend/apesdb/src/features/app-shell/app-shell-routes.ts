@@ -18,9 +18,6 @@ export const appRoute = createRoute({
   getParentRoute: () => rootRoute,
   id: "_app",
   component: lazyRouteComponent(() => import("./app-layout"), "AppLayout"),
-  staticData: {
-    breadcrumbs: [{ icon: "home", label: "Home", to: "/" }],
-  },
   beforeLoad: ({ context, location }) => {
     if (!context.auth.isAuthenticated) {
       throw redirect({

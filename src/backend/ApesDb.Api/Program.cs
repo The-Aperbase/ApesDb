@@ -17,6 +17,7 @@ builder.Services.AddApesDbShared();
 builder.Services.AddApesDbAuth(builder.Configuration);
 
 builder.Services.AddFastEndpoints();
+builder.Services.AddSingleton<IPictureProcessor, PictureProcessor>();
 builder.Services.AddNotifications();
 builder.Services.AddApesDbSwagger();
 builder.Services.AddSpaStaticFiles(options =>
