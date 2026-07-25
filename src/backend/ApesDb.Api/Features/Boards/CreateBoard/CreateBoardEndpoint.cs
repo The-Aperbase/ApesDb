@@ -34,6 +34,7 @@ public sealed class CreateBoardEndpoint : Endpoint<CreateBoardRequest, BoardSumm
     {
         var userId = User.GetApesDbUserId();
         byte[]? picture = null;
+        var pictureIsValid = true;
         if (request.Picture is not null)
         {
             try
@@ -44,34 +45,40 @@ public sealed class CreateBoardEndpoint : Endpoint<CreateBoardRequest, BoardSumm
             catch (InvalidPictureException exception)
             {
                 AddError(request => request.Picture, exception.Message);
-                await Send.ErrorsAsync(cancellation: ct);
-                return;
+                pictureIsValid = false;
             }
         }
 
-        var now = _dateTimeProvider.UtcNow;
-        var board = new Board
+        if (!pictureIsValid)
         {
-            Id = Guid.CreateVersion7(),
-            OwnerUserId = userId,
-            Name = request.Name.Trim(),
-            Picture = picture,
-            CreatedAt = now,
-            UpdatedAt = now,
-        };
+            await Send.ErrorsAsync(cancellation: ct);
+        }
+        else
+        {
+            var now = _dateTimeProvider.UtcNow;
+            var board = new Board
+            {
+                Id = Guid.CreateVersion7(),
+                OwnerUserId = userId,
+                Name = request.Name.Trim(),
+                Picture = picture,
+                CreatedAt = now,
+                UpdatedAt = now,
+            };
 
-        _dbContext.Boards.Add(board);
-        await _dbContext.SaveChangesAsync(ct);
+            _dbContext.Boards.Add(board);
+            await _dbContext.SaveChangesAsync(ct);
 
-        var response = new BoardSummaryResponse(
-            board.Id,
-            board.Name,
-            board.CreatedAt,
-            board.UpdatedAt,
-            BoardResponseFactory.CreatePicture(board.Picture),
-            0,
-            false
-        );
-        await Send.CreatedAtAsync<GetBoardEndpoint>(new { boardId = board.Id }, response, cancellation: ct);
+            var response = new BoardSummaryResponse(
+                board.Id,
+                board.Name,
+                board.CreatedAt,
+                board.UpdatedAt,
+                BoardResponseFactory.CreatePicture(board.Picture),
+                0,
+                false
+            );
+            await Send.CreatedAtAsync<GetBoardEndpoint>(new { boardId = board.Id }, response, cancellation: ct);
+        }
     }
 }

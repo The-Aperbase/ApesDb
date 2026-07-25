@@ -38,24 +38,25 @@ public sealed class GetBoardEndpoint : Endpoint<GetBoardRequest, BoardDetailsRes
         if (board is null)
         {
             await Send.NotFoundAsync(ct);
-            return;
         }
+        else
+        {
+            var games = await _dbContext
+                .BoardEntries.AsNoTracking()
+                .Where(entry => entry.BoardId == request.BoardId)
+                .ToBoardGameResponsesAsync(ct);
 
-        var games = await _dbContext
-            .BoardEntries.AsNoTracking()
-            .Where(entry => entry.BoardId == request.BoardId)
-            .ToBoardGameResponsesAsync(ct);
-
-        await Send.OkAsync(
-            new BoardDetailsResponse(
-                board.Id,
-                board.Name,
-                board.CreatedAt,
-                board.UpdatedAt,
-                BoardResponseFactory.CreatePicture(board.Picture),
-                games
-            ),
-            ct
-        );
+            await Send.OkAsync(
+                new BoardDetailsResponse(
+                    board.Id,
+                    board.Name,
+                    board.CreatedAt,
+                    board.UpdatedAt,
+                    BoardResponseFactory.CreatePicture(board.Picture),
+                    games
+                ),
+                ct
+            );
+        }
     }
 }

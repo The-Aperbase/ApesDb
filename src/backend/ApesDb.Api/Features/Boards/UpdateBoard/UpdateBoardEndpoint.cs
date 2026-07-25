@@ -40,57 +40,65 @@ public sealed class UpdateBoardEndpoint : Endpoint<UpdateBoardRequest, BoardDeta
         if (board is null)
         {
             await Send.NotFoundAsync(ct);
-            return;
         }
-
-        byte[]? picture = null;
-        if (request.Picture is not null)
+        else
         {
-            try
+            byte[]? picture = null;
+            var pictureIsValid = true;
+            if (request.Picture is not null)
             {
-                await using var stream = request.Picture.OpenReadStream();
-                picture = _pictureProcessor.Process(stream);
+                try
+                {
+                    await using var stream = request.Picture.OpenReadStream();
+                    picture = _pictureProcessor.Process(stream);
+                }
+                catch (InvalidPictureException exception)
+                {
+                    AddError(request => request.Picture, exception.Message);
+                    pictureIsValid = false;
+                }
             }
-            catch (InvalidPictureException exception)
+
+            if (!pictureIsValid)
             {
-                AddError(request => request.Picture, exception.Message);
                 await Send.ErrorsAsync(cancellation: ct);
-                return;
+            }
+            else
+            {
+                if (request.Name is not null)
+                {
+                    board.Name = request.Name.Trim();
+                }
+
+                if (picture is not null)
+                {
+                    board.Picture = picture;
+                }
+                else if (request.RemovePicture)
+                {
+                    board.Picture = null;
+                }
+
+                board.UpdatedAt = _dateTimeProvider.UtcNow;
+                await _dbContext.SaveChangesAsync(ct);
+
+                var games = await _dbContext
+                    .BoardEntries.AsNoTracking()
+                    .Where(entry => entry.BoardId == board.Id)
+                    .ToBoardGameResponsesAsync(ct);
+
+                await Send.OkAsync(
+                    new BoardDetailsResponse(
+                        board.Id,
+                        board.Name,
+                        board.CreatedAt,
+                        board.UpdatedAt,
+                        BoardResponseFactory.CreatePicture(board.Picture),
+                        games
+                    ),
+                    ct
+                );
             }
         }
-
-        if (request.Name is not null)
-        {
-            board.Name = request.Name.Trim();
-        }
-
-        if (picture is not null)
-        {
-            board.Picture = picture;
-        }
-        else if (request.RemovePicture)
-        {
-            board.Picture = null;
-        }
-
-        board.UpdatedAt = _dateTimeProvider.UtcNow;
-        await _dbContext.SaveChangesAsync(ct);
-
-        var games = await _dbContext
-            .BoardEntries.AsNoTracking()
-            .Where(entry => entry.BoardId == board.Id)
-            .ToBoardGameResponsesAsync(ct);
-
-        await Send.OkAsync(
-            new BoardDetailsResponse(
-                board.Id,
-                board.Name,
-                board.CreatedAt,
-                board.UpdatedAt,
-                BoardResponseFactory.CreatePicture(board.Picture),
-                games
-            ),
-            ct
-        );
     }
 }

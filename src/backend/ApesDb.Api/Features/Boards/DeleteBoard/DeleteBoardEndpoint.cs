@@ -35,10 +35,11 @@ public sealed class DeleteBoardEndpoint : Endpoint<DeleteBoardRequest>
         if (deleted == 0)
         {
             await Send.NotFoundAsync(ct);
-            return;
         }
-
-        await transaction.CommitAsync(ct);
-        await Send.NoContentAsync(ct);
+        else
+        {
+            await transaction.CommitAsync(ct);
+            await Send.NoContentAsync(ct);
+        }
     }
 }

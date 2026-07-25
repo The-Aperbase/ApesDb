@@ -33,27 +33,31 @@ public sealed class AddBoardEntryEndpoint : Endpoint<AddBoardEntryRequest, AddBo
         if (board is null)
         {
             await Send.NotFoundAsync(ct);
-            return;
         }
-
-        var gameExists = await _dbContext.Games.AnyAsync(game => game.Id == request.GameId, ct);
-        if (!gameExists)
+        else
         {
-            await Send.NotFoundAsync(ct);
-            return;
-        }
+            var gameExists = await _dbContext.Games.AnyAsync(game => game.Id == request.GameId, ct);
+            if (!gameExists)
+            {
+                await Send.NotFoundAsync(ct);
+            }
+            else
+            {
+                var entryExists = await _dbContext.BoardEntries.AnyAsync(
+                    entry => entry.BoardId == request.BoardId && entry.GameId == request.GameId,
+                    ct
+                );
+                if (!entryExists)
+                {
+                    _dbContext.BoardEntries.Add(
+                        new BoardEntry { BoardId = request.BoardId, GameId = request.GameId }
+                    );
+                    board.UpdatedAt = _dateTimeProvider.UtcNow;
+                    await _dbContext.SaveChangesAsync(ct);
+                }
 
-        var entryExists = await _dbContext.BoardEntries.AnyAsync(
-            entry => entry.BoardId == request.BoardId && entry.GameId == request.GameId,
-            ct
-        );
-        if (!entryExists)
-        {
-            _dbContext.BoardEntries.Add(new BoardEntry { BoardId = request.BoardId, GameId = request.GameId });
-            board.UpdatedAt = _dateTimeProvider.UtcNow;
-            await _dbContext.SaveChangesAsync(ct);
+                await Send.OkAsync(new AddBoardEntryResponse(request.GameId), ct);
+            }
         }
-
-        await Send.OkAsync(new AddBoardEntryResponse(request.GameId), ct);
     }
 }

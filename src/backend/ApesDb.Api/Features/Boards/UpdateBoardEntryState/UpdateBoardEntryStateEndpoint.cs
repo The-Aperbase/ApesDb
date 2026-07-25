@@ -37,13 +37,17 @@ public sealed class UpdateBoardEntryStateEndpoint : Endpoint<UpdateBoardEntrySta
         if (updated == 0)
         {
             await Send.NotFoundAsync(ct);
-            return;
         }
+        else
+        {
+            await _dbContext
+                .Boards.Where(board => board.Id == request.BoardId)
+                .ExecuteUpdateAsync(
+                    setters => setters.SetProperty(board => board.UpdatedAt, _dateTimeProvider.UtcNow),
+                    ct
+                );
 
-        await _dbContext
-            .Boards.Where(board => board.Id == request.BoardId)
-            .ExecuteUpdateAsync(setters => setters.SetProperty(board => board.UpdatedAt, _dateTimeProvider.UtcNow), ct);
-
-        await Send.NoContentAsync(ct);
+            await Send.NoContentAsync(ct);
+        }
     }
 }
