@@ -33,6 +33,7 @@ public sealed class BoardEntryConfiguration : IEntityTypeConfiguration<BoardEntr
     {
         entry.HasKey(value => new { value.BoardId, value.GameId });
         entry.HasIndex(value => value.GameId);
+        entry.Property(value => value.State).HasConversion<string>().HasMaxLength(16);
         entry.Property(value => value.AddedAt).HasDefaultValueSql("now()").ValueGeneratedOnAdd();
         entry
             .HasOne(value => value.Board)
@@ -44,6 +45,11 @@ public sealed class BoardEntryConfiguration : IEntityTypeConfiguration<BoardEntr
             .WithMany()
             .HasForeignKey(value => value.GameId)
             .OnDelete(DeleteBehavior.Cascade);
-        entry.ToTable(table => table.HasCheckConstraint("CK_BoardEntries_State", "\"State\" IN (0, 1, 2, 3)"));
+        entry.ToTable(table =>
+            table.HasCheckConstraint(
+                "CK_BoardEntries_State",
+                "\"State\" IN ('Todo', 'InProgress', 'Completed', 'Dnf')"
+            )
+        );
     }
 }
