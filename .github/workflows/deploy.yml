@@ -3,7 +3,12 @@ name: Build, Push, and Deploy
 on:
   push:
     branches: [main]
-  workflow_dispatch: {}
+  workflow_dispatch:
+    inputs:
+      deploy_to_production:
+        description: Deploy the built images to the production host
+        type: boolean
+        default: false
 
 permissions:
   contents: read
@@ -94,6 +99,7 @@ jobs:
           cache-to: type=gha,mode=max,scope=migrations
 
       - name: Connect to Tailscale
+        if: github.event_name == 'push' || inputs.deploy_to_production
         uses: tailscale/github-action@v4
         with:
           oauth-client-id: ${{ secrets.TS_OAUTH_CLIENT_ID }}
@@ -102,6 +108,7 @@ jobs:
           ping: dokbox
 
       - name: Trigger Dokploy redeploy
+        if: github.event_name == 'push' || inputs.deploy_to_production
         run: |
           curl -fsS -X POST "http://dokbox:3000/api/compose.deploy" \
             -H "accept: application/json" \
