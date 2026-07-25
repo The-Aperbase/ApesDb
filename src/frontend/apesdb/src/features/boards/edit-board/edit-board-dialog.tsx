@@ -16,7 +16,7 @@ import {
   FieldLabel,
   Input,
 } from "@apesdb/ui";
-import { ImageIcon, Library, Loader2, Trash2 } from "lucide-react";
+import { ImageIcon, ImageUp, Library, Loader2, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import type { BoardDetails } from "../boards.schemas";
 import { useEditBoard } from "./use-edit-board";
@@ -225,6 +225,7 @@ export function EditBoardDialog({ board, open, onOpenChange }: EditBoardDialogPr
               <div className="grid min-w-0 flex-1 gap-2">
                 <Input
                   ref={fileInputRef}
+                  className="sr-only"
                   id="edit-board-picture"
                   accept="image/jpeg,image/png,image/webp"
                   disabled={editBoard.isPending}
@@ -233,6 +234,17 @@ export function EditBoardDialog({ board, open, onOpenChange }: EditBoardDialogPr
                   aria-invalid={pictureError !== null}
                   aria-describedby="edit-board-picture-description"
                 />
+                <Button
+                  className="w-fit"
+                  disabled={editBoard.isPending}
+                  onClick={() => fileInputRef.current?.click()}
+                  size="sm"
+                  type="button"
+                  variant="outline"
+                >
+                  <ImageUp data-icon="inline-start" />
+                  {hasVisiblePicture ? "Replace picture" : "Choose picture"}
+                </Button>
                 {hasVisiblePicture || pictureError !== null ? (
                   <Button
                     className="w-fit"
