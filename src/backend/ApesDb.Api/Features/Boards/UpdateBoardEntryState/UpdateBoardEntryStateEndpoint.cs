@@ -26,20 +26,24 @@ public sealed class UpdateBoardEntryStateEndpoint : Endpoint<UpdateBoardEntrySta
     public override async Task HandleAsync(UpdateBoardEntryStateRequest request, CancellationToken ct)
     {
         var userId = User.GetApesDbUserId();
-        var state = request.State switch
+        var stateId = await _dbContext
+            .BoardEntryStates.Where(state => state.Name == request.State)
+            .Select(state => (int?)state.Id)
+            .SingleOrDefaultAsync(ct);
+        if (stateId is null)
         {
-            "in-progress" => BoardEntryState.InProgress,
-            "completed" => BoardEntryState.Completed,
-            "dnf" => BoardEntryState.Dnf,
-            _ => BoardEntryState.Todo,
-        };
+            AddError(entry => entry.State, "State is invalid.");
+            await Send.ErrorsAsync(cancellation: ct);
+            return;
+        }
+
         var updated = await _dbContext
             .BoardEntries.Where(entry =>
                 entry.BoardId == request.BoardId
                 && entry.GameId == request.GameId
                 && _dbContext.Boards.Any(board => board.Id == entry.BoardId && board.OwnerUserId == userId)
             )
-            .ExecuteUpdateAsync(setters => setters.SetProperty(entry => entry.State, state), ct);
+            .ExecuteUpdateAsync(setters => setters.SetProperty(entry => entry.StateId, stateId.Value), ct);
 
         if (updated == 0)
         {

@@ -22,6 +22,8 @@ public sealed class ApplicationDbContext : DbContext
 
     public DbSet<BoardEntry> BoardEntries => Set<BoardEntry>();
 
+    public DbSet<BoardEntryState> BoardEntryStates => Set<BoardEntryState>();
+
     public DbSet<Game> Games => Set<Game>();
 
     public DbSet<GameType> GameTypes => Set<GameType>();

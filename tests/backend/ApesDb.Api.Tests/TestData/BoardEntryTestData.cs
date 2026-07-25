@@ -19,7 +19,7 @@ public static class BoardEntryTestData
                 Board = boards[BoardTestData.BacklogId],
                 GameId = BacklogGameId,
                 Game = games[BacklogGameId],
-                State = BoardEntryState.InProgress,
+                StateId = 1,
                 AddedAt = new DateTime(2026, 1, 12, 8, 0, 0, DateTimeKind.Utc),
             },
             new BoardEntry
@@ -28,7 +28,7 @@ public static class BoardEntryTestData
                 Board = boards[BoardTestData.BacklogId],
                 GameId = CompletedGameId,
                 Game = games[CompletedGameId],
-                State = BoardEntryState.Completed,
+                StateId = 2,
                 AddedAt = new DateTime(2026, 1, 13, 8, 0, 0, DateTimeKind.Utc),
             },
         ];

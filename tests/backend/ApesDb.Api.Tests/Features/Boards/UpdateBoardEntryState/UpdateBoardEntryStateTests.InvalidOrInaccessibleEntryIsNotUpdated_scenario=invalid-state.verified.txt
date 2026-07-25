@@ -10,7 +10,7 @@
         ]
       }
     },
-    Content: {"statusCode":400,"message":"One or more errors occurred!","errors":{"state":["State must be one of: todo, in-progress, completed, dnf."]}}
+    Content: {"statusCode":400,"message":"One or more errors occurred!","errors":{"state":["State is invalid."]}}
   },
   OwnerBoardResponse: {
     Response: {

@@ -4,24 +4,19 @@ namespace ApesDb.Api.UnitTests.Features.Boards.UpdateBoardEntryState;
 
 public sealed class UpdateBoardEntryStateValidatorTests
 {
-    [Theory]
-    [InlineData("todo")]
-    [InlineData("in-progress")]
-    [InlineData("completed")]
-    [InlineData("dnf")]
-    public void ValidateAcceptsKnownStates(string state)
+    [Fact]
+    public void ValidateAcceptsStateWithinStorageLimit()
     {
         var validator = new UpdateBoardEntryStateValidator();
-        var result = validator.Validate(new UpdateBoardEntryStateRequest { State = state });
+        var result = validator.Validate(new UpdateBoardEntryStateRequest { State = "database-state" });
 
         Assert.True(result.IsValid);
     }
 
     [Theory]
     [InlineData("")]
-    [InlineData("done")]
-    [InlineData("Todo")]
-    public void ValidateRejectsUnknownStates(string state)
+    [InlineData("state-name-longer-than-sixteen-characters")]
+    public void ValidateRejectsInvalidStateName(string state)
     {
         var validator = new UpdateBoardEntryStateValidator();
         var result = validator.Validate(new UpdateBoardEntryStateRequest { State = state });

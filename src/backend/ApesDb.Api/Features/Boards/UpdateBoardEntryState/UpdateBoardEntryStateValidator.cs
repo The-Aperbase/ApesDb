@@ -8,7 +8,7 @@ public sealed class UpdateBoardEntryStateValidator : Validator<UpdateBoardEntryS
     public UpdateBoardEntryStateValidator()
     {
         RuleFor(request => request.State)
-            .Must(state => state == "todo" || state == "in-progress" || state == "completed" || state == "dnf")
-            .WithMessage("State must be one of: todo, in-progress, completed, dnf.");
+            .NotEmpty()
+            .MaximumLength(16);
     }
 }
