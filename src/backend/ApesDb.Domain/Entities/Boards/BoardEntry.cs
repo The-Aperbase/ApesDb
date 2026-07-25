@@ -45,7 +45,11 @@ public sealed class BoardEntryConfiguration : IEntityTypeConfiguration<BoardEntr
             .WithMany()
             .HasForeignKey(value => value.GameId)
             .OnDelete(DeleteBehavior.Cascade);
-        entry.HasOne(value => value.State).WithMany().HasForeignKey(value => value.StateId).OnDelete(DeleteBehavior.Restrict);
+        entry
+            .HasOne(value => value.State)
+            .WithMany()
+            .HasForeignKey(value => value.StateId)
+            .OnDelete(DeleteBehavior.Restrict);
     }
 }
 
