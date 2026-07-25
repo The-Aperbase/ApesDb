@@ -157,9 +157,9 @@ function GameGridCard({ game, onAddToBoard }: { game: Game; onAddToBoard: (game:
   const coverUrl = game.coverLargeUrl ?? game.coverSmallUrl;
 
   return (
-    <div className="group relative">
+    <div className="group relative h-full">
       <Link
-        className="block rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/30"
+        className="block h-full rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/30"
         params={{ gameId: game.id.toString() }}
         search
         to="/games/$gameId"

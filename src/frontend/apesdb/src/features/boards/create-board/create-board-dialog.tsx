@@ -16,7 +16,7 @@ import {
   FieldLabel,
   Input,
 } from "@apesdb/ui";
-import { ImageIcon, Library, Loader2, Trash2 } from "lucide-react";
+import { ImageIcon, ImageUp, Library, Loader2, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { useCreateBoard } from "./use-create-board";
 
@@ -205,6 +205,7 @@ export function CreateBoardDialog({ open, onOpenChange, onCreated }: CreateBoard
               <div className="grid min-w-0 flex-1 gap-2">
                 <Input
                   ref={fileInputRef}
+                  className="sr-only"
                   id="create-board-picture"
                   accept="image/jpeg,image/png,image/webp"
                   disabled={createBoard.isPending}
@@ -213,6 +214,17 @@ export function CreateBoardDialog({ open, onOpenChange, onCreated }: CreateBoard
                   aria-invalid={pictureError !== null}
                   aria-describedby="create-board-picture-description"
                 />
+                <Button
+                  className="w-fit"
+                  disabled={createBoard.isPending}
+                  onClick={() => fileInputRef.current?.click()}
+                  size="sm"
+                  type="button"
+                  variant="outline"
+                >
+                  <ImageUp data-icon="inline-start" />
+                  Choose file
+                </Button>
                 {picture !== null || pictureError !== null ? (
                   <Button
                     className="w-fit"
