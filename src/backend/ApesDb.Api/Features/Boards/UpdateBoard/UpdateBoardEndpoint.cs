@@ -76,7 +76,10 @@ public sealed class UpdateBoardEndpoint : Endpoint<UpdateBoardRequest, BoardDeta
         board.UpdatedAt = _dateTimeProvider.UtcNow;
         await _dbContext.SaveChangesAsync(ct);
 
-        var games = await BoardGameLoader.LoadAsync(_dbContext, board.Id, ct);
+        var games = await _dbContext
+            .BoardEntries.AsNoTracking()
+            .Where(entry => entry.BoardId == board.Id)
+            .ToBoardGameResponsesAsync(ct);
 
         await Send.OkAsync(
             new BoardDetailsResponse(

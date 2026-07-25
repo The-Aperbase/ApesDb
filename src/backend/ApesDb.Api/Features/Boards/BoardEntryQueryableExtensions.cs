@@ -1,19 +1,16 @@
-using ApesDb.Domain;
+using ApesDb.Domain.Entities.Boards;
 using Microsoft.EntityFrameworkCore;
 
 namespace ApesDb.Api.Features.Boards;
 
-internal static class BoardGameLoader
+internal static class BoardEntryQueryableExtensions
 {
-    public static async Task<BoardGameResponse[]> LoadAsync(
-        ApplicationDbContext dbContext,
-        Guid boardId,
+    public static async Task<BoardGameResponse[]> ToBoardGameResponsesAsync(
+        this IQueryable<BoardEntry> query,
         CancellationToken ct
     )
     {
-        var entries = await dbContext
-            .BoardEntries.AsNoTracking()
-            .Where(entry => entry.BoardId == boardId)
+        var entries = await query
             .OrderBy(entry => entry.AddedAt)
             .ThenBy(entry => entry.GameId)
             .Select(entry => new
@@ -22,10 +19,7 @@ internal static class BoardGameLoader
                 entry.Game.Name,
                 entry.Game.CoverSmallUrl,
                 entry.Game.CoverLargeUrl,
-                GameType = dbContext
-                    .GameTypes.Where(gameType => gameType.Id == entry.Game.GameTypeId)
-                    .Select(gameType => gameType.Name)
-                    .FirstOrDefault(),
+                GameType = entry.Game.GameType!.Name,
                 entry.State,
                 entry.AddedAt,
             })

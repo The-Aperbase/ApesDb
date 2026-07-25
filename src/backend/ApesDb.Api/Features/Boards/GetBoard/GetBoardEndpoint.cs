@@ -41,7 +41,10 @@ public sealed class GetBoardEndpoint : Endpoint<GetBoardRequest, BoardDetailsRes
             return;
         }
 
-        var games = await BoardGameLoader.LoadAsync(_dbContext, request.BoardId, ct);
+        var games = await _dbContext
+            .BoardEntries.AsNoTracking()
+            .Where(entry => entry.BoardId == request.BoardId)
+            .ToBoardGameResponsesAsync(ct);
 
         await Send.OkAsync(
             new BoardDetailsResponse(
