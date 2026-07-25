@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import { useQueryStates } from "nuqs";
+import { AddToBoardDialog } from "../../boards/add-game-to-board/add-to-board-dialog";
 import { AdvancedFiltersSheet } from "./advanced-filters-sheet";
 import { usePageTableViewPreference } from "../../../lib/table-view-preferences";
 import {
@@ -8,12 +9,14 @@ import {
   hasGameFilters,
   type GameFilterPatch,
 } from "./games-query-state";
+import type { Game } from "./games.schemas";
 import { GamesTable } from "./games-table";
 import { GamesToolbar } from "./games-toolbar";
 import { useGameLookups, useGames } from "./use-games";
 
 export function GamesPage() {
   const [advancedFiltersOpen, setAdvancedFiltersOpen] = useState(false);
+  const [gameToAddToBoard, setGameToAddToBoard] = useState<Game | null>(null);
   const [tableView, setTableView] = usePageTableViewPreference("games");
   const [filters, setFilters] = useQueryStates(gameFilterParsers, {
     clearOnDefault: true,
@@ -21,6 +24,15 @@ export function GamesPage() {
   });
   const games = useGames(filters);
   const lookups = useGameLookups();
+  const openAddToBoard = useCallback((game: Game) => {
+    setGameToAddToBoard(game);
+  }, []);
+
+  const closeAddToBoard = useCallback((open: boolean) => {
+    if (!open) {
+      setGameToAddToBoard(null);
+    }
+  }, []);
 
   const updateFilters = useCallback(
     (patch: GameFilterPatch) => {
@@ -66,6 +78,7 @@ export function GamesPage() {
         isLoading={games.isLoading}
         mode={tableView}
         page={Math.max(1, filters.page)}
+        onAddToBoard={openAddToBoard}
         onModeChange={setTableView}
         onPageChange={updatePage}
         onRetry={games.retry}
@@ -79,6 +92,11 @@ export function GamesPage() {
         onOpenChange={setAdvancedFiltersOpen}
         onFiltersChange={updateFilters}
         onRetryLookups={lookups.retry}
+      />
+      <AddToBoardDialog
+        game={gameToAddToBoard}
+        open={gameToAddToBoard !== null}
+        onOpenChange={closeAddToBoard}
       />
     </div>
   );

@@ -9,8 +9,10 @@ import {
   BreadcrumbSeparator,
 } from "@apesdb/ui";
 import { HomeIcon } from "lucide-react";
+import { useBoardDetails } from "./features/boards/get-board-by-id/use-board-details";
+import { useGameDetails } from "./features/games/get-game-by-id/use-game-details";
 
-type BreadcrumbDestination = "/" | "/games";
+type BreadcrumbDestination = "/" | "/boards" | "/games";
 type BreadcrumbIcon = "home";
 
 type BreadcrumbLabelSegment = {
@@ -40,6 +42,14 @@ declare module "@tanstack/react-router" {
 
 export function AppBreadcrumbs() {
   const matches = useMatches();
+  const boardMatch = matches.find((match) => match.routeId === "/_app/boards/$boardId");
+  const matchedBoardId = boardMatch?.params.boardId;
+  const boardId = typeof matchedBoardId === "string" ? matchedBoardId : "";
+  const boardDetails = useBoardDetails(boardId);
+  const gameMatch = matches.find((match) => match.routeId === "/_app/games/$gameId");
+  const matchedGameId = gameMatch?.params.gameId;
+  const gameId = typeof matchedGameId === "string" ? Number(matchedGameId) : 0;
+  const gameDetails = useGameDetails(gameId);
   const breadcrumbs: ResolvedBreadcrumb[] = [];
 
   for (const match of matches) {
@@ -55,7 +65,17 @@ export function AppBreadcrumbs() {
       const value = params[segment.param];
 
       if (typeof value === "string") {
-        breadcrumbs.push({ label: value, truncate: true });
+        let label = value;
+
+        if (segment.param === "boardId" && boardDetails.data !== null) {
+          label = boardDetails.data.name;
+        }
+
+        if (segment.param === "gameId" && gameDetails.data !== null) {
+          label = gameDetails.data.name;
+        }
+
+        breadcrumbs.push({ label, truncate: true });
       }
     }
   }

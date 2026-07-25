@@ -2,6 +2,7 @@ using ApesDb.Domain;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Respawn;
+using Respawn.Graph;
 
 namespace ApesDb.Api.Tests.Infrastructure.Factories;
 
@@ -18,7 +19,12 @@ public sealed class MutableEndpointApiFactory : ApiTestWebApplicationFactory
         await dbContext.Database.OpenConnectionAsync(TestContext.Current.CancellationToken);
         _respawner = await Respawner.CreateAsync(
             dbContext.Database.GetDbConnection(),
-            new RespawnerOptions { DbAdapter = DbAdapter.Postgres, SchemasToInclude = ["public"] }
+            new RespawnerOptions
+            {
+                DbAdapter = DbAdapter.Postgres,
+                SchemasToInclude = ["public"],
+                TablesToIgnore = [new Table("public", "BoardEntryStates")],
+            }
         );
     }
 

@@ -1,4 +1,4 @@
-{
+﻿{
   CurrentUser: {
     ReadResponse: {
       StatusCode: 204,

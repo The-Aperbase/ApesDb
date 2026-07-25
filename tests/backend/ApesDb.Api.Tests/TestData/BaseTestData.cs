@@ -48,6 +48,8 @@ public sealed class BaseTestData
         var externalGames = ExternalGameTestData.Create(games, externalGameSources, platforms);
         var popularGames = PopularGameTestData.Create(games, popularityTypes);
         var gameRelations = GameRelationTestData.Create(games);
+        var boards = BoardTestData.Create(usersById);
+        var boardEntries = BoardEntryTestData.Create(boards, games);
 
         var entities = new List<object>();
         entities.AddRange(allowedUsers);
@@ -82,6 +84,8 @@ public sealed class BaseTestData
         entities.AddRange(externalGames);
         entities.AddRange(popularGames);
         entities.AddRange(gameRelations);
+        entities.AddRange(boards.Values);
+        entities.AddRange(boardEntries);
         return new BaseTestData(entities);
     }
 }

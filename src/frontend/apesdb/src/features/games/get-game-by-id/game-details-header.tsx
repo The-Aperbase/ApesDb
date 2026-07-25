@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Link } from "@tanstack/react-router";
 import { Badge, Button, Tooltip, TooltipContent, TooltipTrigger } from "@apesdb/ui";
-import { Copy, Gamepad2, Star } from "lucide-react";
+import { Copy, Gamepad2, ListPlus, Star } from "lucide-react";
 import { toast } from "sonner";
 import { formatDate } from "../../../lib/date";
 import { GameStoreLinks } from "./game-store-links";
@@ -9,6 +9,7 @@ import type { GameDetails } from "./game-details.schemas";
 
 type GameDetailsHeaderProps = {
   game: GameDetails;
+  onAddToBoard: () => void;
 };
 
 function GameCover({ game }: { game: GameDetails }) {
@@ -66,7 +67,7 @@ async function copyGameUrl() {
   }
 }
 
-export function GameDetailsHeader({ game }: GameDetailsHeaderProps) {
+export function GameDetailsHeader({ game, onAddToBoard }: GameDetailsHeaderProps) {
   return (
     <section className="grid gap-6 md:grid-cols-[14rem_minmax(0,1fr)]">
       <div className="w-full max-w-56 md:max-w-none">
@@ -147,7 +148,13 @@ export function GameDetailsHeader({ game }: GameDetailsHeaderProps) {
           </p>
         )}
 
-        <GameStoreLinks storePages={game.storePages} />
+        <div className="flex flex-wrap items-center gap-2">
+          <Button onClick={onAddToBoard} type="button" variant="outline">
+            <ListPlus data-icon="inline-start" />
+            Add to board
+          </Button>
+          <GameStoreLinks storePages={game.storePages} />
+        </div>
       </div>
     </section>
   );

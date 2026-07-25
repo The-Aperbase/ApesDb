@@ -294,9 +294,10 @@ public sealed class GetGameByIdEndpoint : Endpoint<GetGameByIdRequest, GetGameBy
         if (game is null)
         {
             await Send.NotFoundAsync(ct);
-            return;
         }
-
-        await Send.OkAsync(game, ct);
+        else
+        {
+            await Send.OkAsync(game, ct);
+        }
     }
 }

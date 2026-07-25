@@ -1,0 +1,54 @@
+﻿{
+  CreateResponse: {
+    Response: {
+      StatusCode: 400,
+      ReasonPhrase: Bad Request,
+      Version: 1.1,
+      ContentHeaders: {
+        Content-Type: [
+          application/problem+json; charset=utf-8
+        ]
+      }
+    },
+    Content: {"statusCode":400,"message":"One or more errors occurred!","errors":{"name":["Name must not be empty."]}}
+  },
+  BoardsResponse: {
+    Response: {
+      StatusCode: 200,
+      ReasonPhrase: OK,
+      Version: 1.1,
+      ContentHeaders: {
+        Content-Type: [
+          application/json; charset=utf-8
+        ]
+      }
+    },
+    Content: {
+      Items: [
+        {
+          Id: Guid_1,
+          Name: Backlog,
+          CreatedAt: DateTime_1,
+          UpdatedAt: DateTime_2,
+          Picture: {
+            ContentType: image/webp,
+            ByteLength: 8
+          },
+          GameCount: 2,
+          ContainsGame: false
+        },
+        {
+          Id: Guid_2,
+          Name: Completed,
+          CreatedAt: DateTime_3,
+          UpdatedAt: DateTime_4,
+          ContainsGame: false
+        }
+      ],
+      Total: 2,
+      FilteredTotal: 2,
+      Page: 1,
+      PageSize: 50
+    }
+  }
+}

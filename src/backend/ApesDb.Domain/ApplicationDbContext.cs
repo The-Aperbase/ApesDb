@@ -1,3 +1,4 @@
+using ApesDb.Domain.Entities.Boards;
 using ApesDb.Domain.Entities.Games;
 using ApesDb.Domain.Entities.IgdbSync;
 using ApesDb.Domain.Entities.Notifications;
@@ -16,6 +17,12 @@ public sealed class ApplicationDbContext : DbContext
     public DbSet<AllowedUser> AllowedUsers => Set<AllowedUser>();
 
     public DbSet<Notification> Notifications => Set<Notification>();
+
+    public DbSet<Board> Boards => Set<Board>();
+
+    public DbSet<BoardEntry> BoardEntries => Set<BoardEntry>();
+
+    public DbSet<BoardEntryState> BoardEntryStates => Set<BoardEntryState>();
 
     public DbSet<Game> Games => Set<Game>();
 

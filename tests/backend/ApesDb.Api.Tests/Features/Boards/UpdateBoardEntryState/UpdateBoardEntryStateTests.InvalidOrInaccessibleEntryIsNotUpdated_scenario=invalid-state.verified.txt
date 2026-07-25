@@ -1,0 +1,57 @@
+﻿{
+  UpdateResponse: {
+    Response: {
+      StatusCode: 400,
+      ReasonPhrase: Bad Request,
+      Version: 1.1,
+      ContentHeaders: {
+        Content-Type: [
+          application/problem+json; charset=utf-8
+        ]
+      }
+    },
+    Content: {"statusCode":400,"message":"One or more errors occurred!","errors":{"state":["State is invalid."]}}
+  },
+  OwnerBoardResponse: {
+    Response: {
+      StatusCode: 200,
+      ReasonPhrase: OK,
+      Version: 1.1,
+      ContentHeaders: {
+        Content-Type: [
+          application/json; charset=utf-8
+        ]
+      }
+    },
+    Content: {
+      Id: Guid_1,
+      Name: Backlog,
+      CreatedAt: DateTime_1,
+      UpdatedAt: DateTime_2,
+      Picture: {
+        ContentType: image/webp,
+        ByteLength: 8
+      },
+      Games: [
+        {
+          GameId: 11156,
+          Name: Horizon Zero Dawn,
+          CoverSmallUrl: https://images.igdb.com/igdb/image/upload/t_cover_small_2x/co2una.jpg,
+          CoverLargeUrl: https://images.igdb.com/igdb/image/upload/t_cover_big_2x/co2una.jpg,
+          GameType: Main Game,
+          State: in-progress,
+          AddedAt: DateTime_3
+        },
+        {
+          GameId: 492,
+          Name: Gears of War 3,
+          CoverSmallUrl: https://images.igdb.com/igdb/image/upload/t_cover_small_2x/co2a21.jpg,
+          CoverLargeUrl: https://images.igdb.com/igdb/image/upload/t_cover_big_2x/co2a21.jpg,
+          GameType: Main Game,
+          State: completed,
+          AddedAt: DateTime_4
+        }
+      ]
+    }
+  }
+}

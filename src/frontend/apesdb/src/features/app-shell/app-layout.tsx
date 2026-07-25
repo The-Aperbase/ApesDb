@@ -19,7 +19,7 @@ import {
   SidebarTrigger,
   TooltipProvider,
 } from "@apesdb/ui";
-import { ArrowLeft, Gamepad2 } from "lucide-react";
+import { ArrowLeft, Columns3, Gamepad2 } from "lucide-react";
 import { useAuth } from "../../auth-context";
 import { AccountMenu } from "../../account-menu";
 import { AppBreadcrumbs } from "../../app-breadcrumbs";
@@ -116,6 +116,16 @@ function AppSidebar() {
                 >
                   <Gamepad2 />
                   <span>Games</span>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+              <SidebarMenuItem>
+                <SidebarMenuButton
+                  render={<Link to="/boards" />}
+                  isActive={pathname.startsWith("/boards")}
+                  tooltip="Boards"
+                >
+                  <Columns3 />
+                  <span>Boards</span>
                 </SidebarMenuButton>
               </SidebarMenuItem>
             </SidebarMenu>
