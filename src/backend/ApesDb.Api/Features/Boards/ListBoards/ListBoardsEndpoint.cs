@@ -1,3 +1,5 @@
+using System.ComponentModel;
+using ApesDb.Common;
 using ApesDb.Domain;
 using FastEndpoints;
 using Microsoft.EntityFrameworkCore;
@@ -31,9 +33,12 @@ public sealed class ListBoardsEndpoint : Endpoint<ListBoardsRequest, BoardSummar
         var boards = await _dbContext
             .Boards.AsNoTracking()
             .Where(board => board.OwnerUserId == userId)
-            .OrderBy(board => board.Name.ToLower())
-            .ThenBy(board => board.Name)
-            .ThenBy(board => board.Id)
+            .SortBy(
+                ListSortDirection.Ascending,
+                board => board.Name.ToLower(),
+                board => board.Name,
+                board => board.Id
+            )
             .Select(board => new
             {
                 board.Id,
