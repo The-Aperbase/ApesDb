@@ -1,41 +1,36 @@
-﻿{
-  InviteResponse: {
-    StatusCode: 202,
-    ReasonPhrase: Accepted,
-    Version: 1.1
-  },
-  ReadResponse: {
-    StatusCode: 204,
-    ReasonPhrase: No Content,
-    Version: 1.1
-  },
-  CurrentUserNotificationsResponse: {
-    Response: {
-      StatusCode: 200,
-      ReasonPhrase: OK,
-      Version: 1.1,
-      ContentHeaders: {
-        Content-Type: [
-          application/json; charset=utf-8
-        ]
-      }
+{
+  CurrentUser: {
+    ReadResponse: {
+      StatusCode: 204,
+      ReasonPhrase: No Content,
+      Version: 1.1
     },
-    Content: {
-      Items: [
-        {
-          Id: Guid_1,
-          Type: TeamInvite,
-          ResourceId: Guid_2,
-          CreatedAt: DateTime_1,
-          ReadAt: DateTime_1,
-          IsUnread: false,
-          IsActionable: true
+    NotificationsResponse: {
+      Response: {
+        StatusCode: 200,
+        ReasonPhrase: OK,
+        Version: 1.1,
+        ContentHeaders: {
+          Content-Type: [
+            application/json; charset=utf-8
+          ]
         }
-      ],
-      Metadata: {
-        TotalCount: 1,
-        ActionableCount: 1,
-        AttentionCount: 1
+      },
+      Content: {
+        Items: [
+          {
+            Id: Guid_1,
+            Type: CatalogImportCompleted,
+            ResourceId: Guid_2,
+            CreatedAt: DateTime_1,
+            ReadAt: DateTime_1,
+            IsUnread: false,
+            IsActionable: false
+          }
+        ],
+        Metadata: {
+          TotalCount: 1
+        }
       }
     }
   },
@@ -54,17 +49,16 @@
       Items: [
         {
           Id: Guid_3,
-          Type: TeamInvite,
+          Type: CatalogImportCompleted,
           ResourceId: Guid_4,
           CreatedAt: DateTime_1,
           IsUnread: true,
-          IsActionable: true
+          IsActionable: false
         }
       ],
       Metadata: {
         TotalCount: 1,
         UnreadCount: 1,
-        ActionableCount: 1,
         AttentionCount: 1
       }
     }

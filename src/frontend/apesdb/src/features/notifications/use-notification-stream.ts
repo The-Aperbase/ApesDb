@@ -15,7 +15,7 @@ const readEventSchema = z.object({
 });
 
 const resolvedEventSchema = z.object({
-  resourceId: z.string(),
+  notificationId: z.string(),
 });
 
 const notificationToastId = "notification-created";
@@ -96,7 +96,7 @@ export function useNotificationStream(openNotifications: () => void) {
       }
 
       queryClient.setQueryData<ListNotificationsResponse>(notificationQueryKeys.list, (current) =>
-        withNotificationResolved(current, parsed.data.resourceId),
+        withNotificationResolved(current, parsed.data.notificationId),
       );
     };
 

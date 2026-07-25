@@ -1,4 +1,4 @@
-﻿{
+{
   ReadResponse: {
     StatusCode: 204,
     ReasonPhrase: No Content,
@@ -19,18 +19,16 @@
       Items: [
         {
           Id: Guid_1,
-          Type: TeamInvite,
+          Type: CatalogImportCompleted,
           ResourceId: Guid_2,
           CreatedAt: DateTime_1,
           ReadAt: DateTime_1,
           IsUnread: false,
-          IsActionable: true
+          IsActionable: false
         }
       ],
       Metadata: {
-        TotalCount: 1,
-        ActionableCount: 1,
-        AttentionCount: 1
+        TotalCount: 1
       }
     }
   }

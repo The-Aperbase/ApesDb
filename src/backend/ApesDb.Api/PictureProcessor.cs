@@ -1,19 +1,19 @@
 using SkiaSharp;
 
-namespace ApesDb.Api.Features.Teams;
+namespace ApesDb.Api;
 
-public interface ITeamProfilePictureProcessor
+public interface IPictureProcessor
 {
     byte[] Process(Stream stream);
 }
 
-public sealed class InvalidTeamProfilePictureException : Exception
+public sealed class InvalidPictureException : Exception
 {
-    public InvalidTeamProfilePictureException(string message)
+    public InvalidPictureException(string message)
         : base(message) { }
 }
 
-public sealed class TeamProfilePictureProcessor : ITeamProfilePictureProcessor
+public sealed class PictureProcessor : IPictureProcessor
 {
     public const int OutputSize = 256;
     public const long MaximumPixelCount = 25_000_000;
@@ -23,24 +23,24 @@ public sealed class TeamProfilePictureProcessor : ITeamProfilePictureProcessor
         using var codec = SKCodec.Create(stream, out var codecResult);
         if (codec is null || codecResult != SKCodecResult.Success)
         {
-            throw new InvalidTeamProfilePictureException("The profile picture is not a valid image.");
+            throw new InvalidPictureException("The picture is not a valid image.");
         }
 
         if (!IsSupportedFormat(codec.EncodedFormat))
         {
-            throw new InvalidTeamProfilePictureException("The profile picture must be JPEG, PNG, or WebP.");
+            throw new InvalidPictureException("The picture must be JPEG, PNG, or WebP.");
         }
 
         var pixelCount = (long)codec.Info.Width * codec.Info.Height;
         if (codec.Info.Width <= 0 || codec.Info.Height <= 0 || pixelCount > MaximumPixelCount)
         {
-            throw new InvalidTeamProfilePictureException("The profile picture dimensions are invalid or too large.");
+            throw new InvalidPictureException("The picture dimensions are invalid or too large.");
         }
 
         using var decoded = SKBitmap.Decode(codec);
         if (decoded is null)
         {
-            throw new InvalidTeamProfilePictureException("The profile picture could not be decoded.");
+            throw new InvalidPictureException("The picture could not be decoded.");
         }
 
         using var oriented = ApplyOrientation(decoded, codec.EncodedOrigin);
@@ -63,7 +63,7 @@ public sealed class TeamProfilePictureProcessor : ITeamProfilePictureProcessor
         using var encoded = pixmap.Encode(new SKWebpEncoderOptions(SKWebpEncoderCompression.Lossy, 80));
         if (encoded is null)
         {
-            throw new InvalidTeamProfilePictureException("The profile picture could not be encoded.");
+            throw new InvalidPictureException("The picture could not be encoded.");
         }
 
         return encoded.ToArray();

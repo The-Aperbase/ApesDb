@@ -11,4 +11,4 @@ public sealed record NotificationStreamEvent(string Kind, object Data);
 
 public sealed record NotificationReadEventData(DateTime ReadAt);
 
-public sealed record NotificationResolvedEventData(Guid ResourceId);
+public sealed record NotificationResolvedEventData(Guid NotificationId);

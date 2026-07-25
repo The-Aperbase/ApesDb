@@ -1,7 +1,4 @@
 import {
-  Avatar,
-  AvatarFallback,
-  AvatarImage,
   Badge,
   Button,
   Popover,
@@ -12,31 +9,21 @@ import {
   PopoverTrigger,
   Skeleton,
 } from "@apesdb/ui";
-import { Bell, Check, CheckCheck, Inbox, RefreshCw, User, Users, X } from "lucide-react";
+import { Bell, CheckCheck, Inbox, RefreshCw } from "lucide-react";
 import { formatDateTime } from "../../lib/date";
 import type { Notification } from "./notifications.schemas";
 import { useMarkNotificationsRead } from "./use-mark-notifications-read";
 import { useNotifications } from "./use-notifications";
-import { useRespondToInvite } from "./use-respond-to-invite";
-import { useTeamInvite } from "./use-team-invite";
 
 type NotificationBellProps = {
   open: boolean;
   onOpenChange: (open: boolean) => void;
 };
 
-function errorMessage(error: unknown): string {
-  if (error instanceof Error) {
-    return error.message;
-  }
-
-  return "An unexpected error occurred.";
-}
-
 function NotificationSkeleton() {
   return (
     <div className="flex items-start gap-3 p-2">
-      <Skeleton className="size-8 rounded-full" />
+      <Skeleton className="size-8" />
       <div className="grid flex-1 gap-2">
         <Skeleton className="h-3.5 w-3/4" />
         <Skeleton className="h-3 w-1/3" />
@@ -45,92 +32,7 @@ function NotificationSkeleton() {
   );
 }
 
-function TeamInviteRow({ notification }: { notification: Notification }) {
-  const invite = useTeamInvite(notification.resourceId, notification.isActionable);
-  const respond = useRespondToInvite();
-
-  if (invite.isLoading) {
-    return <NotificationSkeleton />;
-  }
-
-  if (invite.data === null || invite.data === undefined) {
-    return (
-      <div className="flex items-start gap-3 p-2">
-        <Avatar className="size-8">
-          <AvatarFallback className="bg-muted text-muted-foreground">
-            <Users className="size-3.5" />
-          </AvatarFallback>
-        </Avatar>
-        <div className="grid min-w-0 flex-1 gap-1">
-          <p className="text-xs text-muted-foreground">
-            {invite.error === null ? "Team invitation" : errorMessage(invite.error)}
-          </p>
-          <p className="text-[0.625rem] text-muted-foreground">
-            {formatDateTime(notification.createdAt)}
-          </p>
-        </div>
-      </div>
-    );
-  }
-
-  return (
-    <div className="flex items-start gap-3 p-2">
-      <Avatar className="size-8">
-        <AvatarImage
-          alt={invite.data.invitedBy.name}
-          src={invite.data.invitedBy.pictureUrl ?? undefined}
-        />
-        <AvatarFallback className="bg-muted text-muted-foreground">
-          <User className="size-3.5" />
-        </AvatarFallback>
-      </Avatar>
-      <div className="grid min-w-0 flex-1 gap-1">
-        <p className="text-xs">
-          <span className="font-medium">{invite.data.invitedBy.name}</span> invited you to join{" "}
-          <span className="font-medium">{invite.data.team.name}</span>
-        </p>
-        <p className="text-[0.625rem] text-muted-foreground">
-          {formatDateTime(notification.createdAt)}
-        </p>
-        {notification.isActionable ? (
-          <div className="flex gap-2 pt-1">
-            <Button
-              disabled={respond.isPending}
-              onClick={() => respond.mutate({ inviteId: notification.resourceId, accept: true })}
-              size="xs"
-              type="button"
-            >
-              <Check data-icon="inline-start" />
-              Accept
-            </Button>
-            <Button
-              disabled={respond.isPending}
-              onClick={() => respond.mutate({ inviteId: notification.resourceId, accept: false })}
-              size="xs"
-              type="button"
-              variant="outline"
-            >
-              <X data-icon="inline-start" />
-              Decline
-            </Button>
-          </div>
-        ) : null}
-        {respond.isError ? (
-          <p className="text-[0.625rem] text-destructive">{errorMessage(respond.error)}</p>
-        ) : null}
-      </div>
-      {notification.isUnread ? (
-        <span aria-label="Unread" className="mt-1.5 size-2 shrink-0 rounded-full bg-primary" />
-      ) : null}
-    </div>
-  );
-}
-
 function NotificationRow({ notification }: { notification: Notification }) {
-  if (notification.type === "TeamInvite") {
-    return <TeamInviteRow notification={notification} />;
-  }
-
   return (
     <div className="flex items-start gap-3 p-2">
       <div className="grid min-w-0 flex-1 gap-1">
@@ -150,7 +52,6 @@ export function NotificationBell({ open, onOpenChange }: NotificationBellProps) 
   const notifications = useNotifications();
   const markRead = useMarkNotificationsRead();
 
-  const attentionCount = notifications.data?.metadata.attentionCount ?? 0;
   const unreadCount = notifications.data?.metadata.unreadCount ?? 0;
   const items = notifications.data?.items ?? [];
 
@@ -159,7 +60,7 @@ export function NotificationBell({ open, onOpenChange }: NotificationBellProps) 
       <PopoverTrigger
         render={
           <Button
-            aria-label={`Notifications${attentionCount > 0 ? ` (${attentionCount} need attention)` : ""}`}
+            aria-label={`Notifications${unreadCount > 0 ? ` (${unreadCount} unread)` : ""}`}
             className="relative"
             size="icon-lg"
             type="button"
@@ -168,9 +69,9 @@ export function NotificationBell({ open, onOpenChange }: NotificationBellProps) 
         }
       >
         <Bell />
-        {attentionCount > 0 ? (
+        {unreadCount > 0 ? (
           <Badge className="absolute -top-1.5 -right-1.5 h-4 min-w-4 px-1">
-            {attentionCount > 99 ? "99+" : attentionCount}
+            {unreadCount > 99 ? "99+" : unreadCount}
           </Badge>
         ) : null}
       </PopoverTrigger>
@@ -179,7 +80,7 @@ export function NotificationBell({ open, onOpenChange }: NotificationBellProps) 
           <div className="grid gap-1">
             <PopoverTitle>Notifications</PopoverTitle>
             <PopoverDescription>
-              {items.length === 0 ? "Nothing needs your attention." : "Your latest team activity."}
+              {items.length === 0 ? "Nothing needs your attention." : "Your latest activity."}
             </PopoverDescription>
           </div>
           {unreadCount > 0 ? (

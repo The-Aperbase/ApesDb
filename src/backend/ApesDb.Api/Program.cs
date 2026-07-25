@@ -1,6 +1,5 @@
 using ApesDb.Api;
 using ApesDb.Api.Features.Notifications;
-using ApesDb.Api.Features.Teams;
 using ApesDb.Auth;
 using ApesDb.Common;
 using ApesDb.Domain;
@@ -18,7 +17,7 @@ builder.Services.AddApesDbShared();
 builder.Services.AddApesDbAuth(builder.Configuration);
 
 builder.Services.AddFastEndpoints();
-builder.Services.AddTeams();
+builder.Services.AddSingleton<IPictureProcessor, PictureProcessor>();
 builder.Services.AddNotifications();
 builder.Services.AddApesDbSwagger();
 builder.Services.AddSpaStaticFiles(options =>

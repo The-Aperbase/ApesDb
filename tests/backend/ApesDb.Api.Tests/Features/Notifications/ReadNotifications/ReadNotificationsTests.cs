@@ -1,11 +1,7 @@
-using System.Net.Http.Json;
 using ApesDb.Api.Features.Notifications.GetNotifications;
-using ApesDb.Api.Features.Teams.Invites.CreateTeamInvite;
-using ApesDb.Api.Features.Teams.Invites.RespondToTeamInvite;
 using ApesDb.Api.Tests.Infrastructure.Authentication;
 using ApesDb.Api.Tests.Infrastructure.Factories;
 using ApesDb.Api.Tests.Infrastructure.Http;
-using ApesDb.Api.Tests.TestData;
 
 namespace ApesDb.Api.Tests.Features.Notifications.ReadNotifications;
 
@@ -32,98 +28,34 @@ public sealed class ReadNotificationsTests : IClassFixture<MutableEndpointApiFac
     public async Task ExistingUserCanMarkActiveNotificationsAsRead()
     {
         using var client = ApiTestClient.CreateAuthenticated(_factory, TestUsers.Invitee);
-        using var readResponse = await client.PostAsync(
-            "/api/notifications/read",
-            TestContext.Current.CancellationToken
-        );
+        var result = await ReadAndGetNotificationsAsync(client);
 
-        var readHttp = await HttpResponseSnapshot.CreateAsync(readResponse);
-        using var notificationsResponse = await client.GetAsync(
-            "/api/notifications",
-            TestContext.Current.CancellationToken
-        );
-        var notificationsHttp = await HttpResponseSnapshot.CreateAsync<NotificationsResponse>(notificationsResponse);
-
-        await Verify(new { ReadResponse = readHttp.Response, NotificationsResponse = notificationsHttp });
+        await Verify(result);
     }
 
     [Fact]
     public async Task OnlyCurrentUsersNotificationsAreMarkedAsRead()
     {
-        using var ownerClient = ApiTestClient.CreateAuthenticated(_factory, TestUsers.Owner);
-        using var inviteContent = JsonContent.Create(new CreateTeamInviteRequest { Email = TestUsers.Outsider.Email });
-        using var inviteResponse = await ownerClient.PostAsync(
-            $"/api/teams/{BaseTestData.SharedTeamId}/invites",
-            inviteContent,
-            TestContext.Current.CancellationToken
-        );
-        var inviteHttp = await HttpResponseSnapshot.CreateAsync(inviteResponse);
-
         using var inviteeClient = ApiTestClient.CreateAuthenticated(_factory, TestUsers.Invitee);
-        using var readResponse = await inviteeClient.PostAsync(
-            "/api/notifications/read",
-            TestContext.Current.CancellationToken
-        );
-        var readHttp = await HttpResponseSnapshot.CreateAsync(readResponse);
+        var currentUserResult = await ReadAndGetNotificationsAsync(inviteeClient);
 
-        using var inviteeNotificationsResponse = await inviteeClient.GetAsync(
-            "/api/notifications",
-            TestContext.Current.CancellationToken
-        );
-        var inviteeNotificationsHttp = await HttpResponseSnapshot.CreateAsync<NotificationsResponse>(
-            inviteeNotificationsResponse
-        );
         using var outsiderClient = ApiTestClient.CreateAuthenticated(_factory, TestUsers.Outsider);
-        using var outsiderNotificationsResponse = await outsiderClient.GetAsync(
+        using var outsiderResponse = await outsiderClient.GetAsync(
             "/api/notifications",
             TestContext.Current.CancellationToken
         );
-        var outsiderNotificationsHttp = await HttpResponseSnapshot.CreateAsync<NotificationsResponse>(
-            outsiderNotificationsResponse
-        );
+        var outsiderResult = await HttpResponseSnapshot.CreateAsync<NotificationsResponse>(outsiderResponse);
 
-        await Verify(
-            new
-            {
-                InviteResponse = inviteHttp.Response,
-                ReadResponse = readHttp.Response,
-                CurrentUserNotificationsResponse = inviteeNotificationsHttp,
-                OtherUserNotificationsResponse = outsiderNotificationsHttp,
-            }
-        );
+        await Verify(new { CurrentUser = currentUserResult, OtherUserNotificationsResponse = outsiderResult });
     }
 
     [Fact]
     public async Task ResolvedNotificationsRemainExcludedWhenReadingNotifications()
     {
         using var client = ApiTestClient.CreateAuthenticated(_factory, TestUsers.Invitee);
-        using var respondContent = JsonContent.Create(new RespondToTeamInviteRequest { Accept = true });
-        using var respondResponse = await client.PostAsync(
-            $"/api/teams/invites/{BaseTestData.PendingInviteId}/respond",
-            respondContent,
-            TestContext.Current.CancellationToken
-        );
-        var respondHttp = await HttpResponseSnapshot.CreateAsync(respondResponse);
+        var result = await ReadAndGetNotificationsAsync(client);
 
-        using var readResponse = await client.PostAsync(
-            "/api/notifications/read",
-            TestContext.Current.CancellationToken
-        );
-        var readHttp = await HttpResponseSnapshot.CreateAsync(readResponse);
-        using var notificationsResponse = await client.GetAsync(
-            "/api/notifications",
-            TestContext.Current.CancellationToken
-        );
-        var notificationsHttp = await HttpResponseSnapshot.CreateAsync<NotificationsResponse>(notificationsResponse);
-
-        await Verify(
-            new
-            {
-                RespondResponse = respondHttp.Response,
-                ReadResponse = readHttp.Response,
-                NotificationsResponse = notificationsHttp,
-            }
-        );
+        await Verify(result);
     }
 
     [Fact]
@@ -144,9 +76,9 @@ public sealed class ReadNotificationsTests : IClassFixture<MutableEndpointApiFac
             "/api/notifications",
             TestContext.Current.CancellationToken
         );
-        var notificationsHttp = await HttpResponseSnapshot.CreateAsync<NotificationsResponse>(notificationsResponse);
+        var notifications = await HttpResponseSnapshot.CreateAsync<NotificationsResponse>(notificationsResponse);
 
-        await Verify(new { ReadResponses = readResponses, NotificationsResponse = notificationsHttp });
+        await Verify(new { ReadResponses = readResponses, NotificationsResponse = notifications });
     }
 
     [Fact]
@@ -157,15 +89,31 @@ public sealed class ReadNotificationsTests : IClassFixture<MutableEndpointApiFac
             "/api/notifications/read",
             TestContext.Current.CancellationToken
         );
+        var readResult = await HttpResponseSnapshot.CreateAsync(readResponse);
 
-        var readHttp = await HttpResponseSnapshot.CreateAsync(readResponse);
         using var inviteeClient = ApiTestClient.CreateAuthenticated(_factory, TestUsers.Invitee);
         using var notificationsResponse = await inviteeClient.GetAsync(
             "/api/notifications",
             TestContext.Current.CancellationToken
         );
-        var notificationsHttp = await HttpResponseSnapshot.CreateAsync<NotificationsResponse>(notificationsResponse);
+        var notifications = await HttpResponseSnapshot.CreateAsync<NotificationsResponse>(notificationsResponse);
 
-        await Verify(new { ReadResponse = readHttp.Response, NotificationsResponse = notificationsHttp });
+        await Verify(new { ReadResponse = readResult.Response, NotificationsResponse = notifications });
+    }
+
+    private static async Task<object> ReadAndGetNotificationsAsync(ApiTestClient client)
+    {
+        using var readResponse = await client.PostAsync(
+            "/api/notifications/read",
+            TestContext.Current.CancellationToken
+        );
+        var readResult = await HttpResponseSnapshot.CreateAsync(readResponse);
+        using var notificationsResponse = await client.GetAsync(
+            "/api/notifications",
+            TestContext.Current.CancellationToken
+        );
+        var notifications = await HttpResponseSnapshot.CreateAsync<NotificationsResponse>(notificationsResponse);
+
+        return new { ReadResponse = readResult.Response, NotificationsResponse = notifications };
     }
 }

@@ -21,16 +21,6 @@ public static class ApiRoutes
         public const string Platforms = "games/platforms";
     }
 
-    public static class Teams
-    {
-        public const string Get = "teams";
-        public const string Create = "teams";
-        public const string ById = "teams/{teamId:guid}";
-        public const string Invites = "teams/{teamId:guid}/invites";
-        public const string InviteById = "teams/invites/{inviteId:guid}";
-        public const string RespondToInvite = "teams/invites/{inviteId:guid}/respond";
-    }
-
     public static class Auth
     {
         public const string Prefix = "auth";

@@ -1,4 +1,4 @@
-﻿{
+{
   Response: {
     StatusCode: 200,
     ReasonPhrase: OK,

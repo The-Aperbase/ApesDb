@@ -19,14 +19,12 @@ import {
   SidebarTrigger,
   TooltipProvider,
 } from "@apesdb/ui";
-import { ArrowLeft, Gamepad2, Home, Settings } from "lucide-react";
+import { ArrowLeft, Gamepad2 } from "lucide-react";
 import { useAuth } from "../../auth-context";
 import { AccountMenu } from "../../account-menu";
 import { AppBreadcrumbs } from "../../app-breadcrumbs";
 import { NotificationBell } from "../notifications/notification-bell";
 import { useNotificationStream } from "../notifications/use-notification-stream";
-import { TeamProvider, useActiveTeam } from "../teams/team-context";
-import { TeamSwitcher } from "../teams/select-team/team-switcher";
 
 export function AppLayout() {
   const [notificationsOpen, setNotificationsOpen] = useState(false);
@@ -37,29 +35,27 @@ export function AppLayout() {
   useNotificationStream(openNotifications);
 
   return (
-    <TeamProvider>
-      <TooltipProvider>
-        <SidebarProvider className="h-svh overflow-hidden">
-          <AppSidebar />
-          <SidebarInset>
-            <header className="flex h-12 shrink-0 items-center gap-2 border-b px-4">
-              <SidebarTrigger className="-ml-1" size="icon-lg" />
-              <Separator className="h-4" orientation="vertical" />
-              <AppBreadcrumbs />
-              <div className="ml-auto flex items-center">
-                <NotificationBell open={notificationsOpen} onOpenChange={setNotificationsOpen} />
-              </div>
-            </header>
-            <div className="flex min-h-0 flex-1 flex-col overflow-y-auto p-3">
-              <AppBackButton />
-              <div className="min-h-0 flex-1">
-                <Outlet />
-              </div>
+    <TooltipProvider>
+      <SidebarProvider className="h-svh overflow-hidden">
+        <AppSidebar />
+        <SidebarInset>
+          <header className="flex h-12 shrink-0 items-center gap-2 border-b px-4">
+            <SidebarTrigger className="-ml-1" size="icon-lg" />
+            <Separator className="h-4" orientation="vertical" />
+            <AppBreadcrumbs />
+            <div className="ml-auto flex items-center">
+              <NotificationBell open={notificationsOpen} onOpenChange={setNotificationsOpen} />
             </div>
-          </SidebarInset>
-        </SidebarProvider>
-      </TooltipProvider>
-    </TeamProvider>
+          </header>
+          <div className="flex min-h-0 flex-1 flex-col overflow-y-auto p-3">
+            <AppBackButton />
+            <div className="min-h-0 flex-1">
+              <Outlet />
+            </div>
+          </div>
+        </SidebarInset>
+      </SidebarProvider>
+    </TooltipProvider>
   );
 }
 
@@ -91,33 +87,27 @@ function AppBackButton() {
 
 function AppSidebar() {
   const { user, logout } = useAuth();
-  const { activeTeam } = useActiveTeam();
   const pathname = useRouterState({ select: (state) => state.location.pathname });
 
   return (
     <Sidebar collapsible="icon">
       <SidebarHeader>
-        <SidebarMenu>
-          <SidebarMenuItem>
-            <TeamSwitcher />
-          </SidebarMenuItem>
-        </SidebarMenu>
+        <Link
+          className="flex h-12 items-center gap-2 border bg-sidebar-accent/50 px-2 group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:px-0"
+          to="/"
+        >
+          <img alt="ApesDb" className="size-8 shrink-0" src="/192x192.png" />
+          <div className="min-w-0 leading-tight group-data-[collapsible=icon]:hidden">
+            <div className="truncate text-sm font-semibold">ApesDb</div>
+            <div className="truncate text-xs text-sidebar-foreground/70">The AperBase</div>
+          </div>
+        </Link>
       </SidebarHeader>
       <SidebarContent>
         <SidebarGroup>
           <SidebarGroupLabel className="text-primary">General</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
-              <SidebarMenuItem>
-                <SidebarMenuButton
-                  render={<Link to="/" />}
-                  isActive={pathname === "/"}
-                  tooltip="Home"
-                >
-                  <Home />
-                  <span>Home</span>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
               <SidebarMenuItem>
                 <SidebarMenuButton
                   render={<Link to="/games" />}
@@ -127,30 +117,6 @@ function AppSidebar() {
                   <Gamepad2 />
                   <span>Games</span>
                 </SidebarMenuButton>
-              </SidebarMenuItem>
-            </SidebarMenu>
-          </SidebarGroupContent>
-        </SidebarGroup>
-        <SidebarGroup>
-          <SidebarGroupLabel className="text-primary">Team</SidebarGroupLabel>
-          <SidebarGroupContent>
-            <SidebarMenu>
-              <SidebarMenuItem>
-                {activeTeam !== null ? (
-                  <SidebarMenuButton
-                    render={<Link params={{ teamId: activeTeam.id }} to="/teams/$teamId/manage" />}
-                    isActive={pathname === `/teams/${activeTeam.id}/manage`}
-                    tooltip="Manage"
-                  >
-                    <Settings />
-                    <span>Manage</span>
-                  </SidebarMenuButton>
-                ) : (
-                  <SidebarMenuButton disabled tooltip="Manage">
-                    <Settings />
-                    <span>Manage</span>
-                  </SidebarMenuButton>
-                )}
               </SidebarMenuItem>
             </SidebarMenu>
           </SidebarGroupContent>

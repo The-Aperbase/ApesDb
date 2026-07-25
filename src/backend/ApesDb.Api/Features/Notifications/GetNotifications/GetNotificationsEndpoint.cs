@@ -63,7 +63,7 @@ public sealed class GetNotificationsEndpoint : EndpointWithoutRequest<Notificati
 
             items[index] = new NotificationResponse(
                 row.Id,
-                row.Type.ToString(),
+                row.Type,
                 row.ResourceId,
                 row.CreatedAt,
                 row.ReadAt,

@@ -4,11 +4,6 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace ApesDb.Domain.Entities.Notifications;
 
-public enum NotificationType
-{
-    TeamInvite = 0,
-}
-
 public sealed class Notification
 {
     public Guid Id { get; set; }
@@ -17,7 +12,7 @@ public sealed class Notification
 
     public User User { get; set; } = null!;
 
-    public NotificationType Type { get; set; }
+    public string Type { get; set; } = null!;
 
     public Guid ResourceId { get; set; }
 
@@ -36,6 +31,7 @@ public sealed class NotificationConfiguration : IEntityTypeConfiguration<Notific
     {
         notification.HasKey(value => value.Id);
         notification.Property(value => value.Id).HasDefaultValueSql("uuidv7()").ValueGeneratedOnAdd();
+        notification.Property(value => value.Type).HasMaxLength(100);
         notification.Property(value => value.CreatedAt).HasDefaultValueSql("now()").ValueGeneratedOnAdd();
         notification
             .HasIndex(value => new
@@ -56,6 +52,5 @@ public sealed class NotificationConfiguration : IEntityTypeConfiguration<Notific
             .WithMany()
             .HasForeignKey(value => value.UserId)
             .OnDelete(DeleteBehavior.Restrict);
-        notification.ToTable(table => table.HasCheckConstraint("CK_Notifications_Type", "\"Type\" IN (0)"));
     }
 }

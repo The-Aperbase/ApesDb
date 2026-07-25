@@ -6,9 +6,6 @@ public sealed class BaseTestData
     public const int DependencyOnlyGameCount = 74;
     public const int TotalGameCount = FranchiseGameCount + DependencyOnlyGameCount;
 
-    public static readonly Guid SharedTeamId = Guid.Parse("01910000-0000-7000-8000-000000002099");
-    public static readonly Guid PendingInviteId = Guid.Parse("01910000-0000-7000-8000-000000003007");
-
     private BaseTestData(IReadOnlyList<object> entities)
     {
         Entities = entities;
@@ -21,11 +18,7 @@ public sealed class BaseTestData
         var allowedUsers = AllowedUserTestData.Create();
         var users = UserTestData.Create();
         var usersById = users.ToDictionary(user => user.Id);
-        var teams = TeamTestData.Create();
-        var teamsById = teams.ToDictionary(team => team.Id);
-        var teamMemberships = TeamMembershipTestData.Create(teams, teamsById, usersById);
         var notifications = NotificationTestData.Create(usersById);
-
         var gameTypes = GameTypeTestData.Create();
         var gameStatuses = GameStatusTestData.Create();
         var genres = GenreTestData.Create();
@@ -59,8 +52,6 @@ public sealed class BaseTestData
         var entities = new List<object>();
         entities.AddRange(allowedUsers);
         entities.AddRange(users);
-        entities.AddRange(teams);
-        entities.AddRange(teamMemberships);
         entities.AddRange(notifications);
         entities.AddRange(gameTypes.Values);
         entities.AddRange(gameStatuses.Values);

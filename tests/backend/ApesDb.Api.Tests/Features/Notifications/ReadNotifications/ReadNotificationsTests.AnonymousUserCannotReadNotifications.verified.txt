@@ -1,4 +1,4 @@
-﻿{
+{
   ReadResponse: {
     StatusCode: 401,
     ReasonPhrase: Unauthorized,
@@ -19,17 +19,16 @@
       Items: [
         {
           Id: Guid_1,
-          Type: TeamInvite,
+          Type: CatalogImportCompleted,
           ResourceId: Guid_2,
           CreatedAt: DateTime_1,
           IsUnread: true,
-          IsActionable: true
+          IsActionable: false
         }
       ],
       Metadata: {
         TotalCount: 1,
         UnreadCount: 1,
-        ActionableCount: 1,
         AttentionCount: 1
       }
     }

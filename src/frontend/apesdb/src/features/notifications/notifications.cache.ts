@@ -73,10 +73,10 @@ export function withAllNotificationsRead(
 
 export function withNotificationResolved(
   current: ListNotificationsResponse | undefined,
-  resourceId: string,
+  notificationId: string,
 ): ListNotificationsResponse {
   const items = current?.items ?? [];
-  const nextItems = items.filter((item) => item.resourceId !== resourceId);
+  const nextItems = items.filter((item) => item.id !== notificationId);
 
   return {
     items: nextItems,

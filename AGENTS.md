@@ -35,7 +35,6 @@ The tests in `tests/backend/ApesDb.Api.Tests` are black-box integration tests. N
 ### Verify Is the Assertion Mechanism
 
 - Use Verify snapshots for all assertions in integration tests. Do not use xUnit `Assert` calls or another assertion library.
-- `NotificationsStreamTests` is the only exception: it may use xUnit `Assert` calls for incremental SSE framing, timeout, isolation, and cancellation behavior. Keep its final externally observable stream results covered by Verify snapshots, and do not extend this exception to other integration tests.
 - Capture HTTP status, headers, and response content with `HttpResponseSnapshot`, using a response contract type when appropriate.
 - When a scenario makes multiple requests, combine every relevant observable response into one clearly named object and verify that object once.
 - Use `UseParameters` when parameterized cases require distinct, readable snapshot files.
@@ -52,7 +51,6 @@ The tests in `tests/backend/ApesDb.Api.Tests` are black-box integration tests. N
 - Use `MutableEndpointApiFactory` with `IClassFixture<MutableEndpointApiFactory>` and `IAsyncLifetime` for POST, PUT, PATCH, DELETE, or any other scenario that can change state.
 - Call `_factory.ResetAsync(TestContext.Current.CancellationToken)` from `InitializeAsync` so every test starts from the same seeded baseline.
 - Snapshot the mutation response and then call one or more GET endpoints to prove the resulting externally observable state. Verify the mutation and follow-up responses together.
-- In `NotificationsStreamTests`, the externally observed SSE event may serve as the follow-up evidence instead of an additional GET request.
 - For rejected, idempotent, or otherwise no-op mutations, use follow-up GET requests to prove that externally visible state did not change.
 - Perform scenario setup through public API requests when setup beyond the shared seed is required. Do not arrange state by writing directly to the database from the test case.
 

@@ -4,10 +4,9 @@ import { addAuthRoutes } from "./features/auth/auth-routes";
 import { addGamesRoutes } from "./features/games/games-routes";
 import { addHomeRoutes } from "./features/home/home-routes";
 import { addPrivacyRoutes } from "./features/privacy/privacy-routes";
-import { addTeamRoutes } from "./features/teams/teams-routes";
 
 const routeTree = addAppShellRoutes(
-  [addHomeRoutes(), addGamesRoutes(), addTeamRoutes()],
+  [addHomeRoutes(), addGamesRoutes()],
   [addAuthRoutes(), addPrivacyRoutes()],
 );
 
