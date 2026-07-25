@@ -128,7 +128,7 @@ export function BoardsTable({
       emptyTitle={hasFilters ? "No boards found" : "No boards yet"}
       error={error}
       getRowId={(board) => board.id}
-      gridClassName="grid-cols-1 sm:grid-cols-2 lg:grid-cols-3"
+      gridClassName="grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3"
       hasFilters={hasFilters}
       header={header}
       isLoading={isLoading}
