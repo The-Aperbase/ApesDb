@@ -85,10 +85,19 @@ function BoardGridCard({ board }: { board: BoardSummary }) {
       params={{ boardId: board.id }}
       to="/boards/$boardId"
     >
-      <Card className="h-full transition-colors group-hover:bg-muted/40">
-        <CardContent className="flex items-center gap-3">
-          <BoardAvatar board={board} />
-          <div className="grid min-w-0 gap-0.5">
+      <Card className="h-24 py-0 transition-colors group-hover:bg-muted/40">
+        <CardContent className="flex h-full items-center gap-3 px-0">
+          <Avatar className="h-full w-24 rounded-none">
+            <AvatarImage
+              alt={board.name}
+              className="transition-transform group-hover:scale-[1.02]"
+              src={board.pictureUrl ?? undefined}
+            />
+            <AvatarFallback className="rounded-none bg-muted text-muted-foreground">
+              <Library className="size-7" />
+            </AvatarFallback>
+          </Avatar>
+          <div className="grid min-w-0 gap-0.5 pr-4">
             <CardTitle className="truncate group-hover:underline group-hover:underline-offset-4">
               {board.name}
             </CardTitle>
@@ -101,7 +110,17 @@ function BoardGridCard({ board }: { board: BoardSummary }) {
 }
 
 function BoardGridCardSkeleton() {
-  return <Skeleton className="h-20 w-full rounded-lg" />;
+  return (
+    <Card className="h-24 py-0">
+      <CardContent className="flex h-full items-center gap-3 px-0">
+        <Skeleton className="h-full w-24 rounded-none" />
+        <div className="grid flex-1 gap-2 pr-4">
+          <Skeleton className="h-4 w-3/5" />
+          <Skeleton className="h-3 w-2/5" />
+        </div>
+      </CardContent>
+    </Card>
+  );
 }
 
 export function BoardsTable({

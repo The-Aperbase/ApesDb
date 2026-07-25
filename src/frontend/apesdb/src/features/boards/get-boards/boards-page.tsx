@@ -49,10 +49,7 @@ export function BoardsPage() {
   return (
     <main className="mx-auto flex h-full min-h-0 w-full max-w-5xl flex-col gap-4 overflow-hidden">
       <div className="flex flex-wrap items-start justify-between gap-3">
-        <div>
-          <h1 className="text-2xl font-semibold tracking-tight">Boards</h1>
-          <p className="mt-1 text-sm text-muted-foreground">Organize games by what to play next.</p>
-        </div>
+        <h1 className="text-2xl font-semibold tracking-tight">Boards</h1>
         <Button onClick={() => setIsCreateDialogOpen(true)} type="button" variant="outline">
           <Plus data-icon="inline-start" />
           Create board
