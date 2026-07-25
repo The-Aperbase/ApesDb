@@ -1,14 +1,34 @@
 ﻿{
   AddResponses: [
     {
-      StatusCode: 204,
-      ReasonPhrase: No Content,
-      Version: 1.1
+      Response: {
+        StatusCode: 200,
+        ReasonPhrase: OK,
+        Version: 1.1,
+        ContentHeaders: {
+          Content-Type: [
+            application/json; charset=utf-8
+          ]
+        }
+      },
+      Content: {
+        GameId: 534
+      }
     },
     {
-      StatusCode: 204,
-      ReasonPhrase: No Content,
-      Version: 1.1
+      Response: {
+        StatusCode: 200,
+        ReasonPhrase: OK,
+        Version: 1.1,
+        ContentHeaders: {
+          Content-Type: [
+            application/json; charset=utf-8
+          ]
+        }
+      },
+      Content: {
+        GameId: 534
+      }
     }
   ],
   BoardResponse: {

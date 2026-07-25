@@ -39,7 +39,11 @@ public sealed class AddBoardEntryTests : IClassFixture<MutableEndpointApiFactory
             request,
             TestContext.Current.CancellationToken
         );
-        var addResponses = await HttpResponseSnapshot.CreateAsync(firstResponse, secondResponse);
+        var addResponses = new[]
+        {
+            await HttpResponseSnapshot.CreateAsync<AddBoardEntryContract>(firstResponse),
+            await HttpResponseSnapshot.CreateAsync<AddBoardEntryContract>(secondResponse),
+        };
         using var getResponse = await client.GetAsync(
             BoardTestSupport.BoardUrl(BoardTestData.BacklogId),
             TestContext.Current.CancellationToken
@@ -88,3 +92,5 @@ public sealed class AddBoardEntryTests : IClassFixture<MutableEndpointApiFactory
         await Verify(new { AddResponse = add, OwnerBoardResponse = board }).UseParameters(scenario);
     }
 }
+
+internal sealed record AddBoardEntryContract(long GameId);

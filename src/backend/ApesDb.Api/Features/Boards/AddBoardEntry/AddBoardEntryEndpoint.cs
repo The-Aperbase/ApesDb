@@ -1,11 +1,12 @@
 using ApesDb.Common;
 using ApesDb.Domain;
+using ApesDb.Domain.Entities.Boards;
 using FastEndpoints;
 using Microsoft.EntityFrameworkCore;
 
 namespace ApesDb.Api.Features.Boards.AddBoardEntry;
 
-public sealed class AddBoardEntryEndpoint : Endpoint<AddBoardEntryRequest>
+public sealed class AddBoardEntryEndpoint : Endpoint<AddBoardEntryRequest, AddBoardEntryResponse>
 {
     private readonly ApplicationDbContext _dbContext;
     private readonly IDateTimeProvider _dateTimeProvider;
@@ -25,11 +26,11 @@ public sealed class AddBoardEntryEndpoint : Endpoint<AddBoardEntryRequest>
     public override async Task HandleAsync(AddBoardEntryRequest request, CancellationToken ct)
     {
         var userId = User.GetApesDbUserId();
-        var canAccess = await _dbContext.Boards.AnyAsync(
+        var board = await _dbContext.Boards.SingleOrDefaultAsync(
             board => board.Id == request.BoardId && board.OwnerUserId == userId,
             ct
         );
-        if (!canAccess)
+        if (board is null)
         {
             await Send.NotFoundAsync(ct);
             return;
@@ -42,18 +43,17 @@ public sealed class AddBoardEntryEndpoint : Endpoint<AddBoardEntryRequest>
             return;
         }
 
-        await _dbContext.Database.ExecuteSqlInterpolatedAsync(
-            $"""
-            INSERT INTO "public"."BoardEntries" ("BoardId", "GameId")
-            VALUES ({request.BoardId}, {request.GameId})
-            ON CONFLICT ("BoardId", "GameId") DO NOTHING
-            """,
+        var entryExists = await _dbContext.BoardEntries.AnyAsync(
+            entry => entry.BoardId == request.BoardId && entry.GameId == request.GameId,
             ct
         );
-        await _dbContext
-            .Boards.Where(board => board.Id == request.BoardId)
-            .ExecuteUpdateAsync(setters => setters.SetProperty(board => board.UpdatedAt, _dateTimeProvider.UtcNow), ct);
+        if (!entryExists)
+        {
+            _dbContext.BoardEntries.Add(new BoardEntry { BoardId = request.BoardId, GameId = request.GameId });
+            board.UpdatedAt = _dateTimeProvider.UtcNow;
+            await _dbContext.SaveChangesAsync(ct);
+        }
 
-        await Send.NoContentAsync(ct);
+        await Send.OkAsync(new AddBoardEntryResponse(request.GameId), ct);
     }
 }
