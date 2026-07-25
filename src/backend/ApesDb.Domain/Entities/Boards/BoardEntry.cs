@@ -46,10 +46,7 @@ public sealed class BoardEntryConfiguration : IEntityTypeConfiguration<BoardEntr
             .HasForeignKey(value => value.GameId)
             .OnDelete(DeleteBehavior.Cascade);
         entry.ToTable(table =>
-            table.HasCheckConstraint(
-                "CK_BoardEntries_State",
-                "\"State\" IN ('Todo', 'InProgress', 'Completed', 'Dnf')"
-            )
+            table.HasCheckConstraint("CK_BoardEntries_State", "\"State\" IN ('Todo', 'InProgress', 'Completed', 'Dnf')")
         );
     }
 }
