@@ -1,16 +1,15 @@
 {
   "compilerOptions": {
     "allowSyntheticDefaultImports": true,
-    "baseUrl": ".",
     "jsx": "react-jsx",
     "lib": ["DOM", "DOM.Iterable", "ES2023"],
     "module": "ESNext",
     "moduleResolution": "Bundler",
     "noEmit": true,
     "paths": {
-      "@apesdb/common": ["src/frontend/common/src/index.ts"],
-      "@apesdb/ui": ["src/frontend/ui/src/index.ts"],
-      "@apesdb/ui/*": ["src/frontend/ui/src/*"]
+      "@apesdb/common": ["./src/frontend/common/src/index.ts"],
+      "@apesdb/ui": ["./src/frontend/ui/src/index.ts"],
+      "@apesdb/ui/*": ["./src/frontend/ui/src/*"]
     },
     "resolveJsonModule": true,
     "skipLibCheck": true,
