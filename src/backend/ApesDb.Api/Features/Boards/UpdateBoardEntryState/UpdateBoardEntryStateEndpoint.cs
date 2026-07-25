@@ -1,5 +1,6 @@
 using ApesDb.Common;
 using ApesDb.Domain;
+using ApesDb.Domain.Entities.Boards;
 using FastEndpoints;
 using Microsoft.EntityFrameworkCore;
 
@@ -25,7 +26,13 @@ public sealed class UpdateBoardEntryStateEndpoint : Endpoint<UpdateBoardEntrySta
     public override async Task HandleAsync(UpdateBoardEntryStateRequest request, CancellationToken ct)
     {
         var userId = User.GetApesDbUserId();
-        var state = BoardResponseFactory.ParseState(request.State);
+        var state = request.State switch
+        {
+            "in-progress" => BoardEntryState.InProgress,
+            "completed" => BoardEntryState.Completed,
+            "dnf" => BoardEntryState.Dnf,
+            _ => BoardEntryState.Todo,
+        };
         var updated = await _dbContext
             .BoardEntries.Where(entry =>
                 entry.BoardId == request.BoardId

@@ -52,7 +52,7 @@ public sealed class GetBoardEndpoint : Endpoint<GetBoardRequest, BoardDetailsRes
                     board.Name,
                     board.CreatedAt,
                     board.UpdatedAt,
-                    BoardResponseFactory.CreatePicture(board.Picture),
+                    BoardPictureResponse.From(board.Picture),
                     games
                 ),
                 ct

@@ -53,7 +53,7 @@ public sealed class ListBoardsEndpoint : Endpoint<ListBoardsRequest, Pagable<Boa
                 board.Name,
                 board.CreatedAt,
                 board.UpdatedAt,
-                BoardResponseFactory.CreatePicture(board.Picture),
+                BoardPictureResponse.From(board.Picture),
                 board.GameCount,
                 board.ContainsGame
             ))

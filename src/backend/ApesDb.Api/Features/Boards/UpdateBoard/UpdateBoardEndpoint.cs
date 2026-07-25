@@ -93,7 +93,7 @@ public sealed class UpdateBoardEndpoint : Endpoint<UpdateBoardRequest, BoardDeta
                         board.Name,
                         board.CreatedAt,
                         board.UpdatedAt,
-                        BoardResponseFactory.CreatePicture(board.Picture),
+                        BoardPictureResponse.From(board.Picture),
                         games
                     ),
                     ct

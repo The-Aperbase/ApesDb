@@ -26,15 +26,26 @@ internal static class BoardEntryQueryableExtensions
             .ToArrayAsync(ct);
 
         return entries
-            .Select(entry => new BoardGameResponse(
-                entry.GameId,
-                entry.Name,
-                entry.CoverSmallUrl,
-                entry.CoverLargeUrl,
-                entry.GameType,
-                BoardResponseFactory.CreateState(entry.State),
-                entry.AddedAt
-            ))
+            .Select(entry =>
+            {
+                var state = entry.State switch
+                {
+                    BoardEntryState.InProgress => "in-progress",
+                    BoardEntryState.Completed => "completed",
+                    BoardEntryState.Dnf => "dnf",
+                    _ => "todo",
+                };
+
+                return new BoardGameResponse(
+                    entry.GameId,
+                    entry.Name,
+                    entry.CoverSmallUrl,
+                    entry.CoverLargeUrl,
+                    entry.GameType,
+                    state,
+                    entry.AddedAt
+                );
+            })
             .ToArray();
     }
 }

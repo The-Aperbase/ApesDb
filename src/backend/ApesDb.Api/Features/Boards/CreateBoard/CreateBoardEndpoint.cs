@@ -74,7 +74,7 @@ public sealed class CreateBoardEndpoint : Endpoint<CreateBoardRequest, BoardSumm
                 board.Name,
                 board.CreatedAt,
                 board.UpdatedAt,
-                BoardResponseFactory.CreatePicture(board.Picture),
+                BoardPictureResponse.From(board.Picture),
                 0,
                 false
             );
