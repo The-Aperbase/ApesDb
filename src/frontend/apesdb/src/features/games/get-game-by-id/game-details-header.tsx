@@ -57,16 +57,16 @@ function CompanySummary({ game }: { game: GameDetails }) {
   );
 }
 
-export function GameDetailsHeader({ game }: GameDetailsHeaderProps) {
-  async function copyGameTitle() {
-    try {
-      await navigator.clipboard.writeText(game.name);
-      toast.success("Game title copied");
-    } catch {
-      toast.error("Game title could not be copied");
-    }
+async function copyGameUrl() {
+  try {
+    await navigator.clipboard.writeText(window.location.href);
+    toast.success("Game link copied");
+  } catch {
+    toast.error("Game link could not be copied");
   }
+}
 
+export function GameDetailsHeader({ game }: GameDetailsHeaderProps) {
   return (
     <section className="grid gap-6 md:grid-cols-[14rem_minmax(0,1fr)]">
       <div className="w-full max-w-56 md:max-w-none">
@@ -86,18 +86,18 @@ export function GameDetailsHeader({ game }: GameDetailsHeaderProps) {
               <TooltipTrigger
                 render={
                   <Button
-                    aria-label="Copy game title"
+                    aria-label="Copy game link"
                     className="mt-1"
                     size="icon-lg"
                     type="button"
                     variant="ghost"
-                    onClick={() => void copyGameTitle()}
+                    onClick={() => void copyGameUrl()}
                   />
                 }
               >
                 <Copy aria-hidden="true" />
               </TooltipTrigger>
-              <TooltipContent>Copy title</TooltipContent>
+              <TooltipContent>Copy link</TooltipContent>
             </Tooltip>
           </div>
           {game.releaseDate && (
