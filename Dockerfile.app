@@ -25,12 +25,17 @@ COPY ["src/backend/ApesDb.Api/ApesDb.Api.csproj", "src/backend/ApesDb.Api/"]
 COPY ["src/backend/ApesDb.Auth/ApesDb.Auth.csproj", "src/backend/ApesDb.Auth/"]
 COPY ["src/backend/ApesDb.Common/ApesDb.Common.csproj", "src/backend/ApesDb.Common/"]
 COPY ["src/backend/ApesDb.Domain/ApesDb.Domain.csproj", "src/backend/ApesDb.Domain/"]
+COPY ["src/backend/ApesDb.Shared/ApesDb.Shared.csproj", "src/backend/ApesDb.Shared/"]
 
 RUN dotnet restore "src/backend/ApesDb.Api/ApesDb.Api.csproj"
 
-COPY . .
+COPY ["src/backend/ApesDb.Api", "src/backend/ApesDb.Api"]
+COPY ["src/backend/ApesDb.Auth", "src/backend/ApesDb.Auth"]
+COPY ["src/backend/ApesDb.Common", "src/backend/ApesDb.Common"]
+COPY ["src/backend/ApesDb.Domain", "src/backend/ApesDb.Domain"]
+COPY ["src/backend/ApesDb.Shared", "src/backend/ApesDb.Shared"]
 
-RUN dotnet publish "src/backend/ApesDb.Api/ApesDb.Api.csproj" -c Release -o /app/publish /p:UseAppHost=false
+RUN dotnet publish "src/backend/ApesDb.Api/ApesDb.Api.csproj" -c Release -o /app/publish /p:UseAppHost=false --no-restore
 
 FROM mcr.microsoft.com/dotnet/aspnet:10.0 AS final
 WORKDIR /app

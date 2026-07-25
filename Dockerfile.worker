@@ -8,13 +8,18 @@ COPY ["global.json", "./"]
 COPY ["src/backend/ApesDb.Worker/ApesDb.Worker.csproj", "src/backend/ApesDb.Worker/"]
 COPY ["src/backend/ApesDb.Common/ApesDb.Common.csproj", "src/backend/ApesDb.Common/"]
 COPY ["src/backend/ApesDb.Domain/ApesDb.Domain.csproj", "src/backend/ApesDb.Domain/"]
+COPY ["src/backend/ApesDb.Shared/ApesDb.Shared.csproj", "src/backend/ApesDb.Shared/"]
 COPY ["src/backend/sdks/ApesDb.Igdb.Sdk/ApesDb.Igdb.Sdk.csproj", "src/backend/sdks/ApesDb.Igdb.Sdk/"]
 
 RUN dotnet restore "src/backend/ApesDb.Worker/ApesDb.Worker.csproj"
 
-COPY . .
+COPY ["src/backend/ApesDb.Worker", "src/backend/ApesDb.Worker"]
+COPY ["src/backend/ApesDb.Common", "src/backend/ApesDb.Common"]
+COPY ["src/backend/ApesDb.Domain", "src/backend/ApesDb.Domain"]
+COPY ["src/backend/ApesDb.Shared", "src/backend/ApesDb.Shared"]
+COPY ["src/backend/sdks/ApesDb.Igdb.Sdk", "src/backend/sdks/ApesDb.Igdb.Sdk"]
 
-RUN dotnet publish "src/backend/ApesDb.Worker/ApesDb.Worker.csproj" -c Release -o /app/publish /p:UseAppHost=false
+RUN dotnet publish "src/backend/ApesDb.Worker/ApesDb.Worker.csproj" -c Release -o /app/publish /p:UseAppHost=false --no-restore
 
 FROM mcr.microsoft.com/dotnet/aspnet:10.0 AS final
 WORKDIR /app
