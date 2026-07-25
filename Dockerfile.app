@@ -6,7 +6,7 @@ COPY ["src/frontend/apesdb/package.json", "src/frontend/apesdb/"]
 COPY ["src/frontend/common/package.json", "src/frontend/common/"]
 COPY ["src/frontend/ui/package.json", "src/frontend/ui/"]
 
-RUN corepack enable && corepack prepare pnpm@11.16.0 --activate && pnpm install --frozen-lockfile
+RUN corepack enable && corepack prepare pnpm@11.17.0 --activate && pnpm install --frozen-lockfile
 
 COPY ["src/frontend/apesdb", "src/frontend/apesdb"]
 COPY ["src/frontend/common", "src/frontend/common"]
