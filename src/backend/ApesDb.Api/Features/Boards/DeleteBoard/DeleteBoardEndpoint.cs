@@ -22,6 +22,12 @@ public sealed class DeleteBoardEndpoint : Endpoint<DeleteBoardRequest>
     public override async Task HandleAsync(DeleteBoardRequest request, CancellationToken ct)
     {
         var userId = User.GetApesDbUserId();
+        await using var transaction = await _dbContext.Database.BeginTransactionAsync(ct);
+
+        await _dbContext
+            .BoardEntries.Where(entry => entry.BoardId == request.BoardId && entry.Board.OwnerUserId == userId)
+            .ExecuteDeleteAsync(ct);
+
         var deleted = await _dbContext
             .Boards.Where(board => board.Id == request.BoardId && board.OwnerUserId == userId)
             .ExecuteDeleteAsync(ct);
@@ -32,6 +38,7 @@ public sealed class DeleteBoardEndpoint : Endpoint<DeleteBoardRequest>
             return;
         }
 
+        await transaction.CommitAsync(ct);
         await Send.NoContentAsync(ct);
     }
 }
