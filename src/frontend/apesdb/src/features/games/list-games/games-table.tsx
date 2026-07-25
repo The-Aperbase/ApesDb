@@ -69,7 +69,6 @@ function createColumns(onAddToBoard: (game: Game) => void): ColumnDef<Game>[] {
         <Link
           className="group flex min-w-56 items-center gap-3 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/30"
           params={{ gameId: row.original.id.toString() }}
-          search
           to="/games/$gameId"
         >
           <GameCover game={row.original} />
@@ -161,7 +160,6 @@ function GameGridCard({ game, onAddToBoard }: { game: Game; onAddToBoard: (game:
       <Link
         className="block h-full rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/30"
         params={{ gameId: game.id.toString() }}
-        search
         to="/games/$gameId"
       >
         <Card className="h-full gap-3 py-0 transition-colors group-hover:bg-muted/40">
