@@ -1,3 +1,4 @@
+using ApesDb.Domain.Entities.Boards;
 using FastEndpoints;
 using FluentValidation;
 using Microsoft.AspNetCore.Http;
@@ -28,7 +29,7 @@ public abstract class BoardValidator<TRequest> : Validator<TRequest>
             nameRule.Must(name => name is null || name.Trim().Length > 0).WithMessage("Name must not be empty.");
         }
 
-        nameRule.MaximumLength(128);
+        nameRule.MaximumLength(Board.MaximumNameLength);
         RuleFor(request => request.Picture)
             .Must(picture => picture is null || picture.Length <= MaximumPictureLength)
             .WithMessage("Picture must not exceed 5 MB.");

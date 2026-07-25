@@ -5,6 +5,8 @@ namespace ApesDb.Api.UnitTests.Features.Boards.CreateBoard;
 
 public sealed class CreateBoardValidatorTests
 {
+    private const long MaximumPictureLength = 5 * 1024 * 1024;
+
     [Theory]
     [InlineData("")]
     [InlineData("   ")]
@@ -21,7 +23,7 @@ public sealed class CreateBoardValidatorTests
     public void ValidateAcceptsPictureAtMaximumLength()
     {
         var validator = new CreateBoardValidator();
-        var picture = CreateFormFile(CreateBoardValidator.MaximumPictureLength);
+        var picture = CreateFormFile(MaximumPictureLength);
 
         var result = validator.Validate(new CreateBoardRequest { Name = "Backlog", Picture = picture });
 
@@ -32,7 +34,7 @@ public sealed class CreateBoardValidatorTests
     public void ValidateRejectsPictureOverMaximumLength()
     {
         var validator = new CreateBoardValidator();
-        var picture = CreateFormFile(CreateBoardValidator.MaximumPictureLength + 1);
+        var picture = CreateFormFile(MaximumPictureLength + 1);
 
         var result = validator.Validate(new CreateBoardRequest { Name = "Backlog", Picture = picture });
 

@@ -6,6 +6,8 @@ namespace ApesDb.Domain.Entities.Boards;
 
 public sealed class Board
 {
+    public const int MaximumNameLength = 128;
+
     public Guid Id { get; init; }
 
     public Guid OwnerUserId { get; init; }
@@ -30,7 +32,7 @@ public sealed class BoardConfiguration : IEntityTypeConfiguration<Board>
         board.HasKey(value => value.Id);
         board.HasIndex(value => value.OwnerUserId);
         board.Property(value => value.Id).HasDefaultValueSql("uuidv7()").ValueGeneratedOnAdd();
-        board.Property(value => value.Name).HasMaxLength(128);
+        board.Property(value => value.Name).HasMaxLength(Board.MaximumNameLength);
         board.Property(value => value.CreatedAt).HasDefaultValueSql("now()");
         board.Property(value => value.UpdatedAt).HasDefaultValueSql("now()");
         board

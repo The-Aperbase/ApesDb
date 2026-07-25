@@ -84,6 +84,26 @@ public sealed class UpdateBoardTests : IClassFixture<MutableEndpointApiFactory>,
         await Verify(new { UpdateResponse = update, BoardResponse = board });
     }
 
+    [Fact]
+    public async Task NameOverMaximumLengthDoesNotChangeBoard()
+    {
+        using var client = ApiTestClient.CreateAuthenticated(_factory, TestUsers.Owner);
+        using var form = BoardTestSupport.CreateForm(new string('a', 129));
+        using var updateResponse = await client.PutMultipartAsync(
+            BoardTestSupport.BoardUrl(BoardTestData.CompletedId),
+            form,
+            TestContext.Current.CancellationToken
+        );
+        var update = await HttpResponseSnapshot.CreateAsync(updateResponse);
+        using var getResponse = await client.GetAsync(
+            BoardTestSupport.BoardUrl(BoardTestData.CompletedId),
+            TestContext.Current.CancellationToken
+        );
+        var board = await BoardTestSupport.DetailsSnapshotAsync(getResponse);
+
+        await Verify(new { UpdateResponse = update, BoardResponse = board });
+    }
+
     [Theory]
     [InlineData("other-owner")]
     [InlineData("unknown")]

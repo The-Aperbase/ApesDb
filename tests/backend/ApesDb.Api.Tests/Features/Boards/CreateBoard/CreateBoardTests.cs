@@ -47,6 +47,7 @@ public sealed class CreateBoardTests : IClassFixture<MutableEndpointApiFactory>,
 
     [Theory]
     [InlineData("whitespace-name")]
+    [InlineData("long-name")]
     [InlineData("invalid-picture")]
     public async Task InvalidBoardIsRejectedWithoutChangingBoards(string scenario)
     {
@@ -55,6 +56,10 @@ public sealed class CreateBoardTests : IClassFixture<MutableEndpointApiFactory>,
         if (scenario == "whitespace-name")
         {
             form = BoardTestSupport.CreateForm("   ");
+        }
+        else if (scenario == "long-name")
+        {
+            form = BoardTestSupport.CreateForm(new string('a', 129));
         }
         else
         {
