@@ -9,11 +9,19 @@ on:
         description: Deploy the built images to the production host
         type: boolean
         default: false
+      use_max_cache:
+        description: Export all layers (checked=max, unchecked=min)
+        type: boolean
+        default: true
 
 permissions:
   contents: read
   packages: write
   id-token: write
+
+concurrency:
+  group: build-push-deploy-${{ github.ref }}
+  cancel-in-progress: false
 
 env:
   APP_IMAGE_NAME: ghcr.io/${{ github.repository }}/app
@@ -21,7 +29,65 @@ env:
   MIGRATIONS_IMAGE_NAME: ghcr.io/${{ github.repository }}/migrations
 
 jobs:
-  build-push-deploy:
+  changes:
+    runs-on: ubuntu-latest
+    outputs:
+      app: ${{ github.event_name == 'workflow_dispatch' || steps.filter.outputs.app == 'true' }}
+      worker: ${{ github.event_name == 'workflow_dispatch' || steps.filter.outputs.worker == 'true' }}
+      migrations: ${{ github.event_name == 'workflow_dispatch' || steps.filter.outputs.migrations == 'true' }}
+      any: ${{ github.event_name == 'workflow_dispatch' || steps.filter.outputs.app == 'true' || steps.filter.outputs.worker == 'true' || steps.filter.outputs.migrations == 'true' }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Detect affected images
+        id: filter
+        if: github.event_name == 'push'
+        uses: dorny/paths-filter@v3
+        with:
+          filters: |
+            app:
+              - '.github/workflows/deploy.yml'
+              - '.dockerignore'
+              - 'Dockerfile.app'
+              - 'ApesDb.slnx'
+              - 'Directory.Build.props'
+              - 'Directory.Packages.props'
+              - 'global.json'
+              - 'package.json'
+              - 'pnpm-lock.yaml'
+              - 'pnpm-workspace.yaml'
+              - 'nx.json'
+              - 'tsconfig.base.json'
+              - 'src/frontend/**'
+              - 'src/backend/ApesDb.Api/**'
+              - 'src/backend/ApesDb.Auth/**'
+              - 'src/backend/ApesDb.Common/**'
+              - 'src/backend/ApesDb.Domain/**'
+              - 'src/backend/ApesDb.Shared/**'
+            worker:
+              - '.github/workflows/deploy.yml'
+              - '.dockerignore'
+              - 'Dockerfile.worker'
+              - 'ApesDb.slnx'
+              - 'Directory.Build.props'
+              - 'Directory.Packages.props'
+              - 'global.json'
+              - 'src/backend/ApesDb.Worker/**'
+              - 'src/backend/ApesDb.Common/**'
+              - 'src/backend/ApesDb.Domain/**'
+              - 'src/backend/ApesDb.Shared/**'
+              - 'src/backend/sdks/ApesDb.Igdb.Sdk/**'
+            migrations:
+              - '.github/workflows/deploy.yml'
+              - '.dockerignore'
+              - 'Dockerfile.migrations'
+              - 'db/migrations/**'
+
+  build-app:
+    needs: changes
+    if: needs.changes.outputs.app == 'true'
     runs-on: ubuntu-latest
 
     steps:
@@ -35,8 +101,8 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Extract app image metadata
-        id: app-meta
+      - name: Extract image metadata
+        id: meta
         uses: docker/metadata-action@v6
         with:
           images: ${{ env.APP_IMAGE_NAME }}
@@ -44,8 +110,38 @@ jobs:
             type=raw,value=latest,enable={{is_default_branch}}
             type=sha,format=short
 
-      - name: Extract worker image metadata
-        id: worker-meta
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v4
+
+      - name: Build and push image
+        uses: docker/build-push-action@v7
+        with:
+          context: .
+          file: ./Dockerfile.app
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha,scope=app
+          cache-to: type=gha,mode=${{ (github.event_name == 'push' || inputs.use_max_cache) && 'max' || 'min' }},scope=app
+
+  build-worker:
+    needs: changes
+    if: needs.changes.outputs.worker == 'true'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Log in to GHCR
+        uses: docker/login-action@v4
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract image metadata
+        id: meta
         uses: docker/metadata-action@v6
         with:
           images: ${{ env.WORKER_IMAGE_NAME }}
@@ -53,8 +149,38 @@ jobs:
             type=raw,value=latest,enable={{is_default_branch}}
             type=sha,format=short
 
-      - name: Extract migrations image metadata
-        id: migrations-meta
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v4
+
+      - name: Build and push image
+        uses: docker/build-push-action@v7
+        with:
+          context: .
+          file: ./Dockerfile.worker
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha,scope=worker
+          cache-to: type=gha,mode=${{ (github.event_name == 'push' || inputs.use_max_cache) && 'max' || 'min' }},scope=worker
+
+  build-migrations:
+    needs: changes
+    if: needs.changes.outputs.migrations == 'true'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Log in to GHCR
+        uses: docker/login-action@v4
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract image metadata
+        id: meta
         uses: docker/metadata-action@v6
         with:
           images: ${{ env.MIGRATIONS_IMAGE_NAME }}
@@ -65,41 +191,29 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v4
 
-      - name: Build and push app image
-        uses: docker/build-push-action@v7
-        with:
-          context: .
-          file: ./Dockerfile.app
-          push: true
-          tags: ${{ steps.app-meta.outputs.tags }}
-          labels: ${{ steps.app-meta.outputs.labels }}
-          cache-from: type=gha,scope=app
-          cache-to: type=gha,mode=max,scope=app
-
-      - name: Build and push worker image
-        uses: docker/build-push-action@v7
-        with:
-          context: .
-          file: ./Dockerfile.worker
-          push: true
-          tags: ${{ steps.worker-meta.outputs.tags }}
-          labels: ${{ steps.worker-meta.outputs.labels }}
-          cache-from: type=gha,scope=worker
-          cache-to: type=gha,mode=max,scope=worker
-
-      - name: Build and push migrations image
+      - name: Build and push image
         uses: docker/build-push-action@v7
         with:
           context: .
           file: ./Dockerfile.migrations
           push: true
-          tags: ${{ steps.migrations-meta.outputs.tags }}
-          labels: ${{ steps.migrations-meta.outputs.labels }}
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
           cache-from: type=gha,scope=migrations
-          cache-to: type=gha,mode=max,scope=migrations
+          cache-to: type=gha,mode=${{ (github.event_name == 'push' || inputs.use_max_cache) && 'max' || 'min' }},scope=migrations
 
+  deploy:
+    needs: [changes, build-app, build-worker, build-migrations]
+    if: >-
+      always() &&
+      needs.changes.outputs.any == 'true' &&
+      (github.event_name == 'push' || inputs.deploy_to_production) &&
+      !contains(needs.*.result, 'failure') &&
+      !contains(needs.*.result, 'cancelled')
+    runs-on: ubuntu-latest
+
+    steps:
       - name: Connect to Tailscale
-        if: github.event_name == 'push' || inputs.deploy_to_production
         uses: tailscale/github-action@v4
         with:
           oauth-client-id: ${{ secrets.TS_OAUTH_CLIENT_ID }}
@@ -108,7 +222,6 @@ jobs:
           ping: dokbox
 
       - name: Trigger Dokploy redeploy
-        if: github.event_name == 'push' || inputs.deploy_to_production
         run: |
           curl -fsS -X POST "http://dokbox:3000/api/compose.deploy" \
             -H "accept: application/json" \
