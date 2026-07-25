@@ -76,11 +76,11 @@ internal static class BoardTestSupport
         Guid? createdBoardId = null
     )
     {
-        var raw = await HttpResponseSnapshot.CreateAsync<BoardSummaryContract[]>(response);
-        var content = (BoardSummaryContract[]?)raw.Content;
+        var raw = await HttpResponseSnapshot.CreateAsync<PagableContract<BoardSummaryContract>>(response);
+        var content = (PagableContract<BoardSummaryContract>?)raw.Content;
         return new HttpResponseSnapshot(
             raw.Response,
-            content?.Select(board => board.ToSnapshot(createdBoardId)).ToArray()
+            content?.ToSnapshot(board => board.ToSnapshot(createdBoardId))
         );
     }
 
@@ -100,6 +100,20 @@ internal sealed record BoardPictureContract(string ContentType, byte[] Data)
     public BoardPictureSnapshot ToSnapshot()
     {
         return new BoardPictureSnapshot(ContentType, Data.Length);
+    }
+}
+
+internal sealed record PagableContract<T>(T[] Items, int Total, int FilteredTotal, int Page, int PageSize)
+{
+    public PagableContract<TSnapshot> ToSnapshot<TSnapshot>(Func<T, TSnapshot> createSnapshot)
+    {
+        return new PagableContract<TSnapshot>(
+            Items.Select(createSnapshot).ToArray(),
+            Total,
+            FilteredTotal,
+            Page,
+            PageSize
+        );
     }
 }
 

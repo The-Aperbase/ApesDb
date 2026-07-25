@@ -1,4 +1,5 @@
 import { z } from "zod";
+import type { Pageable } from "@apesdb/common";
 
 export const boardPictureSchema = z.object({
   contentType: z.string(),
@@ -22,7 +23,13 @@ export const boardSummarySchema = z
 
 export type BoardSummary = z.infer<typeof boardSummarySchema>;
 
-export const boardSummariesSchema = z.array(boardSummarySchema);
+export const boardSummariesResponseSchema: z.ZodType<Pageable<BoardSummary>> = z.object({
+  items: z.array(boardSummarySchema),
+  total: z.number().int().nonnegative(),
+  filteredTotal: z.number().int().nonnegative(),
+  page: z.number().int().positive(),
+  pageSize: z.number().int().positive(),
+});
 
 export const boardEntryStateSchema = z
   .enum(["todo", "in-progress", "completed", "dnf"])

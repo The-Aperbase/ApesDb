@@ -45,6 +45,18 @@ public sealed class ListBoardsTests
     }
 
     [Fact]
+    public async Task BoardsCanBePaged()
+    {
+        using var client = ApiTestClient.CreateAuthenticated(_factory, TestUsers.Owner);
+        using var response = await client.GetAsync(
+            "/api/boards?page=2&pageSize=1",
+            TestContext.Current.CancellationToken
+        );
+
+        await Verify(await BoardTestSupport.ListSnapshotAsync(response));
+    }
+
+    [Fact]
     public async Task AnonymousUserCannotListBoards()
     {
         using var client = ApiTestClient.CreateAnonymous(_factory);

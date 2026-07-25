@@ -1,7 +1,7 @@
 import { z } from "zod";
 import {
   boardDetailsSchema,
-  boardSummariesSchema,
+  boardSummariesResponseSchema,
   boardSummarySchema,
   type BoardDetails,
   type BoardEntryState,
@@ -99,7 +99,7 @@ export async function fetchBoards(url: string, signal: AbortSignal): Promise<Boa
     throw new Error(`Request failed with status ${response.status}.`);
   }
 
-  return boardSummariesSchema.parse(await response.json());
+  return boardSummariesResponseSchema.parse(await response.json()).items;
 }
 
 export async function fetchBoardDetails(

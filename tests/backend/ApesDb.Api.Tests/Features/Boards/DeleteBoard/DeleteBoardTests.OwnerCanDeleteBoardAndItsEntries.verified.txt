@@ -24,14 +24,20 @@
         ]
       }
     },
-    Content: [
-      {
-        Id: Guid_1,
-        Name: Completed,
-        CreatedAt: DateTime_1,
-        UpdatedAt: DateTime_2,
-        ContainsGame: false
-      }
-    ]
+    Content: {
+      Items: [
+        {
+          Id: Guid_1,
+          Name: Completed,
+          CreatedAt: DateTime_1,
+          UpdatedAt: DateTime_2,
+          ContainsGame: false
+        }
+      ],
+      Total: 1,
+      FilteredTotal: 1,
+      Page: 1,
+      PageSize: 50
+    }
   }
 }
