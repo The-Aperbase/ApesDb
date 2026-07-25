@@ -30,8 +30,10 @@ public sealed class ListBoardsEndpoint : Endpoint<ListBoardsRequest, Pagable<Boa
     {
         var userId = User.GetApesDbUserId();
 
-        var query = _dbContext.Boards.AsNoTracking().Where(board => board.OwnerUserId == userId);
-        var total = await query.CountAsync(ct);
+        var baseQuery = _dbContext.Boards.AsNoTracking().Where(board => board.OwnerUserId == userId);
+        var query = baseQuery.WhereContains(request.Search, board => board.Name);
+        var total = await baseQuery.CountAsync(ct);
+        var filteredTotal = await query.CountAsync(ct);
         var boards = await query
             .SortBy(ListSortDirection.Ascending, board => board.Name.ToLower(), board => board.Name, board => board.Id)
             .Page(request.Page, request.PageSize)
@@ -60,7 +62,7 @@ public sealed class ListBoardsEndpoint : Endpoint<ListBoardsRequest, Pagable<Boa
             .ToArray();
 
         await Send.OkAsync(
-            new Pagable<BoardSummaryResponse>(response, total, total, request.Page, request.PageSize),
+            new Pagable<BoardSummaryResponse>(response, total, filteredTotal, request.Page, request.PageSize),
             ct
         );
     }

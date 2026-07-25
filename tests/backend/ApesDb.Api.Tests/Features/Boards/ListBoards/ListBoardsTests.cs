@@ -57,6 +57,15 @@ public sealed class ListBoardsTests
     }
 
     [Fact]
+    public async Task BoardsCanBeSearchedByName()
+    {
+        using var client = ApiTestClient.CreateAuthenticated(_factory, TestUsers.Owner);
+        using var response = await client.GetAsync("/api/boards?search=LOG", TestContext.Current.CancellationToken);
+
+        await Verify(await BoardTestSupport.ListSnapshotAsync(response));
+    }
+
+    [Fact]
     public async Task AnonymousUserCannotListBoards()
     {
         using var client = ApiTestClient.CreateAnonymous(_factory);

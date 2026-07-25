@@ -9,5 +9,6 @@ public sealed class ListBoardsValidator : Validator<ListBoardsRequest>
     {
         RuleFor(request => request.Page).GreaterThanOrEqualTo(1);
         RuleFor(request => request.PageSize).InclusiveBetween(1, 100);
+        RuleFor(request => request.Search).MaximumLength(512);
     }
 }

@@ -41,6 +41,8 @@ declare module "@tanstack/react-table" {
 export type PageableDataViewProps<TData> = {
   columns: ColumnDef<TData>[];
   data: Pageable<TData> | null;
+  emptyDescription?: React.ReactNode;
+  emptyTitle?: React.ReactNode;
   error: string | null;
   getRowId?: (item: TData, index: number) => string;
   gridClassName?: string;
@@ -148,6 +150,8 @@ function resultSummary<TData>(
 export function PageableDataView<TData>({
   columns,
   data,
+  emptyDescription = "Try changing or clearing the active filters.",
+  emptyTitle,
   error,
   getRowId,
   gridClassName,
@@ -259,8 +263,8 @@ export function PageableDataView<TData>({
     content = (
       <Item className="min-h-0 flex-1 justify-center text-center" variant="outline">
         <ItemContent className="items-center">
-          <ItemTitle>No {itemLabel} found</ItemTitle>
-          <ItemDescription>Try changing or clearing the active filters.</ItemDescription>
+          <ItemTitle>{emptyTitle ?? `No ${itemLabel} found`}</ItemTitle>
+          <ItemDescription>{emptyDescription}</ItemDescription>
         </ItemContent>
       </Item>
     );

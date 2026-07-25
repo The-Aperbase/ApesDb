@@ -6,6 +6,7 @@ import {
   type BoardDetails,
   type BoardEntryState,
   type BoardSummary,
+  type BoardsResponse,
 } from "./boards.schemas";
 
 export class BoardNotFoundError extends Error {
@@ -39,6 +40,15 @@ export type BoardEntryInput = {
 export type UpdateGameStateInput = BoardEntryInput & {
   state: BoardEntryState;
 };
+
+export type BoardsRequest = {
+  gameId?: number;
+  page?: number;
+  pageSize?: number;
+  search?: string;
+};
+
+export const boardsPageSize = 50;
 
 const validationErrorSchema = z.object({
   message: z.string().optional(),
@@ -79,17 +89,36 @@ function boardUrl(boardId: string): string {
   return `/api/boards/${encodeURIComponent(boardId)}`;
 }
 
-export function createBoardsRequestUrl(gameId?: number): string {
+export function createBoardsRequestUrl(request: BoardsRequest = {}): string {
   const base = "/api/boards";
+  const params = new URLSearchParams();
 
-  if (gameId === undefined) {
+  if (request.gameId !== undefined) {
+    params.set("gameId", request.gameId.toString());
+  }
+
+  const search = request.search?.trim();
+  if (search) {
+    params.set("search", search);
+  }
+
+  if (request.page !== undefined) {
+    params.set("page", Math.max(1, request.page).toString());
+  }
+
+  if (request.pageSize !== undefined) {
+    params.set("pageSize", request.pageSize.toString());
+  }
+
+  const query = params.toString();
+  if (query.length === 0) {
     return base;
   }
 
-  return `${base}?gameId=${gameId}`;
+  return `${base}?${query}`;
 }
 
-export async function fetchBoards(url: string, signal: AbortSignal): Promise<BoardSummary[]> {
+export async function fetchBoardsPage(url: string, signal: AbortSignal): Promise<BoardsResponse> {
   const response = await fetch(url, {
     credentials: "include",
     signal,
@@ -99,7 +128,11 @@ export async function fetchBoards(url: string, signal: AbortSignal): Promise<Boa
     throw new Error(`Request failed with status ${response.status}.`);
   }
 
-  return boardSummariesResponseSchema.parse(await response.json()).items;
+  return boardSummariesResponseSchema.parse(await response.json());
+}
+
+export async function fetchBoards(url: string, signal: AbortSignal): Promise<BoardSummary[]> {
+  return (await fetchBoardsPage(url, signal)).items;
 }
 
 export async function fetchBoardDetails(

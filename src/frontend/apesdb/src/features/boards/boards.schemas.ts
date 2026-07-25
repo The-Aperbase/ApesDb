@@ -31,6 +31,8 @@ export const boardSummariesResponseSchema: z.ZodType<Pageable<BoardSummary>> = z
   pageSize: z.number().int().positive(),
 });
 
+export type BoardsResponse = Pageable<BoardSummary>;
+
 export const boardEntryStateSchema = z
   .enum(["todo", "in-progress", "completed", "dnf"])
   .default("todo");

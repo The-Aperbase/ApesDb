@@ -27,7 +27,7 @@ import {
   useComboboxAnchor,
 } from "@apesdb/ui";
 import { RefreshCw } from "lucide-react";
-import { DebouncedFilterInput } from "./debounced-filter-input";
+import { DebouncedFilterInput } from "../../../lib/debounced-filter-input";
 import {
   defaultAdvancedFilters,
   type GameFilterPatch,

@@ -1,7 +1,7 @@
 import { Badge, Button } from "@apesdb/ui";
 import { ListFilter, Search } from "lucide-react";
+import { DebouncedFilterInput } from "../../../lib/debounced-filter-input";
 import type { GameFilterPatch, GameFilters } from "./games-query-state";
-import { DebouncedFilterInput } from "./debounced-filter-input";
 
 type GamesToolbarProps = {
   filters: GameFilters;
