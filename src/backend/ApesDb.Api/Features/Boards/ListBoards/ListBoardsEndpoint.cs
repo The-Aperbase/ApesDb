@@ -33,12 +33,7 @@ public sealed class ListBoardsEndpoint : Endpoint<ListBoardsRequest, Pagable<Boa
         var query = _dbContext.Boards.AsNoTracking().Where(board => board.OwnerUserId == userId);
         var total = await query.CountAsync(ct);
         var boards = await query
-            .SortBy(
-                ListSortDirection.Ascending,
-                board => board.Name.ToLower(),
-                board => board.Name,
-                board => board.Id
-            )
+            .SortBy(ListSortDirection.Ascending, board => board.Name.ToLower(), board => board.Name, board => board.Id)
             .Page(request.Page, request.PageSize)
             .Select(board => new
             {
@@ -48,8 +43,7 @@ public sealed class ListBoardsEndpoint : Endpoint<ListBoardsRequest, Pagable<Boa
                 board.CreatedAt,
                 board.UpdatedAt,
                 GameCount = board.Entries.Count,
-                ContainsGame =
-                    request.GameId != null && board.Entries.Any(entry => entry.GameId == request.GameId),
+                ContainsGame = request.GameId != null && board.Entries.Any(entry => entry.GameId == request.GameId),
             })
             .ToArrayAsync(ct);
 

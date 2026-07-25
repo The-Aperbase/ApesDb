@@ -49,9 +49,7 @@ public sealed class AddBoardEntryEndpoint : Endpoint<AddBoardEntryRequest, AddBo
                 );
                 if (!entryExists)
                 {
-                    _dbContext.BoardEntries.Add(
-                        new BoardEntry { BoardId = request.BoardId, GameId = request.GameId }
-                    );
+                    _dbContext.BoardEntries.Add(new BoardEntry { BoardId = request.BoardId, GameId = request.GameId });
                     board.UpdatedAt = _dateTimeProvider.UtcNow;
                     await _dbContext.SaveChangesAsync(ct);
                 }

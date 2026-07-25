@@ -1,5 +1,5 @@
-using ApesDb.Common;
 using ApesDb.Api.Features.Boards.GetBoard;
+using ApesDb.Common;
 using ApesDb.Domain;
 using ApesDb.Domain.Entities.Boards;
 using FastEndpoints;

@@ -78,10 +78,7 @@ internal static class BoardTestSupport
     {
         var raw = await HttpResponseSnapshot.CreateAsync<PagableContract<BoardSummaryContract>>(response);
         var content = (PagableContract<BoardSummaryContract>?)raw.Content;
-        return new HttpResponseSnapshot(
-            raw.Response,
-            content?.ToSnapshot(board => board.ToSnapshot(createdBoardId))
-        );
+        return new HttpResponseSnapshot(raw.Response, content?.ToSnapshot(board => board.ToSnapshot(createdBoardId)));
     }
 
     public static async Task<HttpResponseSnapshot> DetailsSnapshotAsync(

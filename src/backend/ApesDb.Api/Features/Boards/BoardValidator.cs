@@ -25,9 +25,7 @@ public abstract class BoardValidator<TRequest> : Validator<TRequest>
         }
         else
         {
-            nameRule
-                .Must(name => name is null || name.Trim().Length > 0)
-                .WithMessage("Name must not be empty.");
+            nameRule.Must(name => name is null || name.Trim().Length > 0).WithMessage("Name must not be empty.");
         }
 
         nameRule.MaximumLength(128);
