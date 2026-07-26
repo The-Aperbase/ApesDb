@@ -1,4 +1,5 @@
 using ApesDb.Domain.Entities.IgdbSync;
+using ApesDb.Worker.Telemetry;
 using TickerQ.Utilities.Base;
 
 namespace ApesDb.Worker.Games;
@@ -23,14 +24,25 @@ public sealed class CatalogSyncJobs
     [TickerFunction(CatalogSyncFunctions.ScheduleDaily, cronExpression: "0 3 * * *", maxConcurrency: 1)]
     public Task ScheduleDailyAsync(TickerFunctionContext context, CancellationToken cancellationToken)
     {
-        context.CronOccurrenceOperations?.SkipIfAlreadyRunning();
-        return _orchestrator.EnsureIncrementalAsync(cancellationToken);
+        return TickerQTelemetry.RunAsync(
+            CatalogSyncFunctions.ScheduleDaily,
+            context.RetryCount,
+            async () =>
+            {
+                context.CronOccurrenceOperations?.SkipIfAlreadyRunning();
+                await _orchestrator.EnsureIncrementalAsync(cancellationToken);
+            }
+        );
     }
 
     [TickerFunction(CatalogSyncFunctions.StartFull, maxConcurrency: 1)]
     public Task StartFullAsync(TickerFunctionContext context, CancellationToken cancellationToken)
     {
-        return _orchestrator.StartFullSyncAsync(cancellationToken);
+        return TickerQTelemetry.RunAsync(
+            CatalogSyncFunctions.StartFull,
+            context.RetryCount,
+            () => _orchestrator.StartFullSyncAsync(cancellationToken)
+        );
     }
 
     [TickerFunction(CatalogSyncFunctions.GameTypes, maxConcurrency: 1)]
@@ -163,13 +175,27 @@ public sealed class CatalogSyncJobs
     public Task CompleteAsync(
         TickerFunctionContext<CatalogSyncJobRequest> context,
         CancellationToken cancellationToken
-    ) => _orchestrator.CompleteAsync(context.Request.RunId, context.RetryCount, cancellationToken);
+    ) =>
+        TickerQTelemetry.RunAsync(
+            CatalogSyncFunctions.Complete,
+            context.RetryCount,
+            () => _orchestrator.CompleteAsync(context.Request.RunId, context.RetryCount, cancellationToken),
+            context.Request.RunId,
+            IgdbSyncStageKind.Complete.ToString()
+        );
 
     [TickerFunction(CatalogSyncFunctions.RefreshPopularity, cronExpression: "0 * * * *", maxConcurrency: 1)]
     public async Task RefreshPopularityAsync(TickerFunctionContext context, CancellationToken cancellationToken)
     {
-        context.CronOccurrenceOperations?.SkipIfAlreadyRunning();
-        await _popularitySynchronizer.RefreshAsync(allowDuringCatalogRun: false, cancellationToken);
+        await TickerQTelemetry.RunAsync(
+            CatalogSyncFunctions.RefreshPopularity,
+            context.RetryCount,
+            async () =>
+            {
+                context.CronOccurrenceOperations?.SkipIfAlreadyRunning();
+                await _popularitySynchronizer.RefreshAsync(allowDuringCatalogRun: false, cancellationToken);
+            }
+        );
     }
 
     private async Task RunAsync(
@@ -178,7 +204,21 @@ public sealed class CatalogSyncJobs
         CancellationToken cancellationToken
     )
     {
-        await _stageRunner.RunAsync(context.Request.RunId, stageKind, context.RetryCount, cancellationToken);
-        await _orchestrator.AdvanceAsync(context.Request.RunId, stageKind, cancellationToken);
+        await TickerQTelemetry.RunAsync(
+            CatalogSyncFunctions.ForStage(stageKind),
+            context.RetryCount,
+            async () =>
+            {
+                await _stageRunner.RunAsync(
+                    context.Request.RunId,
+                    stageKind,
+                    context.RetryCount,
+                    cancellationToken
+                );
+                await _orchestrator.AdvanceAsync(context.Request.RunId, stageKind, cancellationToken);
+            },
+            context.Request.RunId,
+            stageKind.ToString()
+        );
     }
 }

@@ -8,6 +8,7 @@ using FastEndpoints;
 
 var builder = WebApplication.CreateBuilder(args);
 
+builder.AddApesDbObservability("apesdb-api");
 builder.Services.AddApesDbForwardedHeaders();
 builder.Services.AddApesDbCommon();
 builder.Services.AddApesDbCache(builder.Configuration);

@@ -13,6 +13,7 @@ using TickerQ.EntityFrameworkCore.DependencyInjection;
 
 var builder = WebApplication.CreateBuilder(args);
 
+builder.AddApesDbObservability("apesdb-worker");
 var databaseOptions =
     builder.Configuration.GetRequiredSection(DatabaseOptions.SectionName).Get<DatabaseOptions>()
     ?? throw new InvalidOperationException($"Missing required configuration section '{DatabaseOptions.SectionName}'.");
