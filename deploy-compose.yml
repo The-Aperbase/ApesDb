@@ -1,6 +1,6 @@
 services:
   app:
-    image: ghcr.io/owencross289/apesdb/app:latest
+    image: ghcr.io/the-aperbase/apesdb/app:latest
     environment:
       ASPNETCORE_ENVIRONMENT: Production
       Database__ConnectionString: Host=postgres;Port=5432;Database=apesdb;Username=apesdb;Password=${POSTGRES_PASSWORD:?POSTGRES_PASSWORD is required}
@@ -18,7 +18,7 @@ services:
       - redis
 
   worker:
-    image: ghcr.io/owencross289/apesdb/worker:latest
+    image: ghcr.io/the-aperbase/apesdb/worker:latest
     environment:
       DOTNET_ENVIRONMENT: Production
       ASPNETCORE_URLS: http://+:8081
@@ -46,7 +46,7 @@ services:
       - postgres-data:/var/lib/postgresql
 
   migrations:
-    image: ghcr.io/owencross289/apesdb/migrations:latest
+    image: ghcr.io/the-aperbase/apesdb/migrations:latest
     command: migrate
     environment:
       FLYWAY_URL: jdbc:postgresql://postgres:5432/apesdb
