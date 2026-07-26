@@ -93,10 +93,14 @@ function AppSidebar() {
     <Sidebar collapsible="icon">
       <SidebarHeader>
         <Link
-          className="flex h-12 items-center gap-2 border bg-sidebar-accent/50 px-2 group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:px-0"
+          className="flex h-12 items-center gap-2 border bg-sidebar-accent/50 px-2 group-data-[collapsible=icon]:size-8 group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:px-0"
           to="/"
         >
-          <img alt="ApesDb" className="size-8 shrink-0" src="/192x192.png" />
+          <img
+            alt="ApesDb"
+            className="size-8 shrink-0 group-data-[collapsible=icon]:size-6"
+            src="/192x192.png"
+          />
           <div className="min-w-0 leading-tight group-data-[collapsible=icon]:hidden">
             <div className="truncate text-sm font-semibold">ApesDb</div>
             <div className="truncate text-xs text-sidebar-foreground/70">The AperBase</div>
