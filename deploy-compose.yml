@@ -14,6 +14,7 @@ services:
       OTEL_EXPORTER_OTLP_ENDPOINT: ${OTEL_EXPORTER_OTLP_ENDPOINT:-http://apesdb-observability_alloy:4317}
       OTEL_EXPORTER_OTLP_PROTOCOL: grpc
       OTEL_RESOURCE_ATTRIBUTES: deployment.environment=production,service.namespace=apesdb
+      ReverseProxy__Clusters__otlp__Destinations__collector__Address: ${OTEL_EXPORTER_OTLP_HTTP_ENDPOINT:-http://apesdb-observability_alloy:4318}
     ports:
       - "8080"
     depends_on:

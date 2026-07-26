@@ -150,7 +150,7 @@ export default defineConfig(({ command }) => {
           globIgnores: ["**/*-login-banner.png"], // cache limit is 2mb these are bigger get them from server its cheaper.
           globPatterns: isLocalServe ? [] : ["**/*.{js,css,html,png,svg,woff2}"],
           navigateFallback: "/index.html",
-          navigateFallbackDenylist: [/^\/api\//],
+          navigateFallbackDenylist: [/^\/(api|otlp)\//],
         },
       }),
     ],

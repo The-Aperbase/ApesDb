@@ -21,6 +21,7 @@ builder.Services.AddFastEndpoints();
 builder.Services.AddSingleton<IPictureProcessor, PictureProcessor>();
 builder.Services.AddNotifications();
 builder.Services.AddApesDbSwagger();
+builder.Services.AddReverseProxy().LoadFromConfig(builder.Configuration.GetRequiredSection("ReverseProxy"));
 builder.Services.AddSpaStaticFiles(options =>
 {
     options.RootPath = "wwwroot";
@@ -42,6 +43,7 @@ app.Use(
 app.UseApesDbAuth();
 app.UseApesDbSwagger();
 app.UseFastEndpoints(config => config.Endpoints.RoutePrefix = ApiRoutes.Api.Prefix);
+app.MapReverseProxy();
 app.UseEndpoints(_ => { });
 
 if (!app.Environment.IsDevelopment())

@@ -20,7 +20,8 @@ public static class ApesDbApiServiceCollectionExtensions
         var cacheOptions = configuration.GetRequiredSection(CacheOptions.SectionName).Get<CacheOptions>()!;
         var redisConfiguration = BuildRedisConfiguration(cacheOptions);
 
-        services.AddSingleton<IConnectionMultiplexer>(_ => ConnectionMultiplexer.Connect(redisConfiguration));
+        IConnectionMultiplexer connectionMultiplexer = ConnectionMultiplexer.Connect(redisConfiguration);
+        services.AddSingleton(connectionMultiplexer);
 
         services.AddStackExchangeRedisCache(options =>
         {

@@ -30,6 +30,7 @@ public static class ApesDbObservabilityExtensions
                 tracing
                     .AddSource(ApesDbTelemetry.ActivitySourceName)
                     .AddSource("Npgsql")
+                    .AddEntityFrameworkCoreInstrumentation()
                     .AddAspNetCoreInstrumentation(options =>
                     {
                         options.RecordException = true;
@@ -42,6 +43,7 @@ public static class ApesDbObservabilityExtensions
                         };
                     })
                     .AddHttpClientInstrumentation(options => options.RecordException = true)
+                    .AddRedisInstrumentation()
                     .AddOtlpExporter();
             })
             .WithMetrics(metrics =>

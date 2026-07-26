@@ -37,6 +37,19 @@ services:
     volumes:
       - redis-data:/data
 
+  observability:
+    image: grafana/otel-lgtm:0.29.2
+    container_name: apesdb-observability
+    ports:
+      - "3000:3000"
+      - "4317:4317"
+      - "4318:4318"
+    volumes:
+      - ./observability/grafana:/otel-lgtm/grafana/conf/provisioning/dashboards/apesdb:ro
+      - ./observability/grafana-provisioning.yml:/otel-lgtm/grafana/conf/provisioning/dashboards/apesdb.yml:ro
+      - observability-data:/data
+
 volumes:
   postgres-data:
   redis-data:
+  observability-data:

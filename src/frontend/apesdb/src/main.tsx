@@ -6,8 +6,10 @@ import { ThemeProvider, Toaster } from "@apesdb/ui";
 import { AuthGate, AuthProvider } from "./auth-context";
 import { registerPwaUpdateListener } from "./register-pwa-update-listener";
 import { router } from "./router";
+import { registerTelemetry } from "./telemetry";
 import "./styles.css";
 
+registerTelemetry();
 registerPwaUpdateListener();
 
 const queryClient = new QueryClient();
