@@ -20,7 +20,7 @@ public sealed class CatalogSyncJobs
         _popularitySynchronizer = popularitySynchronizer;
     }
 
-    [TickerFunction(CatalogSyncFunctions.ScheduleDaily, cronExpression: "0 2 * * *", maxConcurrency: 1)]
+    [TickerFunction(CatalogSyncFunctions.ScheduleDaily, cronExpression: "0 3 * * *", maxConcurrency: 1)]
     public Task ScheduleDailyAsync(TickerFunctionContext context, CancellationToken cancellationToken)
     {
         context.CronOccurrenceOperations?.SkipIfAlreadyRunning();
