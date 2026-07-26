@@ -11,7 +11,7 @@ spec:
     branch: main
     path: observability/grafana
   connection:
-    name: aperbase-github
+    name: Grafana-2026-07-26-4xdph1
   sync:
     enabled: true
     intervalSeconds: 60

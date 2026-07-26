@@ -8,7 +8,7 @@ Grafana Git Sync watches `observability/grafana` on the `main` branch and places
 
 Before running the setup workflow:
 
-1. Create an `aperbase-github` GitHub App connection in Grafana under **Administration > General > Provisioning**. Install the app for `The-Aperbase/ApesDb`.
+1. Create the GitHub App connection in Grafana under **Administration > General > Provisioning**. The current connection is named `Grafana-2026-07-26-4xdph1` and is installed for `The-Aperbase/ApesDb`.
 2. Create a Grafana service account with sufficient permission to manage provisioning repositories.
 3. Add `GRAFANA_SERVICE_ACCOUNT_TOKEN` as a GitHub Actions secret.
 4. Ensure the existing `TS_OAUTH_CLIENT_ID` and `TS_AUDIENCE` organization secrets are available to this repository.
