@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { getRouteApi, Link, Navigate, useNavigate } from "@tanstack/react-router";
+import { getRouteApi, Navigate, useNavigate } from "@tanstack/react-router";
 import {
   Avatar,
   AvatarFallback,
@@ -11,12 +11,13 @@ import {
   ItemTitle,
   Skeleton,
 } from "@apesdb/ui";
-import { Gamepad2, Library, Pencil, RefreshCw, Trash2 } from "lucide-react";
+import { Library, Pencil, Plus, RefreshCw, Trash2 } from "lucide-react";
 import { formatDate } from "../../../lib/date";
 import { gameCountLabel } from "../board-labels";
 import type { BoardDetails } from "../boards.schemas";
 import { DeleteBoardDialog } from "../delete-board/delete-board-dialog";
 import { EditBoardDialog } from "../edit-board/edit-board-dialog";
+import { BoardGamePickerDialog } from "./board-game-picker-dialog";
 import { BoardKanban } from "./board-kanban";
 import { useBoardDetails } from "./use-board-details";
 
@@ -43,12 +44,23 @@ function BoardDetailsSkeleton() {
   );
 }
 
+function AddGameButton({ onClick }: { onClick: () => void }) {
+  return (
+    <Button onClick={onClick} type="button">
+      <Plus data-icon="inline-start" />
+      Add game
+    </Button>
+  );
+}
+
 function BoardHeader({
   board,
+  onAddGame,
   onEdit,
   onDelete,
 }: {
   board: BoardDetails;
+  onAddGame: () => void;
   onEdit: () => void;
   onDelete: () => void;
 }) {
@@ -67,6 +79,7 @@ function BoardHeader({
         </p>
       </div>
       <div className="flex items-center gap-2">
+        <AddGameButton onClick={onAddGame} />
         <Button onClick={onEdit} type="button" variant="outline">
           <Pencil data-icon="inline-start" />
           Edit
@@ -83,6 +96,7 @@ function BoardHeader({
 export function BoardDetailsPage() {
   const { boardId } = routeApi.useParams();
   const boardDetails = useBoardDetails(boardId);
+  const [isGamePickerOpen, setIsGamePickerOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const navigate = useNavigate();
@@ -130,24 +144,27 @@ export function BoardDetailsPage() {
       <div className="mx-auto flex min-h-0 w-full max-w-7xl flex-1 flex-col gap-4">
         <BoardHeader
           board={board}
+          onAddGame={() => setIsGamePickerOpen(true)}
           onEdit={() => setIsEditDialogOpen(true)}
           onDelete={() => setIsDeleteDialogOpen(true)}
         />
         {board.games.length === 0 ? (
-          <Item className="min-h-60 justify-center text-center" variant="outline">
-            <ItemContent className="items-center">
+          <Item className="min-h-60 flex-col justify-center text-center" variant="outline">
+            <ItemContent className="flex-none items-center">
               <ItemTitle>No games yet</ItemTitle>
-              <ItemDescription>Add games to this board from the games page.</ItemDescription>
+              <ItemDescription>Add games directly to this board.</ItemDescription>
             </ItemContent>
-            <Button render={<Link to="/games" />} type="button" variant="outline">
-              <Gamepad2 data-icon="inline-start" />
-              Browse games
-            </Button>
+            <AddGameButton onClick={() => setIsGamePickerOpen(true)} />
           </Item>
         ) : (
           <BoardKanban board={board} />
         )}
       </div>
+      <BoardGamePickerDialog
+        board={board}
+        open={isGamePickerOpen}
+        onOpenChange={setIsGamePickerOpen}
+      />
       <EditBoardDialog board={board} open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen} />
       <DeleteBoardDialog
         board={board}
