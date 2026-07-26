@@ -12,6 +12,11 @@ export const gamesPageSize = 50;
 
 const lookupResponseSchema = z.array(gameLookupValueSchema);
 
+type GamePickerRequest = {
+  page: number;
+  search: string;
+};
+
 function appendIds(params: URLSearchParams, key: string, values: number[]) {
   const sanitized = [...new Set(values.filter((value) => Number.isInteger(value) && value >= 0))];
   sanitized.forEach((value) => params.append(key, value.toString()));
@@ -44,6 +49,14 @@ export function createGamesRequestUrl(filters: GameFilters): string {
   }
 
   params.set("page", Math.max(1, filters.page).toString());
+  params.set("pageSize", gamesPageSize.toString());
+  return `/api/games?${params.toString()}`;
+}
+
+export function createGamePickerRequestUrl(request: GamePickerRequest): string {
+  const params = new URLSearchParams();
+  appendText(params, "search", request.search);
+  params.set("page", Math.max(1, request.page).toString());
   params.set("pageSize", gamesPageSize.toString());
   return `/api/games?${params.toString()}`;
 }
