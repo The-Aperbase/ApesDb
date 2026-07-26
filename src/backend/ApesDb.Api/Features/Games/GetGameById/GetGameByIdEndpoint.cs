@@ -251,6 +251,7 @@ public sealed class GetGameByIdEndpoint : Endpoint<GetGameByIdRequest, GetGameBy
 
         var gameQuery = _dbContext
             .Games.AsNoTracking()
+            .AsSplitQuery()
             .Where(game => game.Id == request.Id)
             .Select(game => new GetGameByIdResponse(
                 game.Id,
