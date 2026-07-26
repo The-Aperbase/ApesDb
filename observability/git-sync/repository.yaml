@@ -1,0 +1,20 @@
+apiVersion: provisioning.grafana.app/v0alpha1
+kind: Repository
+metadata:
+  name: apesdb-dashboards
+  namespace: default
+spec:
+  title: ApesDb
+  type: github
+  github:
+    url: https://github.com/The-Aperbase/ApesDb
+    branch: main
+    path: observability/grafana
+  connection:
+    name: aperbase-github
+  sync:
+    enabled: true
+    intervalSeconds: 60
+    target: folder
+  workflows:
+    - branch

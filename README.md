@@ -206,4 +206,6 @@ The deployment also supports these optional observability settings:
 
 Deploy the observability stack before the first ApesDb deployment so it can create the shared `apesdb-telemetry` overlay network. The API and worker export OTLP traces, metrics, and logs only when `OTEL_EXPORTER_OTLP_ENDPOINT` is configured.
 
+Application-owned Grafana dashboards and Git Sync setup instructions are in [`observability/`](observability/README.md).
+
 The API and worker read database settings from `Database:*`; the worker reads IGDB credentials from `Igdb:*`; the API also reads cache settings from `Cache:*`, while the worker reads TickerQ dashboard settings from `TickerQ:Dashboard:*`. In Docker Compose, use the equivalent double-underscore environment variable names. The deployment compose file fails fast when required secrets are missing.
