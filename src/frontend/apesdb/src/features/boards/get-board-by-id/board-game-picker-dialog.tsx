@@ -107,7 +107,6 @@ export function BoardGamePickerDialog({ board, open, onOpenChange }: BoardGamePi
     try {
       await addGame.mutateAsync(game.id);
       toast.success(`${game.name} added to ${board.name}`);
-      onOpenChange(false);
     } catch (error) {
       toast.error(
         error instanceof Error ? error.message : `Could not add ${game.name}. Try again.`,
