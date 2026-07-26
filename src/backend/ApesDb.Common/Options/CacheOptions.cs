@@ -1,6 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 
-namespace ApesDb.Api.Options;
+namespace ApesDb.Common.Options;
 
 public sealed class CacheOptions
 {

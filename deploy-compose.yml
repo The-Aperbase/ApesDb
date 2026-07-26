@@ -27,6 +27,7 @@ services:
       Igdb__ClientSecret: ${IGDB_CLIENT_SECRET:?IGDB_CLIENT_SECRET is required}
       Cache__ConnectionString: redis:6379
       Cache__Password: ${REDIS_PASSWORD:?REDIS_PASSWORD is required}
+      TickerQ__Recovery__HeartbeatIntervalSeconds: "10"
       TickerQ__Dashboard__BasePath: /tickerq/dashboard
       TickerQ__Dashboard__Username: ${TICKERQ_DASHBOARD_USERNAME:?TICKERQ_DASHBOARD_USERNAME is required}
       TickerQ__Dashboard__Password: ${TICKERQ_DASHBOARD_PASSWORD:?TICKERQ_DASHBOARD_PASSWORD is required}

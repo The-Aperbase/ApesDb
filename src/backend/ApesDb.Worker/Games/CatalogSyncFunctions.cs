@@ -6,6 +6,7 @@ internal static class CatalogSyncFunctions
 {
     public const string ScheduleDaily = "schedule-daily-igdb-sync";
     public const string StartFull = "start-full-igdb-sync";
+    public const string Resume = "resume-igdb-sync";
     public const string GameTypes = "sync-igdb-game-types";
     public const string GameStatuses = "sync-igdb-game-statuses";
     public const string Genres = "sync-igdb-genres";
@@ -62,3 +63,5 @@ internal static class CatalogSyncFunctions
 }
 
 public sealed record CatalogSyncJobRequest(Guid RunId);
+
+public sealed record CatalogSyncResumeRequest(Guid RunId);

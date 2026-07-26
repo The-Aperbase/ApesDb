@@ -12,7 +12,6 @@ namespace ApesDb.Worker.Games;
 public sealed class CatalogStageRunner : ICatalogStageRunner
 {
     private const int PageSize = 500;
-    private const int FinalRetryCount = 3;
 
     private static readonly BulkConfig UpsertConfig = new()
     {
@@ -86,9 +85,13 @@ public sealed class CatalogStageRunner : ICatalogStageRunner
         {
             await RunCoreAsync(run, stage, cancellationToken);
         }
+        catch (OperationCanceledException)
+        {
+            throw;
+        }
         catch (Exception exception)
         {
-            await RecordFailureAsync(runId, stageKind, retryCount, exception, cancellationToken);
+            await RecordFailureAsync(runId, stageKind, retryCount, exception, CancellationToken.None);
             throw;
         }
     }
@@ -1162,7 +1165,7 @@ public sealed class CatalogStageRunner : ICatalogStageRunner
         stage.UpdatedAt = now;
         run.Error = $"{stageKind}: {exception.Message}";
         run.UpdatedAt = now;
-        if (retryCount >= FinalRetryCount)
+        if (retryCount >= CatalogSyncRetryPolicy.MaxRetries)
         {
             run.Status = IgdbSyncRunStatus.Failed;
         }

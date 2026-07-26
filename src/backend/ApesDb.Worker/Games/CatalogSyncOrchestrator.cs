@@ -15,7 +15,6 @@ public sealed class CatalogSyncOrchestrator : ICatalogSyncOrchestrator
     private const string UnfinishedRunIndex = "UX_IgdbSyncRuns_Unfinished";
 
     private static readonly TimeSpan CatalogConsistencyLag = TimeSpan.FromMinutes(5);
-    private static readonly int[] RetryIntervals = [30, 120, 600];
 
     private static readonly IgdbSyncStageKind[] BootstrapStages =
     [
@@ -94,6 +93,12 @@ public sealed class CatalogSyncOrchestrator : ICatalogSyncOrchestrator
         var unfinished = await FindUnfinishedRunAsync(cancellationToken);
         if (unfinished is not null)
         {
+            if (unfinished.Status == IgdbSyncRunStatus.Failed)
+            {
+                LogFailedRunRequiresResume(unfinished);
+                return;
+            }
+
             await EnsureRunScheduledAsync(unfinished, cancellationToken);
             return;
         }
@@ -138,11 +143,50 @@ public sealed class CatalogSyncOrchestrator : ICatalogSyncOrchestrator
         );
     }
 
+    public async Task ResumeFailedAsync(Guid runId, CancellationToken cancellationToken = default)
+    {
+        var run = await _dbContext.IgdbSyncRuns.SingleOrDefaultAsync(value => value.Id == runId, cancellationToken);
+        if (run is null)
+        {
+            throw new InvalidOperationException($"IGDB run {runId} does not exist.");
+        }
+
+        if (run.Status != IgdbSyncRunStatus.Failed)
+        {
+            throw new InvalidOperationException(
+                $"IGDB run {run.Id} cannot be resumed because its status is {run.Status}, not Failed."
+            );
+        }
+
+        var stage = await _dbContext
+            .IgdbSyncStages.Where(value => value.RunId == run.Id && value.Status != IgdbSyncStageStatus.Succeeded)
+            .OrderBy(value => value.Order)
+            .FirstOrDefaultAsync(cancellationToken);
+        if (stage is null)
+        {
+            throw new InvalidDataException($"Failed IGDB run {run.Id} has no incomplete stage to resume.");
+        }
+
+        await ScheduleStageAsync(run, stage, cancellationToken, requireFailedRun: true);
+        _logger.LogInformation(
+            "Resumed failed IGDB run {RunId} at stage {Stage} from cursor {Cursor}.",
+            run.Id,
+            stage.Kind,
+            stage.PageCursor
+        );
+    }
+
     public async Task EnsureIncrementalAsync(CancellationToken cancellationToken = default)
     {
         var unfinished = await FindUnfinishedRunAsync(cancellationToken);
         if (unfinished is not null)
         {
+            if (unfinished.Status == IgdbSyncRunStatus.Failed)
+            {
+                LogFailedRunRequiresResume(unfinished);
+                return;
+            }
+
             await EnsureRunScheduledAsync(unfinished, cancellationToken);
             return;
         }
@@ -181,7 +225,7 @@ public sealed class CatalogSyncOrchestrator : ICatalogSyncOrchestrator
         }
         catch (Exception exception) when (exception is not OperationCanceledException)
         {
-            await RecordCompletionFailureAsync(runId, retryCount, exception, cancellationToken);
+            await RecordCompletionFailureAsync(runId, retryCount, exception, CancellationToken.None);
             throw;
         }
     }
@@ -397,7 +441,12 @@ public sealed class CatalogSyncOrchestrator : ICatalogSyncOrchestrator
         }
     }
 
-    private async Task ScheduleStageAsync(IgdbSyncRun run, IgdbSyncStage stage, CancellationToken cancellationToken)
+    private async Task ScheduleStageAsync(
+        IgdbSyncRun run,
+        IgdbSyncStage stage,
+        CancellationToken cancellationToken,
+        bool requireFailedRun = false
+    )
     {
         var connectionString = _dbContext.Database.GetConnectionString();
         if (string.IsNullOrWhiteSpace(connectionString))
@@ -410,7 +459,7 @@ public sealed class CatalogSyncOrchestrator : ICatalogSyncOrchestrator
         await SetStageSchedulingLockAsync(lockConnection, stage.Id, acquire: true, cancellationToken);
         try
         {
-            await ScheduleStageCoreAsync(run, stage, cancellationToken);
+            await ScheduleStageCoreAsync(run, stage, cancellationToken, requireFailedRun);
         }
         finally
         {
@@ -418,7 +467,12 @@ public sealed class CatalogSyncOrchestrator : ICatalogSyncOrchestrator
         }
     }
 
-    private async Task ScheduleStageCoreAsync(IgdbSyncRun run, IgdbSyncStage stage, CancellationToken cancellationToken)
+    private async Task ScheduleStageCoreAsync(
+        IgdbSyncRun run,
+        IgdbSyncStage stage,
+        CancellationToken cancellationToken,
+        bool requireFailedRun
+    )
     {
         await _dbContext.Entry(run).ReloadAsync(cancellationToken);
         if (_dbContext.Entry(stage).State == EntityState.Detached)
@@ -427,6 +481,13 @@ public sealed class CatalogSyncOrchestrator : ICatalogSyncOrchestrator
         }
 
         await _dbContext.Entry(stage).ReloadAsync(cancellationToken);
+        if (requireFailedRun && run.Status != IgdbSyncRunStatus.Failed)
+        {
+            throw new InvalidOperationException(
+                $"IGDB run {run.Id} changed to {run.Status} before the failed stage could be resumed."
+            );
+        }
+
         if (run.Status == IgdbSyncRunStatus.Succeeded || stage.Status == IgdbSyncStageStatus.Succeeded)
         {
             return;
@@ -437,6 +498,14 @@ public sealed class CatalogSyncOrchestrator : ICatalogSyncOrchestrator
         {
             if (IsActive(existingTicker.Status))
             {
+                if (requireFailedRun)
+                {
+                    throw new InvalidOperationException(
+                        $"IGDB run {run.Id} cannot be resumed while ticker {existingTicker.Id} is "
+                            + $"{existingTicker.Status} on node {existingTicker.LockHolder ?? "unknown"}."
+                    );
+                }
+
                 return;
             }
 
@@ -468,14 +537,15 @@ public sealed class CatalogSyncOrchestrator : ICatalogSyncOrchestrator
         stage.UpdatedAt = now;
         await _dbContext.SaveChangesAsync(cancellationToken);
 
+        var retryIntervals = CatalogSyncRetryPolicy.CreateIntervals();
         var ticker = new TimeTickerEntity
         {
             Id = stage.Id,
             Function = CatalogSyncFunctions.ForStage(stage.Kind),
             Description = $"IGDB {run.Mode} run {run.Id}: {stage.Kind}",
             Request = TickerHelper.CreateTickerRequest(new CatalogSyncJobRequest(run.Id)),
-            Retries = RetryIntervals.Length,
-            RetryIntervals = RetryIntervals,
+            Retries = CatalogSyncRetryPolicy.MaxRetries,
+            RetryIntervals = retryIntervals,
             ExecutionTime = now,
         };
 
@@ -561,7 +631,7 @@ public sealed class CatalogSyncOrchestrator : ICatalogSyncOrchestrator
         stage.UpdatedAt = now;
         run.Error = $"{IgdbSyncStageKind.Complete}: {exception.Message}";
         run.UpdatedAt = now;
-        if (retryCount >= RetryIntervals.Length)
+        if (retryCount >= CatalogSyncRetryPolicy.MaxRetries)
         {
             run.Status = IgdbSyncRunStatus.Failed;
         }
@@ -599,6 +669,15 @@ public sealed class CatalogSyncOrchestrator : ICatalogSyncOrchestrator
     {
         return new InvalidOperationException(
             $"Cannot start a full IGDB sync while run {run.Id} ({run.Mode}, {run.Status}) is unfinished."
+        );
+    }
+
+    private void LogFailedRunRequiresResume(IgdbSyncRun run)
+    {
+        _logger.LogWarning(
+            "IGDB run {RunId} is failed and will remain stopped until {ResumeFunction} is invoked.",
+            run.Id,
+            CatalogSyncFunctions.Resume
         );
     }
 }

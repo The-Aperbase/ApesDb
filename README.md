@@ -153,6 +153,57 @@ docker compose up -d
 Local Redis requires the password `apesdb`. The API's committed local defaults match this through `Cache:ConnectionString=localhost:6379` and `Cache:Password=apesdb`.
 The worker serves the TickerQ dashboard at `http://localhost:8081/tickerq/dashboard` with local development credentials `admin` / `apesdb`.
 
+### TickerQ worker recovery
+
+The worker keeps TickerQ jobs in PostgreSQL and uses Redis only for node heartbeats and dead-node coordination. Each worker has a unique node identifier. With the committed 10-second heartbeat interval, a surviving worker normally releases and resumes work owned by a killed container within approximately 40 seconds.
+
+Recovered jobs use at-least-once execution. The IGDB catalog stages commit each page and its cursor together, so a resumed stage continues from the last committed cursor. A normal exception follows the configured retries of 30 seconds, 2 minutes, and 10 minutes. After the final retry, the run remains failed across worker restarts and daily scheduling.
+
+Resume a terminally failed run from the authenticated TickerQ dashboard by invoking `resume-igdb-sync` with:
+
+```json
+{
+  "runId": "00000000-0000-0000-0000-000000000000"
+}
+```
+
+The command accepts only a failed run with no active stage ticker. It clears the run and stage errors and creates a fresh ticker retry sequence without resetting the saved cursor or progress counters.
+
+Deployments created before Redis heartbeat coordination may already contain a ticker owned by a container that no longer exists. Recover those rows once during the first rollout:
+
+1. Scale every worker replica to zero and confirm no worker process is running.
+2. Preview the catalog tickers that will be released:
+
+   ```sql
+   SELECT ticker."Id", ticker."Function", ticker."LockHolder", ticker."LockedAt"
+   FROM worker."TimeTickers" AS ticker
+   INNER JOIN public."IgdbSyncStages" AS stage ON stage."Id" = ticker."Id"
+   WHERE ticker."Status" = 2
+     AND stage."Status" = 'Running';
+   ```
+
+3. If every returned owner is stopped, release only those catalog tickers:
+
+   ```sql
+   BEGIN;
+
+   UPDATE worker."TimeTickers" AS ticker
+   SET "Status" = 0,
+       "LockHolder" = NULL,
+       "LockedAt" = NULL,
+       "UpdatedAt" = now()
+   FROM public."IgdbSyncStages" AS stage
+   WHERE stage."Id" = ticker."Id"
+     AND ticker."Status" = 2
+     AND stage."Status" = 'Running';
+
+   COMMIT;
+   ```
+
+4. Restore the worker replicas. The existing stage state remains `Running` until the released ticker resumes it from the saved cursor.
+
+Do not run this procedure while any worker is live; heartbeat cleanup handles all subsequent container failures automatically.
+
 Stop services:
 
 ```bash
@@ -199,4 +250,4 @@ The production compose file expects the following environment variables:
 - `TICKERQ_DASHBOARD_USERNAME`
 - `TICKERQ_DASHBOARD_PASSWORD`
 
-The API and worker read database settings from `Database:*`; the worker reads IGDB credentials from `Igdb:*`; the API also reads cache settings from `Cache:*`, while the worker reads TickerQ dashboard settings from `TickerQ:Dashboard:*`. In Docker Compose, use the equivalent double-underscore environment variable names. The deployment compose file fails fast when required secrets are missing.
+The API and worker read database settings from `Database:*`; the worker reads IGDB credentials from `Igdb:*`; both services read Redis settings from `Cache:*`; and the worker reads TickerQ recovery and dashboard settings from `TickerQ:Recovery:*` and `TickerQ:Dashboard:*`. In Docker Compose, use the equivalent double-underscore environment variable names. The deployment compose file fails fast when required secrets are missing.

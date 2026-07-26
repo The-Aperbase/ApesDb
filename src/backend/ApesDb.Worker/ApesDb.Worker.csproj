@@ -6,6 +6,7 @@
   <ItemGroup>
     <PackageReference Include="EFCore.BulkExtensions" />
     <PackageReference Include="TickerQ" />
+    <PackageReference Include="TickerQ.Caching.StackExchangeRedis" />
     <PackageReference Include="TickerQ.Dashboard" />
     <PackageReference Include="TickerQ.EntityFrameworkCore" />
   </ItemGroup>
