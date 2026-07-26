@@ -42,11 +42,6 @@ builder
 
 builder.Services.AddTickerQ(options =>
 {
-    options.ConfigureScheduler(scheduler =>
-    {
-        scheduler.SchedulerTimeZone = TimeZoneInfo.FindSystemTimeZoneById("Europe/Oslo");
-    });
-
     options.AddOperationalStore(efCoreOptions =>
     {
         efCoreOptions.UseTickerQDbContext<WorkerTickerQDbContext>(
