@@ -4,20 +4,23 @@ ApesDb owns its application dashboards in this directory. The shared LGTM deploy
 
 ## Git Sync setup
 
-Grafana Git Sync watches `observability/grafana` on the `main` branch and places its resources in an `ApesDb` folder. The repository configuration is stored separately in `observability/git-sync` so Grafana does not try to interpret it as a dashboard.
+Grafana owns the GitHub connection and repository sync configuration. ApesDb owns only the dashboard resources under `observability/grafana`.
 
-Before running the setup workflow:
+Configure the repository once in Grafana at `https://grafana.owencross.com` under **Administration > General > Provisioning**:
 
-1. Create the GitHub App connection in Grafana under **Administration > General > Provisioning**. The current connection is named `Grafana-2026-07-26-4xdph1` and is installed for `The-Aperbase/ApesDb`.
-2. Create a Grafana service account with sufficient permission to manage provisioning repositories.
-3. Add `GRAFANA_SERVICE_ACCOUNT_TOKEN` as a GitHub Actions secret.
-4. Ensure the existing `TS_OAUTH_CLIENT_ID` and `TS_AUDIENCE` organization secrets are available to this repository.
-5. Run the **Grafana Git Sync** workflow with `apply` disabled to validate the resources and connection.
-6. Run it again with `apply` enabled to create or update the `apesdb-dashboards` repository resource.
+1. Select the existing GitHub App connection named `Grafana-2026-07-26-4xdph1`.
+2. Set the repository URL to `https://github.com/The-Aperbase/ApesDb`.
+3. Set the branch to `main`.
+4. Set the repository path to `observability/grafana`.
+5. Use folder sync with the display name `ApesDb`.
+6. Set the sync interval to 60 seconds.
+7. Enable the branch and pull-request workflow, but disable direct pushes to `main`.
+8. Leave dashboard previews disabled unless a public image renderer is configured.
+9. Start synchronization and confirm that Grafana reports the repository as healthy.
 
-Git Sync polls every 60 seconds. It may edit dashboards through branches and pull requests, but it cannot commit directly to `main`.
+After setup, Grafana polls the repository and applies dashboard changes merged into `main`. Dashboard edits made in Grafana use the GitHub App to create a branch and pull request. No GitHub Actions workflow, Grafana service-account token, or Tailscale route is required for synchronization.
 
-Grafana's public root URL is `https://grafana.owencross.com`. For automation, the workflow maps `grafana.owencross.com` to `dokbox`'s Tailscale address and connects to `http://grafana.owencross.com`. This sends traffic directly to Dokploy's Traefik listener over Tailscale while retaining the hostname required by its Grafana route; it does not pass through Cloudflare.
+The GitHub App is installed only for `The-Aperbase/ApesDb`. Grafana stores its App ID, installation ID, and private key; none of those credentials belong in this repository.
 
 ## Game-list dashboard
 
