@@ -1,0 +1,81 @@
+name: Grafana Git Sync
+
+on:
+  workflow_dispatch:
+    inputs:
+      apply:
+        description: Apply the Git Sync repository configuration after validation
+        required: true
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+concurrency:
+  group: grafana-git-sync
+  cancel-in-progress: false
+
+jobs:
+  configure:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Connect to Tailscale
+        uses: tailscale/github-action@v4
+        with:
+          oauth-client-id: ${{ secrets.TS_OAUTH_CLIENT_ID }}
+          audience: ${{ secrets.TS_AUDIENCE }}
+          tags: tag:ci
+          ping: dokbox
+
+      - name: Route Grafana through Tailscale
+        env:
+          GRAFANA_HOST: grafana.owencross.com
+        run: |
+          read -r dokbox_ip _ < <(getent ahostsv4 dokbox)
+          test -n "${dokbox_ip}"
+          printf '%s %s\n' "${dokbox_ip}" "${GRAFANA_HOST}" | sudo tee -a /etc/hosts
+
+      - name: Verify Grafana route
+        env:
+          GRAFANA_HOST: grafana.owencross.com
+        run: |
+          status="$(curl -sS -o /tmp/grafana-health.json -w '%{http_code}' "http://${GRAFANA_HOST}/api/health")"
+          test "${status}" = "200"
+          node -e 'const health = require("/tmp/grafana-health.json"); if (health.database !== "ok") process.exit(1)'
+
+      - name: Install gcx
+        env:
+          GCX_VERSION: 0.6.0
+          GCX_SHA256: 5e76c064f14d9ec360cc48c46251b06a47762ab0dc755e4275e14ce2f67e8dbe
+        run: |
+          archive="gcx_${GCX_VERSION}_linux_amd64.tar.gz"
+          curl -fsSLo "/tmp/${archive}" "https://github.com/grafana/gcx/releases/download/v${GCX_VERSION}/${archive}"
+          printf '%s  %s\n' "${GCX_SHA256}" "/tmp/${archive}" | sha256sum --check -
+          tar -xzf "/tmp/${archive}" -C /tmp gcx
+          sudo install /tmp/gcx /usr/local/bin/gcx
+          gcx --version
+
+      - name: Validate Grafana resources
+        env:
+          GRAFANA_SERVER: http://grafana.owencross.com
+          GRAFANA_ORG_ID: "1"
+          GRAFANA_TOKEN: ${{ secrets.GRAFANA_SERVICE_ACCOUNT_TOKEN }}
+        run: |
+          gcx config check
+          gcx resources validate --path observability/grafana --on-error abort
+          gcx resources push --path observability/git-sync --dry-run --on-error abort
+
+      - name: Configure Git Sync
+        if: ${{ inputs.apply }}
+        env:
+          GRAFANA_SERVER: http://grafana.owencross.com
+          GRAFANA_ORG_ID: "1"
+          GRAFANA_TOKEN: ${{ secrets.GRAFANA_SERVICE_ACCOUNT_TOKEN }}
+        run: |
+          gcx resources push --path observability/git-sync --on-error abort
+          gcx resources get repository/apesdb-dashboards --output yaml
