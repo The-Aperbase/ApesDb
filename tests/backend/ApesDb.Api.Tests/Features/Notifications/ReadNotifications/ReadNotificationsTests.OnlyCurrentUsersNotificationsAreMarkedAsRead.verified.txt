@@ -26,10 +26,21 @@
             ReadAt: DateTime_1,
             IsUnread: false,
             IsActionable: false
+          },
+          {
+            Id: Guid_3,
+            Type: CalendarInvite,
+            ResourceId: Guid_4,
+            CreatedAt: DateTime_2,
+            ReadAt: DateTime_1,
+            IsUnread: false,
+            IsActionable: true
           }
         ],
         Metadata: {
-          TotalCount: 1
+          TotalCount: 2,
+          ActionableCount: 1,
+          AttentionCount: 1
         }
       }
     }
@@ -48,9 +59,9 @@
     Content: {
       Items: [
         {
-          Id: Guid_3,
+          Id: Guid_5,
           Type: CatalogImportCompleted,
-          ResourceId: Guid_4,
+          ResourceId: Guid_6,
           CreatedAt: DateTime_1,
           IsUnread: true,
           IsActionable: false

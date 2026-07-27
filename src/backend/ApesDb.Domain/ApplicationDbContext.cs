@@ -1,4 +1,5 @@
 using ApesDb.Domain.Entities.Boards;
+using ApesDb.Domain.Entities.Calendar;
 using ApesDb.Domain.Entities.Games;
 using ApesDb.Domain.Entities.IgdbSync;
 using ApesDb.Domain.Entities.Notifications;
@@ -23,6 +24,12 @@ public sealed class ApplicationDbContext : DbContext
     public DbSet<BoardEntry> BoardEntries => Set<BoardEntry>();
 
     public DbSet<BoardEntryState> BoardEntryStates => Set<BoardEntryState>();
+
+    public DbSet<CalendarEvent> CalendarEvents => Set<CalendarEvent>();
+
+    public DbSet<CalendarInvitation> CalendarInvitations => Set<CalendarInvitation>();
+
+    public DbSet<CalendarConnection> CalendarConnections => Set<CalendarConnection>();
 
     public DbSet<Game> Games => Set<Game>();
 

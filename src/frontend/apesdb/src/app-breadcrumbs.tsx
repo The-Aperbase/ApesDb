@@ -12,7 +12,7 @@ import { HomeIcon } from "lucide-react";
 import { useBoardDetails } from "./features/boards/get-board-by-id/use-board-details";
 import { useGameDetails } from "./features/games/get-game-by-id/use-game-details";
 
-type BreadcrumbDestination = "/" | "/boards" | "/games";
+type BreadcrumbDestination = "/" | "/boards" | "/calendar" | "/games";
 type BreadcrumbIcon = "home";
 
 type BreadcrumbLabelSegment = {

@@ -1,0 +1,84 @@
+﻿{
+  InviteResponse: {
+    Response: {
+      StatusCode: 202,
+      ReasonPhrase: Accepted,
+      Version: 1.1
+    }
+  },
+  SharingResponse: {
+    Response: {
+      StatusCode: 200,
+      ReasonPhrase: OK,
+      Version: 1.1,
+      ContentHeaders: {
+        Content-Type: [
+          application/json; charset=utf-8
+        ]
+      }
+    },
+    Content: {
+      Connections: [
+        {
+          Id: Guid_1,
+          User: {
+            Id: Guid_2,
+            Name: Mason Member,
+            PictureUrl: https://images.apesdb.test/member.png
+          },
+          CreatedAt: DateTimeOffset_1
+        }
+      ],
+      OutgoingInvitations: [
+        {
+          Id: Guid_3,
+          Email: outsider@apesdb.test,
+          CreatedAt: DateTimeOffset_2
+        },
+        {
+          Id: Guid_4,
+          Email: invitee@apesdb.test,
+          CreatedAt: DateTimeOffset_1
+        }
+      ]
+    }
+  },
+  NotificationsResponse: {
+    Response: {
+      StatusCode: 200,
+      ReasonPhrase: OK,
+      Version: 1.1,
+      ContentHeaders: {
+        Content-Type: [
+          application/json; charset=utf-8
+        ]
+      }
+    },
+    Content: {
+      Items: [
+        {
+          Id: Guid_5,
+          Type: CalendarInvite,
+          ResourceId: Guid_3,
+          CreatedAt: DateTime_1,
+          IsUnread: true,
+          IsActionable: true
+        },
+        {
+          Id: Guid_6,
+          Type: CatalogImportCompleted,
+          ResourceId: Guid_7,
+          CreatedAt: DateTime_1,
+          IsUnread: true,
+          IsActionable: false
+        }
+      ],
+      Metadata: {
+        TotalCount: 2,
+        UnreadCount: 2,
+        ActionableCount: 1,
+        AttentionCount: 2
+      }
+    }
+  }
+}

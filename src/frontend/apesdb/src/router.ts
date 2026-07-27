@@ -2,12 +2,13 @@ import { createRouter, defaultParseSearch } from "@tanstack/react-router";
 import { addAppShellRoutes } from "./features/app-shell/app-shell-routes";
 import { addAuthRoutes } from "./features/auth/auth-routes";
 import { addBoardsRoutes } from "./features/boards/boards-routes";
+import { addCalendarRoutes } from "./features/calendar/calendar-routes";
 import { addGamesRoutes } from "./features/games/games-routes";
 import { addHomeRoutes } from "./features/home/home-routes";
 import { addPrivacyRoutes } from "./features/privacy/privacy-routes";
 
 const routeTree = addAppShellRoutes(
-  [addHomeRoutes(), addGamesRoutes(), addBoardsRoutes()],
+  [addHomeRoutes(), addGamesRoutes(), addBoardsRoutes(), addCalendarRoutes()],
   [addAuthRoutes(), addPrivacyRoutes()],
 );
 

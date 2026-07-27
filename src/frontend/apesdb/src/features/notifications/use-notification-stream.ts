@@ -32,7 +32,7 @@ function parseEventData(event: Event): unknown {
   }
 }
 
-function showNotificationToast(openNotifications: () => void) {
+function showNotificationToast(notificationType: string, openNotifications: () => void) {
   const handleClick = () => {
     openNotifications();
     toast.dismiss(notificationToastId);
@@ -46,7 +46,9 @@ function showNotificationToast(openNotifications: () => void) {
       onClick: handleClick,
       type: "button",
     },
-    "You have a new notification.",
+    notificationType === "CalendarInvite"
+      ? "You have a new calendar invitation."
+      : "You have a new notification.",
   );
 
   toast(message, {
@@ -73,7 +75,7 @@ export function useNotificationStream(openNotifications: () => void) {
       queryClient.setQueryData<ListNotificationsResponse>(notificationQueryKeys.list, (current) =>
         withNotificationAdded(current, parsed.data),
       );
-      showNotificationToast(openNotifications);
+      showNotificationToast(parsed.data.type, openNotifications);
     };
 
     const onRead = (event: Event) => {

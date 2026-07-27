@@ -1,0 +1,76 @@
+﻿{
+  Response: {
+    StatusCode: 200,
+    ReasonPhrase: OK,
+    Version: 1.1,
+    ContentHeaders: {
+      Content-Type: [
+        application/json; charset=utf-8
+      ]
+    }
+  },
+  Content: {
+    Resources: [
+      {
+        Id: Guid_1,
+        Title: Mason Member,
+        PictureUrl: https://images.apesdb.test/member.png,
+        IsCurrentUser: true
+      },
+      {
+        Id: Guid_2,
+        Title: Olivia Owner,
+        PictureUrl: https://images.apesdb.test/owner.png,
+        IsCurrentUser: false
+      }
+    ],
+    Events: [
+      {
+        Id: Guid_3,
+        ResourceId: Guid_2,
+        Title: Recurring rota,
+        Start: DateTimeOffset_1,
+        End: DateTimeOffset_2,
+        AllDay: false,
+        TimeZoneId: Europe/Oslo,
+        Recurrence: {
+          Frequency: weekly,
+          Interval: 1,
+          Until: DateTimeOffset_3,
+          ByWeekday: [
+            MO,
+            WE
+          ],
+          WeekStart: MO
+        },
+        ReadOnly: true,
+        CreatedAt: DateTimeOffset_4,
+        UpdatedAt: DateTimeOffset_4
+      },
+      {
+        Id: Guid_4,
+        ResourceId: Guid_2,
+        Title: Office shift,
+        Start: DateTimeOffset_5,
+        End: DateTimeOffset_6,
+        AllDay: false,
+        TimeZoneId: Europe/Oslo,
+        ReadOnly: true,
+        CreatedAt: DateTimeOffset_4,
+        UpdatedAt: DateTimeOffset_4
+      },
+      {
+        Id: Guid_5,
+        ResourceId: Guid_1,
+        Title: Evening shift,
+        Start: DateTimeOffset_7,
+        End: DateTimeOffset_8,
+        AllDay: false,
+        TimeZoneId: Europe/London,
+        ReadOnly: false,
+        CreatedAt: DateTimeOffset_4,
+        UpdatedAt: DateTimeOffset_4
+      }
+    ]
+  }
+}
