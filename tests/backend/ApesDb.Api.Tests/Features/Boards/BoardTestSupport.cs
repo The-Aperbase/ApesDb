@@ -142,7 +142,6 @@ internal sealed record BoardGameContract(
     string? CoverSmallUrl,
     string? CoverLargeUrl,
     string? GameType,
-    string State,
     DateTime AddedAt
 );
 
@@ -152,7 +151,7 @@ internal sealed record BoardDetailsContract(
     DateTime CreatedAt,
     DateTime UpdatedAt,
     BoardPictureContract? Picture,
-    BoardGameContract[] Games
+    Dictionary<string, Dictionary<int, BoardGameContract>> Games
 )
 {
     public BoardDetailsSnapshot ToSnapshot(Guid? createdBoardId = null)
@@ -185,5 +184,5 @@ internal sealed record BoardDetailsSnapshot(
     DateTime CreatedAt,
     DateTime UpdatedAt,
     BoardPictureSnapshot? Picture,
-    BoardGameContract[] Games
+    Dictionary<string, Dictionary<int, BoardGameContract>> Games
 );

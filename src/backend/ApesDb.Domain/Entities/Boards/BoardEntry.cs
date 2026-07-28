@@ -25,6 +25,8 @@ public sealed class BoardEntry
 
     public BoardEntryState State { get; set; } = null!;
 
+    public int Position { get; set; }
+
     public DateTime AddedAt { get; init; }
 }
 
@@ -34,6 +36,16 @@ public sealed class BoardEntryConfiguration : IEntityTypeConfiguration<BoardEntr
     {
         entry.HasKey(value => new { value.BoardId, value.GameId });
         entry.HasIndex(value => value.GameId);
+        entry
+            .HasIndex(value => new
+            {
+                value.BoardId,
+                value.StateId,
+                value.Position,
+            })
+            .IsUnique()
+            .HasDatabaseName("UQ_BoardEntries_BoardId_StateId_Position");
+        entry.ToTable(table => table.HasCheckConstraint("CK_BoardEntries_Position_NonNegative", "\"Position\" >= 0"));
         entry.Property(value => value.AddedAt).HasDefaultValueSql("now()").ValueGeneratedOnAdd();
         entry
             .HasOne(value => value.Board)

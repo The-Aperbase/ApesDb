@@ -26,26 +26,28 @@
         ContentType: image/webp,
         ByteLength: 8
       },
-      Games: [
-        {
-          GameId: 11156,
-          Name: Horizon Zero Dawn,
-          CoverSmallUrl: https://images.igdb.com/igdb/image/upload/t_cover_small_2x/co2una.jpg,
-          CoverLargeUrl: https://images.igdb.com/igdb/image/upload/t_cover_big_2x/co2una.jpg,
-          GameType: Main Game,
-          State: in-progress,
-          AddedAt: DateTime_3
+      Games: {
+        completed: {
+          0: {
+            GameId: 492,
+            Name: Gears of War 3,
+            CoverSmallUrl: https://images.igdb.com/igdb/image/upload/t_cover_small_2x/co2a21.jpg,
+            CoverLargeUrl: https://images.igdb.com/igdb/image/upload/t_cover_big_2x/co2a21.jpg,
+            GameType: Main Game,
+            AddedAt: DateTime_3
+          }
         },
-        {
-          GameId: 492,
-          Name: Gears of War 3,
-          CoverSmallUrl: https://images.igdb.com/igdb/image/upload/t_cover_small_2x/co2a21.jpg,
-          CoverLargeUrl: https://images.igdb.com/igdb/image/upload/t_cover_big_2x/co2a21.jpg,
-          GameType: Main Game,
-          State: completed,
-          AddedAt: DateTime_4
+        in-progress: {
+          0: {
+            GameId: 11156,
+            Name: Horizon Zero Dawn,
+            CoverSmallUrl: https://images.igdb.com/igdb/image/upload/t_cover_small_2x/co2una.jpg,
+            CoverLargeUrl: https://images.igdb.com/igdb/image/upload/t_cover_big_2x/co2una.jpg,
+            GameType: Main Game,
+            AddedAt: DateTime_4
+          }
         }
-      ]
+      }
     }
   }
 }

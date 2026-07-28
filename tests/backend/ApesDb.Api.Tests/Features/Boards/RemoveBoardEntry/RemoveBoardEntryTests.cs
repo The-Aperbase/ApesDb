@@ -1,3 +1,4 @@
+using ApesDb.Api.Tests.Features.Boards.AddBoardEntry;
 using ApesDb.Api.Tests.Infrastructure.Authentication;
 using ApesDb.Api.Tests.Infrastructure.Factories;
 using ApesDb.Api.Tests.Infrastructure.Http;
@@ -28,7 +29,22 @@ public sealed class RemoveBoardEntryTests : IClassFixture<MutableEndpointApiFact
     public async Task OwnerCanRemoveEntryAndRepeatedRemovalIsNotFound()
     {
         using var client = ApiTestClient.CreateAuthenticated(_factory, TestUsers.Owner);
-        var url = BoardTestSupport.EntryUrl(BoardTestData.BacklogId, BoardEntryTestData.BacklogGameId);
+        using var firstAddResponse = await client.PostAsJsonAsync(
+            BoardTestSupport.EntriesUrl(BoardTestData.BacklogId),
+            new { GameId = BoardEntryTestData.AppendPredecessorGameId },
+            TestContext.Current.CancellationToken
+        );
+        using var secondAddResponse = await client.PostAsJsonAsync(
+            BoardTestSupport.EntriesUrl(BoardTestData.BacklogId),
+            new { GameId = BoardEntryTestData.AddableGameId },
+            TestContext.Current.CancellationToken
+        );
+        var addResponses = new[]
+        {
+            await HttpResponseSnapshot.CreateAsync<AddBoardEntryContract>(firstAddResponse),
+            await HttpResponseSnapshot.CreateAsync<AddBoardEntryContract>(secondAddResponse),
+        };
+        var url = BoardTestSupport.EntryUrl(BoardTestData.BacklogId, BoardEntryTestData.AppendPredecessorGameId);
         using var firstResponse = await client.DeleteAsync(url, TestContext.Current.CancellationToken);
         using var secondResponse = await client.DeleteAsync(url, TestContext.Current.CancellationToken);
         var removeResponses = await HttpResponseSnapshot.CreateAsync(firstResponse, secondResponse);
@@ -38,7 +54,14 @@ public sealed class RemoveBoardEntryTests : IClassFixture<MutableEndpointApiFact
         );
         var board = await BoardTestSupport.DetailsSnapshotAsync(getResponse);
 
-        await Verify(new { RemoveResponses = removeResponses, BoardResponse = board });
+        await Verify(
+            new
+            {
+                AddResponses = addResponses,
+                RemoveResponses = removeResponses,
+                BoardResponse = board,
+            }
+        );
     }
 
     [Fact]
