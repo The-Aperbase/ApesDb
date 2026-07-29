@@ -45,21 +45,20 @@ public sealed class UpdateCalendarEventEndpoint : Endpoint<UpdateCalendarEventRe
             return;
         }
 
-        if (root.RecurrenceJson is not null && request.Scope != "series")
+        if (root.Recurrence is not null && request.Scope != "series")
         {
             AddError(request => request.Scope, "Recurring events must be updated as a series or occurrence.");
             await Send.ErrorsAsync(cancellation: ct);
             return;
         }
 
-        if (root.RecurrenceJson is null && request.Scope == "series")
+        if (root.Recurrence is null && request.Scope == "series")
         {
             AddError(request => request.Scope, "Only recurring events can be updated as a series.");
             await Send.ErrorsAsync(cancellation: ct);
             return;
         }
 
-        var recurrenceJson = CalendarContractFactory.SerializeRecurrence(request.Recurrence);
         var startAt = request.Start.ToUniversalTime();
         var endAt = request.End.ToUniversalTime();
         var scheduleChanged =
@@ -67,16 +66,16 @@ public sealed class UpdateCalendarEventEndpoint : Endpoint<UpdateCalendarEventRe
             || root.EndAt != endAt
             || root.AllDay != request.AllDay
             || root.TimeZoneId != request.TimeZoneId
-            || root.RecurrenceJson != recurrenceJson;
+            || !RecurrencesEqual(root.Recurrence, request.Recurrence);
         var title = request.Title.Trim();
 
-        if (scheduleChanged && root.RecurrenceJson is not null)
+        if (scheduleChanged && root.Recurrence is not null)
         {
             await _dbContext
                 .CalendarEvents.Where(calendarEvent => calendarEvent.RecurringEventId == root.Id)
                 .ExecuteDeleteAsync(ct);
         }
-        else if (root.Title != title && root.RecurrenceJson is not null)
+        else if (root.Title != title && root.Recurrence is not null)
         {
             await _dbContext
                 .CalendarEvents.Where(calendarEvent =>
@@ -90,12 +89,30 @@ public sealed class UpdateCalendarEventEndpoint : Endpoint<UpdateCalendarEventRe
         root.EndAt = endAt;
         root.AllDay = request.AllDay;
         root.TimeZoneId = request.TimeZoneId;
-        root.RecurrenceJson = recurrenceJson;
+        root.Recurrence = request.Recurrence;
         root.RecurrenceUntil = request.Recurrence?.Until?.ToUniversalTime();
         root.UpdatedAt = _dateTimeProvider.OffsetUtcNow;
         await _dbContext.SaveChangesAsync(ct);
 
-        await Send.OkAsync(CalendarContractFactory.CreateEventResponse(root, [], false), ct);
+        await Send.OkAsync(
+            new CalendarEventResponse(
+                root.Id,
+                root.OwnerUserId,
+                root.Title,
+                root.StartAt,
+                root.EndAt,
+                root.AllDay,
+                root.TimeZoneId,
+                request.Recurrence,
+                [],
+                root.RecurringEventId,
+                root.OriginalStartAt,
+                false,
+                root.CreatedAt,
+                root.UpdatedAt
+            ),
+            ct
+        );
     }
 
     private async Task UpdateOccurrenceAsync(
@@ -104,7 +121,7 @@ public sealed class UpdateCalendarEventEndpoint : Endpoint<UpdateCalendarEventRe
         CancellationToken ct
     )
     {
-        if (root.RecurrenceJson is null)
+        if (root.Recurrence is null)
         {
             AddError(request => request.Scope, "Only recurring events can be updated by occurrence.");
             await Send.ErrorsAsync(cancellation: ct);
@@ -151,6 +168,46 @@ public sealed class UpdateCalendarEventEndpoint : Endpoint<UpdateCalendarEventRe
         }
 
         await _dbContext.SaveChangesAsync(ct);
-        await Send.OkAsync(CalendarContractFactory.CreateEventResponse(exception, [], false), ct);
+        await Send.OkAsync(
+            new CalendarEventResponse(
+                exception.Id,
+                exception.OwnerUserId,
+                exception.Title,
+                exception.StartAt,
+                exception.EndAt,
+                exception.AllDay,
+                exception.TimeZoneId,
+                null,
+                [],
+                exception.RecurringEventId,
+                exception.OriginalStartAt,
+                false,
+                exception.CreatedAt,
+                exception.UpdatedAt
+            ),
+            ct
+        );
+    }
+
+    private static bool RecurrencesEqual(CalendarRecurrenceContract? left, CalendarRecurrenceContract? right)
+    {
+        if (ReferenceEquals(left, right))
+        {
+            return true;
+        }
+
+        if (left is null || right is null)
+        {
+            return false;
+        }
+
+        return left.Frequency == right.Frequency
+            && left.Interval == right.Interval
+            && left.Count == right.Count
+            && left.Until == right.Until
+            && left.ByWeekday.SequenceEqual(right.ByWeekday)
+            && left.ByMonthDay.SequenceEqual(right.ByMonthDay)
+            && left.ByMonth.SequenceEqual(right.ByMonth)
+            && left.WeekStart == right.WeekStart;
     }
 }

@@ -34,7 +34,12 @@
             CreatedAt: DateTime_2,
             ReadAt: DateTime_1,
             IsUnread: false,
-            IsActionable: true
+            IsActionable: true,
+            Actor: {
+              Id: Guid_5,
+              Name: Olivia Owner,
+              PictureUrl: https://images.apesdb.test/owner.png
+            }
           }
         ],
         Metadata: {
@@ -59,9 +64,9 @@
     Content: {
       Items: [
         {
-          Id: Guid_5,
+          Id: Guid_6,
           Type: CatalogImportCompleted,
-          ResourceId: Guid_6,
+          ResourceId: Guid_7,
           CreatedAt: DateTime_1,
           IsUnread: true,
           IsActionable: false

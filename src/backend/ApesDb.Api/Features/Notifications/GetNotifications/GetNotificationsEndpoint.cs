@@ -6,6 +6,8 @@ namespace ApesDb.Api.Features.Notifications.GetNotifications;
 
 public sealed class GetNotificationsEndpoint : EndpointWithoutRequest<NotificationsResponse>
 {
+    private const string CalendarInviteNotificationType = "CalendarInvite";
+
     private readonly ApplicationDbContext _dbContext;
 
     public GetNotificationsEndpoint(ApplicationDbContext dbContext)
@@ -38,6 +40,23 @@ public sealed class GetNotificationsEndpoint : EndpointWithoutRequest<Notificati
             })
             .ToArrayAsync(ct);
 
+        var calendarInvitationIds = rows.Where(row => row.Type == CalendarInviteNotificationType)
+            .Select(row => row.ResourceId)
+            .ToArray();
+        var actorsByInvitationId = await _dbContext
+            .CalendarInvitations.AsNoTracking()
+            .Where(invitation => calendarInvitationIds.Contains(invitation.Id))
+            .Select(invitation => new
+            {
+                invitation.Id,
+                Actor = new NotificationActorResponse(
+                    invitation.InviterUserId,
+                    invitation.InviterUser.Name,
+                    invitation.InviterUser.PictureUrl
+                ),
+            })
+            .ToDictionaryAsync(row => row.Id, row => row.Actor, ct);
+
         var items = new NotificationResponse[rows.Length];
         var unreadCount = 0;
         var actionableCount = 0;
@@ -61,6 +80,15 @@ public sealed class GetNotificationsEndpoint : EndpointWithoutRequest<Notificati
                 attentionCount++;
             }
 
+            NotificationActorResponse? actor = null;
+            if (
+                row.Type == CalendarInviteNotificationType
+                && actorsByInvitationId.TryGetValue(row.ResourceId, out var invitationActor)
+            )
+            {
+                actor = invitationActor;
+            }
+
             items[index] = new NotificationResponse(
                 row.Id,
                 row.Type,
@@ -68,7 +96,8 @@ public sealed class GetNotificationsEndpoint : EndpointWithoutRequest<Notificati
                 row.CreatedAt,
                 row.ReadAt,
                 isUnread,
-                row.IsActionable
+                row.IsActionable,
+                actor
             );
         }
 

@@ -31,7 +31,12 @@
           ResourceId: Guid_4,
           CreatedAt: DateTime_2,
           IsUnread: true,
-          IsActionable: true
+          IsActionable: true,
+          Actor: {
+            Id: Guid_5,
+            Name: Olivia Owner,
+            PictureUrl: https://images.apesdb.test/owner.png
+          }
         }
       ],
       Metadata: {

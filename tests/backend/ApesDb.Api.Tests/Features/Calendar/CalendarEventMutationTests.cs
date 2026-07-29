@@ -6,6 +6,7 @@ using ApesDb.Api.Tests.Infrastructure.Authentication;
 using ApesDb.Api.Tests.Infrastructure.Factories;
 using ApesDb.Api.Tests.Infrastructure.Http;
 using ApesDb.Api.Tests.TestData;
+using ApesDb.Domain.Entities.Calendar;
 
 namespace ApesDb.Api.Tests.Features.Calendar;
 

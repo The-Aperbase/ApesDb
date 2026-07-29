@@ -25,7 +25,7 @@ public sealed class CalendarEvent
 
     public required string TimeZoneId { get; set; }
 
-    public string? RecurrenceJson { get; set; }
+    public CalendarRecurrenceContract? Recurrence { get; set; }
 
     public DateTimeOffset? RecurrenceUntil { get; set; }
 
@@ -63,7 +63,21 @@ public sealed class CalendarEventConfiguration : IEntityTypeConfiguration<Calend
         calendarEvent.Property(value => value.Id).HasDefaultValueSql("uuidv7()").ValueGeneratedOnAdd();
         calendarEvent.Property(value => value.Title).HasMaxLength(CalendarEvent.MaximumTitleLength);
         calendarEvent.Property(value => value.TimeZoneId).HasMaxLength(CalendarEvent.MaximumTimeZoneIdLength);
-        calendarEvent.Property(value => value.RecurrenceJson).HasColumnType("jsonb");
+        calendarEvent.ComplexProperty(
+            value => value.Recurrence,
+            recurrence =>
+            {
+                recurrence.ToJson("RecurrenceJson");
+                recurrence.Property(value => value.Frequency).HasJsonPropertyName("frequency");
+                recurrence.Property(value => value.Interval).HasJsonPropertyName("interval");
+                recurrence.Property(value => value.Count).HasJsonPropertyName("count");
+                recurrence.Property(value => value.Until).HasJsonPropertyName("until");
+                recurrence.PrimitiveCollection(value => value.ByWeekday).HasJsonPropertyName("byWeekday");
+                recurrence.PrimitiveCollection(value => value.ByMonthDay).HasJsonPropertyName("byMonthDay");
+                recurrence.PrimitiveCollection(value => value.ByMonth).HasJsonPropertyName("byMonth");
+                recurrence.Property(value => value.WeekStart).HasJsonPropertyName("weekStart");
+            }
+        );
         calendarEvent.Property(value => value.CreatedAt).HasDefaultValueSql("now()");
         calendarEvent.Property(value => value.UpdatedAt).HasDefaultValueSql("now()");
         calendarEvent

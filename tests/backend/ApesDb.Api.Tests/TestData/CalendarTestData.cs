@@ -1,5 +1,3 @@
-using System.Text.Json;
-using ApesDb.Api.Features.Calendar;
 using ApesDb.Api.Tests.Infrastructure.Authentication;
 using ApesDb.Domain.Entities.Calendar;
 using ApesDb.Domain.Entities.Users;
@@ -14,8 +12,6 @@ public static class CalendarTestData
     public static readonly Guid OutsiderEventId = Guid.Parse("01910000-0000-7000-8000-000000007004");
     public static readonly Guid OwnerMemberConnectionId = Guid.Parse("01910000-0000-7000-8000-000000008001");
     public static readonly Guid PendingInvitationId = Guid.Parse("01910000-0000-7000-8000-000000009001");
-
-    private static readonly JsonSerializerOptions SerializerOptions = new(JsonSerializerDefaults.Web);
 
     public static object[] Create(IReadOnlyDictionary<Guid, User> usersById)
     {
@@ -56,7 +52,7 @@ public static class CalendarTestData
                 StartAt = new DateTimeOffset(2026, 1, 12, 7, 0, 0, TimeSpan.FromHours(1)).ToUniversalTime(),
                 EndAt = new DateTimeOffset(2026, 1, 12, 15, 0, 0, TimeSpan.FromHours(1)).ToUniversalTime(),
                 TimeZoneId = "Europe/Oslo",
-                RecurrenceJson = JsonSerializer.Serialize(recurrence, SerializerOptions),
+                Recurrence = recurrence,
                 RecurrenceUntil = recurrence.Until,
                 CreatedAt = createdAt,
                 UpdatedAt = createdAt,
@@ -102,7 +98,7 @@ public static class CalendarTestData
                 InviteeUserId = inviteeId,
                 InviteeUser = usersById[inviteeId],
                 InviteeEmail = TestUsers.Invitee.Email,
-                Status = CalendarInvitationStatus.Pending,
+                StatusId = CalendarInvitationStatus.Pending,
                 CreatedAt = createdAt,
             },
         ];

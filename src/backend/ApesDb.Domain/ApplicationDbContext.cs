@@ -27,6 +27,8 @@ public sealed class ApplicationDbContext : DbContext
 
     public DbSet<CalendarEvent> CalendarEvents => Set<CalendarEvent>();
 
+    public DbSet<CalendarInvitationStatus> CalendarInvitationStatuses => Set<CalendarInvitationStatus>();
+
     public DbSet<CalendarInvitation> CalendarInvitations => Set<CalendarInvitation>();
 
     public DbSet<CalendarConnection> CalendarConnections => Set<CalendarConnection>();

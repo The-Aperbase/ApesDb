@@ -33,7 +33,12 @@
           CreatedAt: DateTime_2,
           ReadAt: DateTime_1,
           IsUnread: false,
-          IsActionable: true
+          IsActionable: true,
+          Actor: {
+            Id: Guid_5,
+            Name: Olivia Owner,
+            PictureUrl: https://images.apesdb.test/owner.png
+          }
         }
       ],
       Metadata: {

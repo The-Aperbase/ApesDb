@@ -23,7 +23,11 @@ public sealed class MutableEndpointApiFactory : ApiTestWebApplicationFactory
             {
                 DbAdapter = DbAdapter.Postgres,
                 SchemasToInclude = ["public"],
-                TablesToIgnore = [new Table("public", "BoardEntryStates")],
+                TablesToIgnore =
+                [
+                    new Table("public", "BoardEntryStates"),
+                    new Table("public", "CalendarInvitationStatuses"),
+                ],
             }
         );
     }

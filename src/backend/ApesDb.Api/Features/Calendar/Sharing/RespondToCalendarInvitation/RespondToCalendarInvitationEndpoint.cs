@@ -4,7 +4,6 @@ using ApesDb.Domain;
 using ApesDb.Domain.Entities.Calendar;
 using FastEndpoints;
 using Microsoft.EntityFrameworkCore;
-using Npgsql;
 
 namespace ApesDb.Api.Features.Calendar.Sharing.RespondToCalendarInvitation;
 
@@ -46,7 +45,7 @@ public sealed class RespondToCalendarInvitationEndpoint : Endpoint<RespondToCale
             return;
         }
 
-        if (invitation.Status == CalendarInvitationStatus.Accepted)
+        if (invitation.StatusId == CalendarInvitationStatus.Accepted)
         {
             if (request.Accept)
             {
@@ -60,7 +59,7 @@ public sealed class RespondToCalendarInvitationEndpoint : Endpoint<RespondToCale
             return;
         }
 
-        if (invitation.Status != CalendarInvitationStatus.Pending)
+        if (invitation.StatusId != CalendarInvitationStatus.Pending)
         {
             await Send.NotFoundAsync(ct);
             return;
@@ -72,40 +71,20 @@ public sealed class RespondToCalendarInvitationEndpoint : Endpoint<RespondToCale
 
         if (request.Accept)
         {
-            invitation.Status = CalendarInvitationStatus.Accepted;
+            invitation.StatusId = CalendarInvitationStatus.Accepted;
             await EnsureConnectionAsync(invitation.InviterUserId, userId, now, ct);
             await ResolveReciprocalInvitationsAsync(userId, invitation.InviterUserId, now, notificationIdsByUser, ct);
         }
         else
         {
-            invitation.Status = CalendarInvitationStatus.Declined;
+            invitation.StatusId = CalendarInvitationStatus.Declined;
         }
 
         invitation.ResolvedAt = now;
         await ResolveNotificationsAsync(userId, [invitation.Id], now, notificationIdsByUser, ct);
 
-        try
-        {
-            await _dbContext.SaveChangesAsync(ct);
-            await transaction.CommitAsync(ct);
-        }
-        catch (DbUpdateException exception) when (IsUniqueViolation(exception) && request.Accept)
-        {
-            await transaction.RollbackAsync(ct);
-            _dbContext.ChangeTracker.Clear();
-
-            var accepted = await _dbContext.CalendarInvitations.SingleOrDefaultAsync(
-                value => value.Id == request.InviteId && value.InviteeUserId == userId,
-                ct
-            );
-            if (accepted is not null && accepted.Status == CalendarInvitationStatus.Accepted)
-            {
-                await Send.NoContentAsync(ct);
-                return;
-            }
-
-            throw;
-        }
+        await _dbContext.SaveChangesAsync(ct);
+        await transaction.CommitAsync(ct);
 
         PublishResolved(notificationIdsByUser);
         await Send.NoContentAsync(ct);
@@ -152,12 +131,12 @@ public sealed class RespondToCalendarInvitationEndpoint : Endpoint<RespondToCale
             .CalendarInvitations.Where(invitation =>
                 invitation.InviterUserId == inviterId
                 && invitation.InviteeUserId == inviteeId
-                && invitation.Status == CalendarInvitationStatus.Pending
+                && invitation.StatusId == CalendarInvitationStatus.Pending
             )
             .ToArrayAsync(ct);
         foreach (var invitation in reciprocal)
         {
-            invitation.Status = CalendarInvitationStatus.Accepted;
+            invitation.StatusId = CalendarInvitationStatus.Accepted;
             invitation.ResolvedAt = now;
         }
 
@@ -221,10 +200,5 @@ public sealed class RespondToCalendarInvitationEndpoint : Endpoint<RespondToCale
                 );
             }
         }
-    }
-
-    private static bool IsUniqueViolation(DbUpdateException exception)
-    {
-        return exception.InnerException is PostgresException { SqlState: PostgresErrorCodes.UniqueViolation };
     }
 }

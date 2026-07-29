@@ -1,6 +1,7 @@
 using System.Security.Claims;
 using ApesDb.Common;
 using ApesDb.Domain;
+using ApesDb.Domain.Entities.Calendar;
 using Microsoft.EntityFrameworkCore;
 
 namespace ApesDb.Auth.Services.UserProvisioning;
@@ -55,7 +56,7 @@ public sealed class UserProvisioningService : IUserProvisioningService
             SET "InviteeUserId" = {provisionedUserId}
             WHERE "InviteeUserId" IS NULL
                 AND "InviteeEmail" = {normalizedEmail}
-                AND "Status" = 'Pending'
+                AND "StatusId" = {CalendarInvitationStatus.Pending}
             """,
             cancellationToken
         );
@@ -67,7 +68,7 @@ public sealed class UserProvisioningService : IUserProvisioningService
             SELECT uuidv7(), {provisionedUserId}, 'CalendarInvite', invitation."Id", true, {now}
             FROM "public"."CalendarInvitations" AS invitation
             WHERE invitation."InviteeUserId" = {provisionedUserId}
-                AND invitation."Status" = 'Pending'
+                AND invitation."StatusId" = {CalendarInvitationStatus.Pending}
             ON CONFLICT ("UserId", "Type", "ResourceId") DO NOTHING
             """,
             cancellationToken

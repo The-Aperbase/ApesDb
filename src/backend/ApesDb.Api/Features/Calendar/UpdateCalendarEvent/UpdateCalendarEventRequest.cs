@@ -1,3 +1,5 @@
+using ApesDb.Domain.Entities.Calendar;
+
 namespace ApesDb.Api.Features.Calendar.UpdateCalendarEvent;
 
 public sealed class UpdateCalendarEventRequest : ICalendarEventMutationRequest

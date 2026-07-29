@@ -1,4 +1,7 @@
 import {
+  Avatar,
+  AvatarFallback,
+  AvatarImage,
   Badge,
   Button,
   Popover,
@@ -43,16 +46,36 @@ type NotificationRowProps = {
   onRespond: (inviteId: string, accept: boolean) => void;
 };
 
+function initials(name: string): string {
+  return name
+    .split(/\s+/)
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((part) => part[0]?.toUpperCase())
+    .join("");
+}
+
 function NotificationRow({ notification, responding, onRespond }: NotificationRowProps) {
   const isCalendarInvite = notification.type === "CalendarInvite" && notification.isActionable;
+  const actor = notification.actor;
 
   return (
     <div className="flex items-start gap-3 p-2">
+      {isCalendarInvite && actor ? (
+        <Avatar className="size-8 shrink-0">
+          <AvatarImage alt={actor.name} src={actor.pictureUrl ?? undefined} />
+          <AvatarFallback>{initials(actor.name)}</AvatarFallback>
+        </Avatar>
+      ) : null}
       <div className="grid min-w-0 flex-1 gap-1">
         <p className="text-xs">
-          {isCalendarInvite
-            ? "Someone invited you to connect calendars."
-            : "You have a new notification."}
+          {isCalendarInvite && actor ? (
+            <>
+              <span className="font-medium">{actor.name}</span> invited you to connect calendars.
+            </>
+          ) : (
+            "You have a new notification."
+          )}
         </p>
         <p className="text-[0.625rem] text-muted-foreground">
           {formatDateTime(notification.createdAt)}

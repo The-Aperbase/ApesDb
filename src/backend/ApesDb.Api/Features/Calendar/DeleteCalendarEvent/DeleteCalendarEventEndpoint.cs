@@ -45,14 +45,14 @@ public sealed class DeleteCalendarEventEndpoint : Endpoint<DeleteCalendarEventRe
             return;
         }
 
-        if (root.RecurrenceJson is not null && request.Scope != "series")
+        if (root.Recurrence is not null && request.Scope != "series")
         {
             AddError(request => request.Scope, "Recurring events must be deleted as a series or occurrence.");
             await Send.ErrorsAsync(cancellation: ct);
             return;
         }
 
-        if (root.RecurrenceJson is null && request.Scope == "series")
+        if (root.Recurrence is null && request.Scope == "series")
         {
             AddError(request => request.Scope, "Only recurring events can be deleted as a series.");
             await Send.ErrorsAsync(cancellation: ct);
@@ -70,7 +70,7 @@ public sealed class DeleteCalendarEventEndpoint : Endpoint<DeleteCalendarEventRe
         CancellationToken ct
     )
     {
-        if (root.RecurrenceJson is null)
+        if (root.Recurrence is null)
         {
             AddError(request => request.Scope, "Only recurring events can be deleted by occurrence.");
             await Send.ErrorsAsync(cancellation: ct);

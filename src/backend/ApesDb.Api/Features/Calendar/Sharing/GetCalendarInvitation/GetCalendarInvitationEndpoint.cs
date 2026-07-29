@@ -28,7 +28,7 @@ public sealed class GetCalendarInvitationEndpoint : Endpoint<GetCalendarInvitati
             .Where(invitation =>
                 invitation.Id == request.InviteId
                 && invitation.InviteeUserId == userId
-                && invitation.Status == CalendarInvitationStatus.Pending
+                && invitation.StatusId == CalendarInvitationStatus.Pending
             )
             .Select(invitation => new CalendarInvitationResponse(
                 invitation.Id,

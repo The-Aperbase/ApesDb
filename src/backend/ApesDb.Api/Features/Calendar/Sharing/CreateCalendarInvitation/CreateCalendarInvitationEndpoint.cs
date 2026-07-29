@@ -6,7 +6,6 @@ using ApesDb.Domain.Entities.Calendar;
 using ApesDb.Domain.Entities.Notifications;
 using FastEndpoints;
 using Microsoft.EntityFrameworkCore;
-using Npgsql;
 
 namespace ApesDb.Api.Features.Calendar.Sharing.CreateCalendarInvitation;
 
@@ -77,7 +76,7 @@ public sealed class CreateCalendarInvitationEndpoint : Endpoint<CreateCalendarIn
             invitation =>
                 invitation.InviterUserId == inviterId
                 && invitation.InviteeEmail == normalizedEmail
-                && invitation.Status == CalendarInvitationStatus.Pending,
+                && invitation.StatusId == CalendarInvitationStatus.Pending,
             ct
         );
         if (pending is not null)
@@ -99,25 +98,18 @@ public sealed class CreateCalendarInvitationEndpoint : Endpoint<CreateCalendarIn
             InviterUserId = inviterId,
             InviteeUserId = targetId,
             InviteeEmail = normalizedEmail,
-            Status = CalendarInvitationStatus.Pending,
+            StatusId = CalendarInvitationStatus.Pending,
             CreatedAt = now,
         };
         _dbContext.CalendarInvitations.Add(invitation);
 
-        try
+        if (targetId is null)
         {
-            if (targetId is null)
-            {
-                await _dbContext.SaveChangesAsync(ct);
-            }
-            else
-            {
-                await AddNotificationAndSaveAsync(invitation, targetId.Value, ct);
-            }
+            await _dbContext.SaveChangesAsync(ct);
         }
-        catch (DbUpdateException exception) when (IsUniqueViolation(exception))
+        else
         {
-            _dbContext.ChangeTracker.Clear();
+            await AddNotificationAndSaveAsync(invitation, targetId.Value, ct);
         }
 
         await Send.AcceptedAsync();
@@ -126,6 +118,11 @@ public sealed class CreateCalendarInvitationEndpoint : Endpoint<CreateCalendarIn
     private async Task AddNotificationAndSaveAsync(CalendarInvitation invitation, Guid targetId, CancellationToken ct)
     {
         var createdAt = invitation.CreatedAt.UtcDateTime;
+        var actor = await _dbContext
+            .Users.AsNoTracking()
+            .Where(user => user.Id == invitation.InviterUserId)
+            .Select(user => new NotificationActorResponse(user.Id, user.Name, user.PictureUrl))
+            .SingleAsync(ct);
         var notification = new Notification
         {
             Id = Guid.CreateVersion7(),
@@ -148,14 +145,10 @@ public sealed class CreateCalendarInvitationEndpoint : Endpoint<CreateCalendarIn
                     notification.CreatedAt,
                     null,
                     true,
-                    true
+                    true,
+                    actor
                 )
             )
         );
-    }
-
-    private static bool IsUniqueViolation(DbUpdateException exception)
-    {
-        return exception.InnerException is PostgresException { SqlState: PostgresErrorCodes.UniqueViolation };
     }
 }

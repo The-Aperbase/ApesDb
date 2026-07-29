@@ -4,12 +4,17 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace ApesDb.Domain.Entities.Calendar;
 
-public enum CalendarInvitationStatus
+public sealed class CalendarInvitationStatus
 {
-    Pending,
-    Accepted,
-    Declined,
-    Cancelled,
+    public const int Pending = 0;
+    public const int Accepted = 1;
+    public const int Declined = 2;
+    public const int Cancelled = 3;
+    public const int MaximumNameLength = 16;
+
+    public int Id { get; set; }
+
+    public required string Name { get; set; }
 }
 
 public sealed class CalendarInvitation
@@ -28,7 +33,9 @@ public sealed class CalendarInvitation
 
     public required string InviteeEmail { get; set; }
 
-    public CalendarInvitationStatus Status { get; set; }
+    public int StatusId { get; set; }
+
+    public CalendarInvitationStatus Status { get; set; } = null!;
 
     public DateTimeOffset CreatedAt { get; set; }
 
@@ -43,11 +50,11 @@ public sealed class CalendarInvitationConfiguration : IEntityTypeConfiguration<C
         invitation
             .HasIndex(value => new { value.InviterUserId, value.InviteeEmail })
             .IsUnique()
-            .HasFilter("\"Status\" = 'Pending'");
-        invitation.HasIndex(value => new { value.InviteeUserId, value.Status });
+            .HasFilter($"\"StatusId\" = {CalendarInvitationStatus.Pending}");
+        invitation.HasIndex(value => new { value.InviteeUserId, value.StatusId });
+        invitation.HasIndex(value => value.StatusId);
         invitation.Property(value => value.Id).HasDefaultValueSql("uuidv7()").ValueGeneratedOnAdd();
         invitation.Property(value => value.InviteeEmail).HasMaxLength(CalendarInvitation.MaximumEmailLength);
-        invitation.Property(value => value.Status).HasConversion<string>().HasMaxLength(16);
         invitation.Property(value => value.CreatedAt).HasDefaultValueSql("now()");
         invitation
             .HasOne(value => value.InviterUser)
@@ -59,17 +66,30 @@ public sealed class CalendarInvitationConfiguration : IEntityTypeConfiguration<C
             .WithMany()
             .HasForeignKey(value => value.InviteeUserId)
             .OnDelete(DeleteBehavior.Cascade);
+        invitation
+            .HasOne(value => value.Status)
+            .WithMany()
+            .HasForeignKey(value => value.StatusId)
+            .OnDelete(DeleteBehavior.Restrict);
         invitation.ToTable(table =>
         {
             table.HasCheckConstraint(
-                "CK_CalendarInvitations_Status",
-                "\"Status\" IN ('Pending', 'Accepted', 'Declined', 'Cancelled')"
-            );
-            table.HasCheckConstraint(
                 "CK_CalendarInvitations_Resolution",
-                "(\"Status\" = 'Pending' AND \"ResolvedAt\" IS NULL) "
-                    + "OR (\"Status\" <> 'Pending' AND \"ResolvedAt\" IS NOT NULL)"
+                $"(\"StatusId\" = {CalendarInvitationStatus.Pending} AND \"ResolvedAt\" IS NULL) "
+                    + $"OR (\"StatusId\" <> {CalendarInvitationStatus.Pending} AND \"ResolvedAt\" IS NOT NULL)"
             );
         });
+    }
+}
+
+public sealed class CalendarInvitationStatusConfiguration : IEntityTypeConfiguration<CalendarInvitationStatus>
+{
+    public void Configure(EntityTypeBuilder<CalendarInvitationStatus> status)
+    {
+        status.ToTable("CalendarInvitationStatuses");
+        status.HasKey(value => value.Id);
+        status.Property(value => value.Id).ValueGeneratedNever();
+        status.Property(value => value.Name).HasMaxLength(CalendarInvitationStatus.MaximumNameLength);
+        status.HasIndex(value => value.Name).IsUnique();
     }
 }

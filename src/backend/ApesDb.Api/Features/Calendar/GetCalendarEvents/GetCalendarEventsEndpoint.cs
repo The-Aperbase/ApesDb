@@ -71,12 +71,12 @@ public sealed class GetCalendarEventsEndpoint : Endpoint<GetCalendarEventsReques
                 && calendarEvent.RecurringEventId == null
                 && (
                     (
-                        calendarEvent.RecurrenceJson == null
+                        calendarEvent.Recurrence == null
                         && calendarEvent.StartAt < rangeEnd
                         && calendarEvent.EndAt > rangeStart
                     )
                     || (
-                        calendarEvent.RecurrenceJson != null
+                        calendarEvent.Recurrence != null
                         && calendarEvent.StartAt < rangeEnd
                         && (calendarEvent.RecurrenceUntil == null || calendarEvent.RecurrenceUntil >= rangeStart)
                     )
@@ -113,7 +113,22 @@ public sealed class GetCalendarEventsEndpoint : Endpoint<GetCalendarEventsReques
                 .Select(calendarEvent => calendarEvent.OriginalStartAt!.Value)
                 .ToArray();
             eventResponses.Add(
-                CalendarContractFactory.CreateEventResponse(root, exDates, root.OwnerUserId != currentUserId)
+                new CalendarEventResponse(
+                    root.Id,
+                    root.OwnerUserId,
+                    root.Title,
+                    root.StartAt,
+                    root.EndAt,
+                    root.AllDay,
+                    root.TimeZoneId,
+                    root.Recurrence,
+                    exDates,
+                    root.RecurringEventId,
+                    root.OriginalStartAt,
+                    root.OwnerUserId != currentUserId,
+                    root.CreatedAt,
+                    root.UpdatedAt
+                )
             );
 
             foreach (var exception in rootExceptions)
@@ -129,7 +144,22 @@ public sealed class GetCalendarEventsEndpoint : Endpoint<GetCalendarEventsReques
                 }
 
                 eventResponses.Add(
-                    CalendarContractFactory.CreateEventResponse(exception, [], exception.OwnerUserId != currentUserId)
+                    new CalendarEventResponse(
+                        exception.Id,
+                        exception.OwnerUserId,
+                        exception.Title,
+                        exception.StartAt,
+                        exception.EndAt,
+                        exception.AllDay,
+                        exception.TimeZoneId,
+                        null,
+                        [],
+                        exception.RecurringEventId,
+                        exception.OriginalStartAt,
+                        exception.OwnerUserId != currentUserId,
+                        exception.CreatedAt,
+                        exception.UpdatedAt
+                    )
                 );
             }
         }

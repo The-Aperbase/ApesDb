@@ -39,7 +39,7 @@ public sealed class CancelCalendarInvitationEndpoint : Endpoint<CancelCalendarIn
             value =>
                 value.Id == request.InviteId
                 && value.InviterUserId == userId
-                && value.Status == CalendarInvitationStatus.Pending,
+                && value.StatusId == CalendarInvitationStatus.Pending,
             ct
         );
         if (invitation is null)
@@ -49,7 +49,7 @@ public sealed class CancelCalendarInvitationEndpoint : Endpoint<CancelCalendarIn
         }
 
         var now = _dateTimeProvider.OffsetUtcNow;
-        invitation.Status = CalendarInvitationStatus.Cancelled;
+        invitation.StatusId = CalendarInvitationStatus.Cancelled;
         invitation.ResolvedAt = now;
 
         var notifications = await _dbContext

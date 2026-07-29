@@ -1,5 +1,11 @@
 import { z } from "zod";
 
+const notificationActorSchema = z.object({
+  id: z.string(),
+  name: z.string(),
+  pictureUrl: z.string().nullable(),
+});
+
 export const notificationSchema = z.object({
   id: z.string(),
   type: z.string().min(1),
@@ -8,6 +14,7 @@ export const notificationSchema = z.object({
   readAt: z.string().nullable(),
   isUnread: z.boolean(),
   isActionable: z.boolean(),
+  actor: notificationActorSchema.nullable().optional(),
 });
 
 export const notificationMetadataSchema = z.object({

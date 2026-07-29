@@ -34,7 +34,7 @@ public sealed class CreateCalendarEventEndpoint : Endpoint<CreateCalendarEventRe
             EndAt = request.End.ToUniversalTime(),
             AllDay = request.AllDay,
             TimeZoneId = request.TimeZoneId,
-            RecurrenceJson = CalendarContractFactory.SerializeRecurrence(request.Recurrence),
+            Recurrence = request.Recurrence,
             RecurrenceUntil = request.Recurrence?.Until?.ToUniversalTime(),
             CreatedAt = now,
             UpdatedAt = now,
@@ -43,7 +43,22 @@ public sealed class CreateCalendarEventEndpoint : Endpoint<CreateCalendarEventRe
         _dbContext.CalendarEvents.Add(calendarEvent);
         await _dbContext.SaveChangesAsync(ct);
 
-        var response = CalendarContractFactory.CreateEventResponse(calendarEvent, [], false);
+        var response = new CalendarEventResponse(
+            calendarEvent.Id,
+            calendarEvent.OwnerUserId,
+            calendarEvent.Title,
+            calendarEvent.StartAt,
+            calendarEvent.EndAt,
+            calendarEvent.AllDay,
+            calendarEvent.TimeZoneId,
+            request.Recurrence,
+            [],
+            calendarEvent.RecurringEventId,
+            calendarEvent.OriginalStartAt,
+            false,
+            calendarEvent.CreatedAt,
+            calendarEvent.UpdatedAt
+        );
         await Send.ResponseAsync(response, StatusCodes.Status201Created, ct);
     }
 }

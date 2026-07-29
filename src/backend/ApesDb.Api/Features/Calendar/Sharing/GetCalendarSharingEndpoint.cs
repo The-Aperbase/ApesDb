@@ -58,7 +58,7 @@ public sealed class GetCalendarSharingEndpoint : EndpointWithoutRequest<Calendar
         var incoming = await _dbContext
             .CalendarInvitations.AsNoTracking()
             .Where(invitation =>
-                invitation.InviteeUserId == userId && invitation.Status == CalendarInvitationStatus.Pending
+                invitation.InviteeUserId == userId && invitation.StatusId == CalendarInvitationStatus.Pending
             )
             .OrderByDescending(invitation => invitation.CreatedAt)
             .Select(invitation => new IncomingCalendarInvitationResponse(
@@ -74,7 +74,7 @@ public sealed class GetCalendarSharingEndpoint : EndpointWithoutRequest<Calendar
         var outgoing = await _dbContext
             .CalendarInvitations.AsNoTracking()
             .Where(invitation =>
-                invitation.InviterUserId == userId && invitation.Status == CalendarInvitationStatus.Pending
+                invitation.InviterUserId == userId && invitation.StatusId == CalendarInvitationStatus.Pending
             )
             .OrderByDescending(invitation => invitation.CreatedAt)
             .Select(invitation => new OutgoingCalendarInvitationResponse(

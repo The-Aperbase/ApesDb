@@ -277,7 +277,7 @@ export function CalendarPage() {
       return undefined;
     }
 
-    const inTimeGrid = view === "week" || view === "day" || view === "days" || view === "resource";
+    const inTimeGrid = view === "week" || view === "day" || view === "days";
     const durationMinutes = (segment.endMin ?? 0) - (segment.startMin ?? 0);
     if (!inTimeGrid || durationMinutes < 60) {
       return undefined;
@@ -448,7 +448,7 @@ export function CalendarPage() {
           renderEvent={renderConnectedEvent}
           resources={resources}
           timeZone={displayTimeZone}
-          views={resources.length > 1 ? ["month", "week", "day", "agenda", "resource"] : undefined}
+          views={["month", "week", "day", "agenda"]}
           weekStartsOn={1}
         >
           <EventCalendarNav />

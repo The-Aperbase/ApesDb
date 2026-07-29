@@ -35,12 +35,28 @@ CREATE UNIQUE INDEX "UX_CalendarEvents_RecurringEventId_OriginalStartAt"
     ON "public"."CalendarEvents" ("RecurringEventId", "OriginalStartAt")
     WHERE "RecurringEventId" IS NOT NULL;
 
+CREATE TABLE "public"."CalendarInvitationStatuses" (
+    "Id" integer NOT NULL,
+    "Name" character varying(16) NOT NULL,
+    CONSTRAINT "PK_CalendarInvitationStatuses" PRIMARY KEY ("Id")
+);
+
+CREATE UNIQUE INDEX "IX_CalendarInvitationStatuses_Name"
+    ON "public"."CalendarInvitationStatuses" ("Name");
+
+INSERT INTO "public"."CalendarInvitationStatuses" ("Id", "Name")
+VALUES
+    (0, 'Pending'),
+    (1, 'Accepted'),
+    (2, 'Declined'),
+    (3, 'Cancelled');
+
 CREATE TABLE "public"."CalendarInvitations" (
     "Id" uuid NOT NULL DEFAULT uuidv7(),
     "InviterUserId" uuid NOT NULL,
     "InviteeUserId" uuid,
     "InviteeEmail" character varying(256) NOT NULL,
-    "Status" character varying(16) NOT NULL,
+    "StatusId" integer NOT NULL,
     "CreatedAt" timestamp with time zone NOT NULL DEFAULT now(),
     "ResolvedAt" timestamp with time zone,
     CONSTRAINT "PK_CalendarInvitations" PRIMARY KEY ("Id"),
@@ -48,20 +64,22 @@ CREATE TABLE "public"."CalendarInvitations" (
         REFERENCES "public"."Users" ("Id") ON DELETE CASCADE,
     CONSTRAINT "FK_CalendarInvitations_Users_InviteeUserId" FOREIGN KEY ("InviteeUserId")
         REFERENCES "public"."Users" ("Id") ON DELETE CASCADE,
-    CONSTRAINT "CK_CalendarInvitations_Status"
-        CHECK ("Status" IN ('Pending', 'Accepted', 'Declined', 'Cancelled')),
+    CONSTRAINT "FK_CalendarInvitations_CalendarInvitationStatuses_StatusId" FOREIGN KEY ("StatusId")
+        REFERENCES "public"."CalendarInvitationStatuses" ("Id") ON DELETE RESTRICT,
     CONSTRAINT "CK_CalendarInvitations_Resolution" CHECK (
-        ("Status" = 'Pending' AND "ResolvedAt" IS NULL)
+        ("StatusId" = 0 AND "ResolvedAt" IS NULL)
         OR
-        ("Status" <> 'Pending' AND "ResolvedAt" IS NOT NULL)
+        ("StatusId" <> 0 AND "ResolvedAt" IS NOT NULL)
     )
 );
 
-CREATE INDEX "IX_CalendarInvitations_InviteeUserId_Status"
-    ON "public"."CalendarInvitations" ("InviteeUserId", "Status");
+CREATE INDEX "IX_CalendarInvitations_InviteeUserId_StatusId"
+    ON "public"."CalendarInvitations" ("InviteeUserId", "StatusId");
+CREATE INDEX "IX_CalendarInvitations_StatusId"
+    ON "public"."CalendarInvitations" ("StatusId");
 CREATE UNIQUE INDEX "UX_CalendarInvitations_InviterUserId_InviteeEmail_Pending"
     ON "public"."CalendarInvitations" ("InviterUserId", "InviteeEmail")
-    WHERE "Status" = 'Pending';
+    WHERE "StatusId" = 0;
 
 CREATE TABLE "public"."CalendarConnections" (
     "Id" uuid NOT NULL DEFAULT uuidv7(),
