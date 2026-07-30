@@ -209,12 +209,7 @@ public sealed class CatalogSyncJobs
             context.RetryCount,
             async () =>
             {
-                await _stageRunner.RunAsync(
-                    context.Request.RunId,
-                    stageKind,
-                    context.RetryCount,
-                    cancellationToken
-                );
+                await _stageRunner.RunAsync(context.Request.RunId, stageKind, context.RetryCount, cancellationToken);
                 await _orchestrator.AdvanceAsync(context.Request.RunId, stageKind, cancellationToken);
             },
             context.Request.RunId,

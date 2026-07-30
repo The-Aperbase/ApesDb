@@ -74,11 +74,7 @@ internal static class TickerQTelemetry
         }
         finally
         {
-            var tags = new TagList
-            {
-                { "tickerq.function.name", functionName },
-                { "outcome", outcome },
-            };
+            var tags = new TagList { { "tickerq.function.name", functionName }, { "outcome", outcome } };
 
             if (!string.IsNullOrWhiteSpace(stage))
             {

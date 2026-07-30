@@ -8,7 +8,7 @@ using FastEndpoints;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.AddApesDbObservability("apesdb-api");
+builder.AddApesDbApiTelemetry();
 builder.Services.AddApesDbForwardedHeaders();
 builder.Services.AddApesDbCommon();
 builder.Services.AddApesDbCache(builder.Configuration);
@@ -21,7 +21,6 @@ builder.Services.AddFastEndpoints();
 builder.Services.AddSingleton<IPictureProcessor, PictureProcessor>();
 builder.Services.AddNotifications();
 builder.Services.AddApesDbSwagger();
-builder.Services.AddReverseProxy().LoadFromConfig(builder.Configuration.GetRequiredSection("ReverseProxy"));
 builder.Services.AddSpaStaticFiles(options =>
 {
     options.RootPath = "wwwroot";
@@ -43,7 +42,7 @@ app.Use(
 app.UseApesDbAuth();
 app.UseApesDbSwagger();
 app.UseFastEndpoints(config => config.Endpoints.RoutePrefix = ApiRoutes.Api.Prefix);
-app.MapReverseProxy();
+app.MapApesDbApiTelemetry();
 app.UseEndpoints(_ => { });
 
 if (!app.Environment.IsDevelopment())

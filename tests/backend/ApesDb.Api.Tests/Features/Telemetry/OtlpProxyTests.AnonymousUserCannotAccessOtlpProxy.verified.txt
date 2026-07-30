@@ -1,0 +1,7 @@
+﻿{
+  Response: {
+    StatusCode: 401,
+    ReasonPhrase: Unauthorized,
+    Version: 1.1
+  }
+}
