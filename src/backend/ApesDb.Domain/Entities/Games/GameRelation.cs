@@ -41,10 +41,17 @@ public sealed class GameRelationConfiguration : IEntityTypeConfiguration<GameRel
         gameRelation.Property(value => value.CreatedAt).HasDefaultValueSql("now()").ValueGeneratedOnAdd();
         gameRelation.ToTable(table =>
         {
-            table.HasCheckConstraint("CK_GameRelations_DifferentGames", "\"GameId\" <> \"RelatedGameId\"");
+            table.HasCheckConstraint(
+                "CK_GameRelations_DifferentGames",
+                """
+                "GameId" <> "RelatedGameId"
+                """
+            );
             table.HasCheckConstraint(
                 "CK_GameRelations_RelationType",
-                "\"RelationType\" IN ('Dlc', 'Expansion', 'StandaloneExpansion')"
+                """
+                "RelationType" IN ('Dlc', 'Expansion', 'StandaloneExpansion')
+                """
             );
         });
         gameRelation

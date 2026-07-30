@@ -57,9 +57,24 @@ public sealed class PlatformConfiguration : IEntityTypeConfiguration<Platform>
         platform.Property(value => value.LogoImageId).HasMaxLength(128);
         platform.ToTable(table =>
         {
-            table.HasCheckConstraint("CK_Platforms_Generation", "\"Generation\" IS NULL OR \"Generation\" >= 0");
-            table.HasCheckConstraint("CK_Platforms_LogoWidth", "\"LogoWidth\" IS NULL OR \"LogoWidth\" > 0");
-            table.HasCheckConstraint("CK_Platforms_LogoHeight", "\"LogoHeight\" IS NULL OR \"LogoHeight\" > 0");
+            table.HasCheckConstraint(
+                "CK_Platforms_Generation",
+                """
+                "Generation" IS NULL OR "Generation" >= 0
+                """
+            );
+            table.HasCheckConstraint(
+                "CK_Platforms_LogoWidth",
+                """
+                "LogoWidth" IS NULL OR "LogoWidth" > 0
+                """
+            );
+            table.HasCheckConstraint(
+                "CK_Platforms_LogoHeight",
+                """
+                "LogoHeight" IS NULL OR "LogoHeight" > 0
+                """
+            );
         });
         platform
             .HasOne(value => value.PlatformType)

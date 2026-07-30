@@ -52,7 +52,12 @@ public sealed class ExternalGameConfiguration : IEntityTypeConfiguration<Externa
         externalGame.Property(value => value.Name).HasMaxLength(512);
         externalGame.Property(value => value.Url).HasMaxLength(2048);
         externalGame.ToTable(table =>
-            table.HasCheckConstraint("CK_ExternalGames_Year", "\"Year\" IS NULL OR \"Year\" BETWEEN 0 AND 9999")
+            table.HasCheckConstraint(
+                "CK_ExternalGames_Year",
+                """
+                "Year" IS NULL OR "Year" BETWEEN 0 AND 9999
+                """
+            )
         );
         externalGame
             .HasOne(value => value.Game)

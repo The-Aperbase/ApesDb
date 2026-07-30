@@ -32,7 +32,10 @@ function parseEventData(event: Event): unknown {
   }
 }
 
-function showNotificationToast(openNotifications: () => void) {
+function showNotificationToast(
+  notification: z.infer<typeof notificationSchema>,
+  openNotifications: () => void,
+) {
   const handleClick = () => {
     openNotifications();
     toast.dismiss(notificationToastId);
@@ -46,7 +49,9 @@ function showNotificationToast(openNotifications: () => void) {
       onClick: handleClick,
       type: "button",
     },
-    "You have a new notification.",
+    notification.type === "CalendarInvite" && notification.actor
+      ? `${notification.actor.name} invited you to connect calendars.`
+      : "You have a new notification.",
   );
 
   toast(message, {
@@ -73,7 +78,7 @@ export function useNotificationStream(openNotifications: () => void) {
       queryClient.setQueryData<ListNotificationsResponse>(notificationQueryKeys.list, (current) =>
         withNotificationAdded(current, parsed.data),
       );
-      showNotificationToast(openNotifications);
+      showNotificationToast(parsed.data, openNotifications);
     };
 
     const onRead = (event: Event) => {

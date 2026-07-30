@@ -91,16 +91,45 @@ public sealed class IgdbSyncStageConfiguration : IEntityTypeConfiguration<IgdbSy
         {
             table.HasCheckConstraint(
                 "CK_IgdbSyncStages_Status",
-                "\"Status\" IN ('Pending', 'Running', 'Failed', 'Succeeded')"
+                """
+                "Status" IN ('Pending', 'Running', 'Failed', 'Succeeded')
+                """
             );
-            table.HasCheckConstraint("CK_IgdbSyncStages_Order", "\"Order\" >= 0");
-            table.HasCheckConstraint("CK_IgdbSyncStages_PageCursor", "\"PageCursor\" >= -1");
-            table.HasCheckConstraint("CK_IgdbSyncStages_PagesProcessed", "\"PagesProcessed\" >= 0");
-            table.HasCheckConstraint("CK_IgdbSyncStages_RowsProcessed", "\"RowsProcessed\" >= 0");
-            table.HasCheckConstraint("CK_IgdbSyncStages_RowsSkipped", "\"RowsSkipped\" >= 0");
+            table.HasCheckConstraint(
+                "CK_IgdbSyncStages_Order",
+                """
+                "Order" >= 0
+                """
+            );
+            table.HasCheckConstraint(
+                "CK_IgdbSyncStages_PageCursor",
+                """
+                "PageCursor" >= -1
+                """
+            );
+            table.HasCheckConstraint(
+                "CK_IgdbSyncStages_PagesProcessed",
+                """
+                "PagesProcessed" >= 0
+                """
+            );
+            table.HasCheckConstraint(
+                "CK_IgdbSyncStages_RowsProcessed",
+                """
+                "RowsProcessed" >= 0
+                """
+            );
+            table.HasCheckConstraint(
+                "CK_IgdbSyncStages_RowsSkipped",
+                """
+                "RowsSkipped" >= 0
+                """
+            );
             table.HasCheckConstraint(
                 "CK_IgdbSyncStages_Completion",
-                "(\"Status\" = 'Succeeded' AND \"CompletedAt\" IS NOT NULL) OR \"Status\" <> 'Succeeded'"
+                """
+                ("Status" = 'Succeeded' AND "CompletedAt" IS NOT NULL) OR "Status" <> 'Succeeded'
+                """
             );
         });
         stage

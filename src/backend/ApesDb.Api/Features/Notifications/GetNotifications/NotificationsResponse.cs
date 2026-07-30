@@ -1,5 +1,7 @@
 namespace ApesDb.Api.Features.Notifications.GetNotifications;
 
+public sealed record NotificationActorResponse(Guid Id, string Name, string? PictureUrl);
+
 public sealed record NotificationResponse(
     Guid Id,
     string Type,
@@ -7,7 +9,8 @@ public sealed record NotificationResponse(
     DateTime CreatedAt,
     DateTime? ReadAt,
     bool IsUnread,
-    bool IsActionable
+    bool IsActionable,
+    NotificationActorResponse? Actor
 );
 
 public sealed record NotificationMetadataResponse(

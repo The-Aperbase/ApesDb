@@ -30,6 +30,19 @@ public static class ApiRoutes
         public const string EntryByGame = $"{Entries}/{{gameId:long}}";
     }
 
+    public static class Calendar
+    {
+        public const string Prefix = "calendar";
+        public const string Events = $"{Prefix}/events";
+        public const string EventById = $"{Events}/{{eventId:guid}}";
+        public const string Sharing = $"{Prefix}/sharing";
+        public const string Invites = $"{Prefix}/invites";
+        public const string InviteById = $"{Invites}/{{inviteId:guid}}";
+        public const string RespondToInvite = $"{InviteById}/respond";
+        public const string Connections = $"{Prefix}/connections";
+        public const string ConnectionById = $"{Connections}/{{connectionId:guid}}";
+    }
+
     public static class Auth
     {
         public const string Prefix = "auth";

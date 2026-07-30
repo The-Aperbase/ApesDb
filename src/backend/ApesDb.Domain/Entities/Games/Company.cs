@@ -46,8 +46,18 @@ public sealed class CompanyConfiguration : IEntityTypeConfiguration<Company>
         company.Property(value => value.LogoImageId).HasMaxLength(128);
         company.ToTable(table =>
         {
-            table.HasCheckConstraint("CK_Companies_LogoWidth", "\"LogoWidth\" IS NULL OR \"LogoWidth\" > 0");
-            table.HasCheckConstraint("CK_Companies_LogoHeight", "\"LogoHeight\" IS NULL OR \"LogoHeight\" > 0");
+            table.HasCheckConstraint(
+                "CK_Companies_LogoWidth",
+                """
+                "LogoWidth" IS NULL OR "LogoWidth" > 0
+                """
+            );
+            table.HasCheckConstraint(
+                "CK_Companies_LogoHeight",
+                """
+                "LogoHeight" IS NULL OR "LogoHeight" > 0
+                """
+            );
         });
     }
 }

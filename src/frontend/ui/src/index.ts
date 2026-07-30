@@ -1,6 +1,21 @@
 export { Button, buttonVariants, type ButtonProps } from "./lib/button";
 export { Alert, AlertAction, AlertDescription, AlertTitle } from "./lib/alert";
+export {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogMedia,
+  AlertDialogOverlay,
+  AlertDialogPortal,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "./lib/alert-dialog";
 export { Badge, badgeVariants } from "./lib/badge";
+export { Calendar, CalendarDayButton } from "./lib/calendar";
 export {
   Breadcrumb,
   BreadcrumbEllipsis,
@@ -78,6 +93,18 @@ export {
 } from "./lib/avatar";
 export { Input } from "./lib/input";
 export {
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectLabel,
+  SelectScrollDownButton,
+  SelectScrollUpButton,
+  SelectSeparator,
+  SelectTrigger,
+  SelectValue,
+} from "./lib/select";
+export {
   Field,
   FieldContent,
   FieldDescription,
@@ -130,6 +157,7 @@ export {
   PopoverTrigger,
 } from "./lib/popover";
 export { Separator } from "./lib/separator";
+export { ScrollArea, ScrollBar } from "./lib/scroll-area";
 export {
   Sheet,
   SheetClose,

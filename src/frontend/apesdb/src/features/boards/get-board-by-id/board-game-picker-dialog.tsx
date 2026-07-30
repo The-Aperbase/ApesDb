@@ -107,7 +107,6 @@ export function BoardGamePickerDialog({ board, open, onOpenChange }: BoardGamePi
     try {
       await addGame.mutateAsync(game.id);
       toast.success(`${game.name} added to ${board.name}`);
-      onOpenChange(false);
     } catch (error) {
       toast.error(
         error instanceof Error ? error.message : `Could not add ${game.name}. Try again.`,
@@ -151,10 +150,9 @@ export function BoardGamePickerDialog({ board, open, onOpenChange }: BoardGamePi
                   : `Add ${game.name} to ${board.name}`
               }
               className="cursor-pointer text-left hover:bg-muted/40 disabled:cursor-not-allowed disabled:opacity-60"
-              disabled={isAlreadyAdded || addGame.isPending}
               key={game.id}
               onClick={() => void handleAdd(game)}
-              render={<button type="button" />}
+              render={<button disabled={isAlreadyAdded || addGame.isPending} type="button" />}
               size="sm"
               variant="outline"
             >

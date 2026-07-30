@@ -1,0 +1,13 @@
+﻿{
+  Response: {
+    StatusCode: 400,
+    ReasonPhrase: Bad Request,
+    Version: 1.1,
+    ContentHeaders: {
+      Content-Type: [
+        application/problem+json; charset=utf-8
+      ]
+    }
+  },
+  Content: {"statusCode":400,"message":"One or more errors occurred!","errors":{"":["Calendar ranges must not exceed 62 days."]}}
+}

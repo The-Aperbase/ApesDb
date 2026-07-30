@@ -43,6 +43,16 @@ internal static class NotificationTestData
                 CreatedAt = TestClock.UtcNow.AddMinutes(-1),
                 ResolvedAt = TestClock.UtcNow,
             },
+            new Notification
+            {
+                Id = Guid.Parse("01910000-0000-7000-8000-000000005004"),
+                UserId = inviteeId,
+                User = usersById[inviteeId],
+                Type = "CalendarInvite",
+                ResourceId = CalendarTestData.PendingInvitationId,
+                IsActionable = true,
+                CreatedAt = TestClock.UtcNow.AddMinutes(-2),
+            },
         ];
     }
 }
