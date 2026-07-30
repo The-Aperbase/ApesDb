@@ -72,14 +72,28 @@ public sealed class GameConfiguration : IEntityTypeConfiguration<Game>
         {
             table.HasCheckConstraint(
                 "CK_Games_TotalRating",
-                "\"TotalRating\" IS NULL OR (\"TotalRating\" >= 0 AND \"TotalRating\" <= 100)"
+                """
+                "TotalRating" IS NULL OR ("TotalRating" >= 0 AND "TotalRating" <= 100)
+                """
             );
             table.HasCheckConstraint(
                 "CK_Games_TotalRatingCount",
-                "\"TotalRatingCount\" IS NULL OR \"TotalRatingCount\" >= 0"
+                """
+                "TotalRatingCount" IS NULL OR "TotalRatingCount" >= 0
+                """
             );
-            table.HasCheckConstraint("CK_Games_CoverWidth", "\"CoverWidth\" IS NULL OR \"CoverWidth\" > 0");
-            table.HasCheckConstraint("CK_Games_CoverHeight", "\"CoverHeight\" IS NULL OR \"CoverHeight\" > 0");
+            table.HasCheckConstraint(
+                "CK_Games_CoverWidth",
+                """
+                "CoverWidth" IS NULL OR "CoverWidth" > 0
+                """
+            );
+            table.HasCheckConstraint(
+                "CK_Games_CoverHeight",
+                """
+                "CoverHeight" IS NULL OR "CoverHeight" > 0
+                """
+            );
         });
         game.HasOne(value => value.GameType)
             .WithMany()

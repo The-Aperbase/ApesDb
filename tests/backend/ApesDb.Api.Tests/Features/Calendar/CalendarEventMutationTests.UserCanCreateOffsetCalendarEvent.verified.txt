@@ -1,0 +1,69 @@
+﻿{
+  CreatedEventId: Guid_1,
+  CreateResponse: {
+    Response: {
+      StatusCode: 201,
+      ReasonPhrase: Created,
+      Version: 1.1,
+      ContentHeaders: {
+        Content-Type: [
+          application/json; charset=utf-8
+        ]
+      }
+    },
+    Content: {
+      Id: Guid_1,
+      ResourceId: Guid_2,
+      Title: Late shift,
+      Start: DateTimeOffset_1,
+      End: DateTimeOffset_2,
+      AllDay: false,
+      TimeZoneId: Europe/Oslo,
+      ReadOnly: false,
+      CreatedAt: DateTimeOffset_3,
+      UpdatedAt: DateTimeOffset_3
+    }
+  },
+  RangeResponse: {
+    Response: {
+      StatusCode: 200,
+      ReasonPhrase: OK,
+      Version: 1.1,
+      ContentHeaders: {
+        Content-Type: [
+          application/json; charset=utf-8
+        ]
+      }
+    },
+    Content: {
+      Resources: [
+        {
+          Id: Guid_2,
+          Title: Olivia Owner,
+          PictureUrl: https://images.apesdb.test/owner.png,
+          IsCurrentUser: true
+        },
+        {
+          Id: Guid_3,
+          Title: Mason Member,
+          PictureUrl: https://images.apesdb.test/member.png,
+          IsCurrentUser: false
+        }
+      ],
+      Events: [
+        {
+          Id: Guid_1,
+          ResourceId: Guid_2,
+          Title: Late shift,
+          Start: DateTimeOffset_1,
+          End: DateTimeOffset_2,
+          AllDay: false,
+          TimeZoneId: Europe/Oslo,
+          ReadOnly: false,
+          CreatedAt: DateTimeOffset_3,
+          UpdatedAt: DateTimeOffset_3
+        }
+      ]
+    }
+  }
+}

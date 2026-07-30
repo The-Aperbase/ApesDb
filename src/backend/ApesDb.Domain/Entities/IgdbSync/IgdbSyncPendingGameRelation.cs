@@ -35,11 +35,15 @@ public sealed class IgdbSyncPendingGameRelationConfiguration : IEntityTypeConfig
         {
             table.HasCheckConstraint(
                 "CK_IgdbSyncPendingGameRelations_DifferentGames",
-                "\"GameId\" <> \"RelatedGameId\""
+                """
+                "GameId" <> "RelatedGameId"
+                """
             );
             table.HasCheckConstraint(
                 "CK_IgdbSyncPendingGameRelations_RelationType",
-                "\"RelationType\" IN ('Dlc', 'Expansion', 'StandaloneExpansion')"
+                """
+                "RelationType" IN ('Dlc', 'Expansion', 'StandaloneExpansion')
+                """
             );
         });
         relation

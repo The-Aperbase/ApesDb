@@ -1,0 +1,35 @@
+﻿{
+  Response: {
+    StatusCode: 200,
+    ReasonPhrase: OK,
+    Version: 1.1,
+    ContentHeaders: {
+      Content-Type: [
+        application/json; charset=utf-8
+      ]
+    }
+  },
+  Content: {
+    Resources: [
+      {
+        Id: Guid_1,
+        Title: Oscar Outsider,
+        IsCurrentUser: true
+      }
+    ],
+    Events: [
+      {
+        Id: Guid_2,
+        ResourceId: Guid_1,
+        Title: Private shift,
+        Start: DateTimeOffset_1,
+        End: DateTimeOffset_2,
+        AllDay: false,
+        TimeZoneId: Europe/London,
+        ReadOnly: false,
+        CreatedAt: DateTimeOffset_3,
+        UpdatedAt: DateTimeOffset_3
+      }
+    ]
+  }
+}

@@ -19,7 +19,9 @@ public sealed class AllowedUserConfiguration : IEntityTypeConfiguration<AllowedU
         allowedUser.ToTable(table =>
             table.HasCheckConstraint(
                 "CK_AllowedUsers_Email_Normalized",
-                "\"Email\" <> '' AND \"Email\" = btrim(\"Email\") AND \"Email\" = lower(\"Email\")"
+                """
+                "Email" <> '' AND "Email" = btrim("Email") AND "Email" = lower("Email")
+                """
             )
         );
         allowedUser.HasKey(value => value.Id);

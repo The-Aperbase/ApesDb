@@ -1,0 +1,157 @@
+﻿{
+  UpdateResponse: {
+    Response: {
+      StatusCode: 200,
+      ReasonPhrase: OK,
+      Version: 1.1,
+      ContentHeaders: {
+        Content-Type: [
+          application/json; charset=utf-8
+        ]
+      }
+    },
+    Content: {
+      Id: Guid_1,
+      ResourceId: Guid_2,
+      Title: Swapped shift,
+      Start: DateTimeOffset_1,
+      End: DateTimeOffset_2,
+      AllDay: false,
+      TimeZoneId: Europe/Oslo,
+      RecurringEventId: Guid_3,
+      OriginalStart: DateTimeOffset_3,
+      ReadOnly: false,
+      CreatedAt: DateTimeOffset_4,
+      UpdatedAt: DateTimeOffset_4
+    }
+  },
+  ChangedRange: {
+    Response: {
+      StatusCode: 200,
+      ReasonPhrase: OK,
+      Version: 1.1,
+      ContentHeaders: {
+        Content-Type: [
+          application/json; charset=utf-8
+        ]
+      }
+    },
+    Content: {
+      Resources: [
+        {
+          Id: Guid_2,
+          Title: Olivia Owner,
+          PictureUrl: https://images.apesdb.test/owner.png,
+          IsCurrentUser: true
+        },
+        {
+          Id: Guid_4,
+          Title: Mason Member,
+          PictureUrl: https://images.apesdb.test/member.png,
+          IsCurrentUser: false
+        }
+      ],
+      Events: [
+        {
+          Id: Guid_3,
+          ResourceId: Guid_2,
+          Title: Rota,
+          Start: DateTimeOffset_5,
+          End: DateTimeOffset_6,
+          AllDay: false,
+          TimeZoneId: Europe/Oslo,
+          Recurrence: {
+            Frequency: weekly,
+            Interval: 1,
+            Count: 4,
+            ByWeekday: [
+              MO
+            ],
+            WeekStart: MO
+          },
+          ExDates: [
+            DateTimeOffset_3
+          ],
+          ReadOnly: false,
+          CreatedAt: DateTimeOffset_4,
+          UpdatedAt: DateTimeOffset_4
+        },
+        {
+          Id: Guid_1,
+          ResourceId: Guid_2,
+          Title: Swapped shift,
+          Start: DateTimeOffset_1,
+          End: DateTimeOffset_2,
+          AllDay: false,
+          TimeZoneId: Europe/Oslo,
+          RecurringEventId: Guid_3,
+          OriginalStart: DateTimeOffset_3,
+          ReadOnly: false,
+          CreatedAt: DateTimeOffset_4,
+          UpdatedAt: DateTimeOffset_4
+        }
+      ]
+    }
+  },
+  DeleteResponse: {
+    Response: {
+      StatusCode: 204,
+      ReasonPhrase: No Content,
+      Version: 1.1
+    }
+  },
+  CancelledRange: {
+    Response: {
+      StatusCode: 200,
+      ReasonPhrase: OK,
+      Version: 1.1,
+      ContentHeaders: {
+        Content-Type: [
+          application/json; charset=utf-8
+        ]
+      }
+    },
+    Content: {
+      Resources: [
+        {
+          Id: Guid_2,
+          Title: Olivia Owner,
+          PictureUrl: https://images.apesdb.test/owner.png,
+          IsCurrentUser: true
+        },
+        {
+          Id: Guid_4,
+          Title: Mason Member,
+          PictureUrl: https://images.apesdb.test/member.png,
+          IsCurrentUser: false
+        }
+      ],
+      Events: [
+        {
+          Id: Guid_3,
+          ResourceId: Guid_2,
+          Title: Rota,
+          Start: DateTimeOffset_5,
+          End: DateTimeOffset_6,
+          AllDay: false,
+          TimeZoneId: Europe/Oslo,
+          Recurrence: {
+            Frequency: weekly,
+            Interval: 1,
+            Count: 4,
+            ByWeekday: [
+              MO
+            ],
+            WeekStart: MO
+          },
+          ExDates: [
+            DateTimeOffset_3
+          ],
+          ReadOnly: false,
+          CreatedAt: DateTimeOffset_4,
+          UpdatedAt: DateTimeOffset_4
+        }
+      ]
+    }
+  }
+}

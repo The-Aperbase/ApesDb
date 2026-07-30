@@ -1,4 +1,7 @@
 import {
+  Avatar,
+  AvatarFallback,
+  AvatarImage,
   Badge,
   Button,
   Popover,
@@ -9,8 +12,13 @@ import {
   PopoverTrigger,
   Skeleton,
 } from "@apesdb/ui";
-import { Bell, CheckCheck, Inbox, RefreshCw } from "lucide-react";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { Bell, Check, CheckCheck, Inbox, Loader2, RefreshCw, X } from "lucide-react";
+import { toast } from "sonner";
 import { formatDateTime } from "../../lib/date";
+import { respondToCalendarInvitation } from "../calendar/calendar.api";
+import { calendarQueryKeys } from "../calendar/calendar-query-keys";
+import { notificationQueryKeys } from "./notification-query-keys";
 import type { Notification } from "./notifications.schemas";
 import { useMarkNotificationsRead } from "./use-mark-notifications-read";
 import { useNotifications } from "./use-notifications";
@@ -32,14 +40,73 @@ function NotificationSkeleton() {
   );
 }
 
-function NotificationRow({ notification }: { notification: Notification }) {
+type NotificationRowProps = {
+  notification: Notification;
+  responding: boolean;
+  onRespond: (inviteId: string, accept: boolean) => void;
+};
+
+function initials(name: string): string {
+  return name
+    .split(/\s+/)
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((part) => part[0]?.toUpperCase())
+    .join("");
+}
+
+function NotificationRow({ notification, responding, onRespond }: NotificationRowProps) {
+  const isCalendarInvite = notification.type === "CalendarInvite" && notification.isActionable;
+  const actor = notification.actor;
+
   return (
     <div className="flex items-start gap-3 p-2">
+      {isCalendarInvite && actor ? (
+        <Avatar className="size-8 shrink-0">
+          <AvatarImage alt={actor.name} src={actor.pictureUrl ?? undefined} />
+          <AvatarFallback>{initials(actor.name)}</AvatarFallback>
+        </Avatar>
+      ) : null}
       <div className="grid min-w-0 flex-1 gap-1">
-        <p className="text-xs">You have a new notification.</p>
+        <p className="text-xs">
+          {isCalendarInvite && actor ? (
+            <>
+              <span className="font-medium">{actor.name}</span> invited you to connect calendars.
+            </>
+          ) : (
+            "You have a new notification."
+          )}
+        </p>
         <p className="text-[0.625rem] text-muted-foreground">
           {formatDateTime(notification.createdAt)}
         </p>
+        {isCalendarInvite ? (
+          <div className="mt-1 flex gap-2">
+            <Button
+              disabled={responding}
+              onClick={() => onRespond(notification.resourceId, false)}
+              size="xs"
+              type="button"
+              variant="ghost"
+            >
+              <X data-icon="inline-start" />
+              Decline
+            </Button>
+            <Button
+              disabled={responding}
+              onClick={() => onRespond(notification.resourceId, true)}
+              size="xs"
+              type="button"
+            >
+              {responding ? (
+                <Loader2 className="animate-spin" />
+              ) : (
+                <Check data-icon="inline-start" />
+              )}
+              Accept
+            </Button>
+          </div>
+        ) : null}
       </div>
       {notification.isUnread ? (
         <span aria-label="Unread" className="mt-1.5 size-2 shrink-0 rounded-full bg-primary" />
@@ -49,8 +116,23 @@ function NotificationRow({ notification }: { notification: Notification }) {
 }
 
 export function NotificationBell({ open, onOpenChange }: NotificationBellProps) {
+  const queryClient = useQueryClient();
   const notifications = useNotifications();
   const markRead = useMarkNotificationsRead();
+  const respond = useMutation({
+    mutationFn: ({ inviteId, accept }: { inviteId: string; accept: boolean }) =>
+      respondToCalendarInvitation(inviteId, accept),
+    onSuccess: async (_result, input) => {
+      toast.success(input.accept ? "Calendars connected" : "Calendar invitation declined");
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: notificationQueryKeys.list }),
+        queryClient.invalidateQueries({ queryKey: calendarQueryKeys.all }),
+      ]);
+    },
+    onError: (error) => {
+      toast.error(error instanceof Error ? error.message : "Unable to respond to the invitation.");
+    },
+  });
 
   const unreadCount = notifications.data?.metadata.unreadCount ?? 0;
   const items = notifications.data?.items ?? [];
@@ -120,7 +202,14 @@ export function NotificationBell({ open, onOpenChange }: NotificationBellProps) 
         {items.length > 0 ? (
           <div className="-mx-1 grid max-h-80 gap-0.5 overflow-y-auto">
             {items.map((notification) => (
-              <NotificationRow key={notification.id} notification={notification} />
+              <NotificationRow
+                key={notification.id}
+                notification={notification}
+                responding={
+                  respond.isPending && respond.variables?.inviteId === notification.resourceId
+                }
+                onRespond={(inviteId, accept) => respond.mutate({ inviteId, accept })}
+              />
             ))}
           </div>
         ) : null}

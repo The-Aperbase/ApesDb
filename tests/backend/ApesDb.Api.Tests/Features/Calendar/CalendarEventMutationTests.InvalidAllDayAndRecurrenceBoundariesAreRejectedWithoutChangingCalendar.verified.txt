@@ -1,0 +1,56 @@
+﻿{
+  InvalidAllDayResponse: {
+    Response: {
+      StatusCode: 400,
+      ReasonPhrase: Bad Request,
+      Version: 1.1,
+      ContentHeaders: {
+        Content-Type: [
+          application/problem+json; charset=utf-8
+        ]
+      }
+    },
+    Content: {"statusCode":400,"message":"One or more errors occurred!","errors":{"":["All-day event boundaries must be midnight in the selected time zone."]}}
+  },
+  InvalidRecurrenceResponse: {
+    Response: {
+      StatusCode: 400,
+      ReasonPhrase: Bad Request,
+      Version: 1.1,
+      ContentHeaders: {
+        Content-Type: [
+          application/problem+json; charset=utf-8
+        ]
+      }
+    },
+    Content: {"statusCode":400,"message":"One or more errors occurred!","errors":{"":["Recurrence end must not be before the event start."]}}
+  },
+  RangeResponse: {
+    Response: {
+      StatusCode: 200,
+      ReasonPhrase: OK,
+      Version: 1.1,
+      ContentHeaders: {
+        Content-Type: [
+          application/json; charset=utf-8
+        ]
+      }
+    },
+    Content: {
+      Resources: [
+        {
+          Id: Guid_1,
+          Title: Olivia Owner,
+          PictureUrl: https://images.apesdb.test/owner.png,
+          IsCurrentUser: true
+        },
+        {
+          Id: Guid_2,
+          Title: Mason Member,
+          PictureUrl: https://images.apesdb.test/member.png,
+          IsCurrentUser: false
+        }
+      ]
+    }
+  }
+}

@@ -31,7 +31,9 @@ public sealed class IgdbSyncTouchedRelationParentConfiguration : IEntityTypeConf
         parent.ToTable(table =>
             table.HasCheckConstraint(
                 "CK_IgdbSyncTouchedRelationParents_RelationType",
-                "\"RelationType\" IN ('Dlc', 'Expansion', 'StandaloneExpansion')"
+                """
+                "RelationType" IN ('Dlc', 'Expansion', 'StandaloneExpansion')
+                """
             )
         );
         parent

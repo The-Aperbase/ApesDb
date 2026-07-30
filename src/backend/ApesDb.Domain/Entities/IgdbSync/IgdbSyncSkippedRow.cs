@@ -44,7 +44,9 @@ public sealed class IgdbSyncSkippedRowConfiguration : IEntityTypeConfiguration<I
         {
             table.HasCheckConstraint(
                 "CK_IgdbSyncSkippedRows_Reason",
-                "\"Reason\" IN ('MissingGame', 'MissingCompany', 'MissingExternalGameSource', 'MissingPlatform')"
+                """
+                "Reason" IN ('MissingGame', 'MissingCompany', 'MissingExternalGameSource', 'MissingPlatform')
+                """
             );
         });
         skippedRow

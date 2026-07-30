@@ -1,5 +1,6 @@
 using System.Security.Claims;
 using System.Text.Encodings.Web;
+using ApesDb.Auth.Services.UserProvisioning;
 using ApesDb.Domain;
 using ApesDb.Shared.Services.Users;
 using Microsoft.AspNetCore.Authentication;
@@ -16,18 +17,21 @@ public sealed class FakeAuthenticationHandler : AuthenticationHandler<Authentica
 
     private readonly ApplicationDbContext _dbContext;
     private readonly IAllowedUserService _allowedUserService;
+    private readonly IUserProvisioningService _userProvisioningService;
 
     public FakeAuthenticationHandler(
         IOptionsMonitor<AuthenticationSchemeOptions> options,
         ILoggerFactory logger,
         UrlEncoder encoder,
         ApplicationDbContext dbContext,
-        IAllowedUserService allowedUserService
+        IAllowedUserService allowedUserService,
+        IUserProvisioningService userProvisioningService
     )
         : base(options, logger, encoder)
     {
         _dbContext = dbContext;
         _allowedUserService = allowedUserService;
+        _userProvisioningService = userProvisioningService;
     }
 
     protected override async Task<AuthenticateResult> HandleAuthenticateAsync()
@@ -54,7 +58,14 @@ public sealed class FakeAuthenticationHandler : AuthenticationHandler<Authentica
         );
         if (user is null)
         {
-            return AuthenticateResult.NoResult();
+            await _userProvisioningService.EnsureUserFromPrincipalAsync(
+                TestUsers.CreateAuth0Principal(testUser),
+                Context.RequestAborted
+            );
+            user = await _dbContext.Users.SingleAsync(
+                candidate => candidate.Auth0Subject == testUser.Auth0Subject,
+                Context.RequestAborted
+            );
         }
 
         var claims = new List<Claim>
