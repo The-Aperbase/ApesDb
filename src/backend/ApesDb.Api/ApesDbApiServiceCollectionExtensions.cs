@@ -1,5 +1,5 @@
 using ApesDb.Api.Features.Games;
-using ApesDb.Api.Options;
+using ApesDb.Common.Options;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.HttpOverrides;
 using StackExchange.Redis;

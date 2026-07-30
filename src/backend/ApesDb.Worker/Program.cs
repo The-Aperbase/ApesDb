@@ -1,4 +1,5 @@
 using ApesDb.Common;
+using ApesDb.Common.Options;
 using ApesDb.Domain;
 using ApesDb.Domain.Options;
 using ApesDb.Igdb.Sdk;
@@ -7,6 +8,8 @@ using ApesDb.Worker;
 using ApesDb.Worker.Games;
 using ApesDb.Worker.Options;
 using Microsoft.EntityFrameworkCore;
+using StackExchange.Redis;
+using TickerQ.Caching.StackExchangeRedis.DependencyInjection;
 using TickerQ.Dashboard.DependencyInjection;
 using TickerQ.DependencyInjection;
 using TickerQ.EntityFrameworkCore.DependencyInjection;
@@ -21,6 +24,16 @@ var dashboardOptions =
     ?? throw new InvalidOperationException(
         $"Missing required configuration section '{TickerQDashboardOptions.SectionName}'."
     );
+var cacheOptions =
+    builder.Configuration.GetRequiredSection(CacheOptions.SectionName).Get<CacheOptions>()
+    ?? throw new InvalidOperationException($"Missing required configuration section '{CacheOptions.SectionName}'.");
+var tickerQRecoveryOptions =
+    builder.Configuration.GetRequiredSection(TickerQRecoveryOptions.SectionName).Get<TickerQRecoveryOptions>()
+    ?? throw new InvalidOperationException(
+        $"Missing required configuration section '{TickerQRecoveryOptions.SectionName}'."
+    );
+var redisConfiguration = ConfigurationOptions.Parse(cacheOptions.ConnectionString);
+redisConfiguration.Password = cacheOptions.Password;
 
 builder.Services.AddApesDbCommon();
 builder.Services.AddApesDbDomain(builder.Configuration);
@@ -39,6 +52,16 @@ builder
     .Validate(options => !string.IsNullOrWhiteSpace(options.Username), "TickerQ dashboard username is required.")
     .Validate(options => !string.IsNullOrWhiteSpace(options.Password), "TickerQ dashboard password is required.")
     .ValidateOnStart();
+builder
+    .Services.AddOptions<CacheOptions>()
+    .Bind(builder.Configuration.GetRequiredSection(CacheOptions.SectionName))
+    .ValidateDataAnnotations()
+    .ValidateOnStart();
+builder
+    .Services.AddOptions<TickerQRecoveryOptions>()
+    .Bind(builder.Configuration.GetRequiredSection(TickerQRecoveryOptions.SectionName))
+    .ValidateDataAnnotations()
+    .ValidateOnStart();
 
 builder.Services.AddTickerQ(options =>
 {
@@ -48,6 +71,12 @@ builder.Services.AddTickerQ(options =>
             dbContextOptions => dbContextOptions.UseNpgsql(databaseOptions.ConnectionString),
             WorkerTickerQDbContext.Schema
         );
+    });
+    options.AddStackExchangeRedis(redisOptions =>
+    {
+        redisOptions.ConfigurationOptions = redisConfiguration;
+        redisOptions.InstanceName = "apesdb:tickerq:";
+        redisOptions.NodeHeartbeatInterval = TimeSpan.FromSeconds(tickerQRecoveryOptions.HeartbeatIntervalSeconds);
     });
 
     options.AddDashboard(dashboard =>

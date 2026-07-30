@@ -33,6 +33,15 @@ public sealed class CatalogSyncJobs
         return _orchestrator.StartFullSyncAsync(cancellationToken);
     }
 
+    [TickerFunction(CatalogSyncFunctions.Resume, maxConcurrency: 1)]
+    public Task ResumeFailedAsync(
+        TickerFunctionContext<CatalogSyncResumeRequest> context,
+        CancellationToken cancellationToken
+    )
+    {
+        return _orchestrator.ResumeFailedAsync(context.Request.RunId, cancellationToken);
+    }
+
     [TickerFunction(CatalogSyncFunctions.GameTypes, maxConcurrency: 1)]
     public Task SyncGameTypesAsync(
         TickerFunctionContext<CatalogSyncJobRequest> context,

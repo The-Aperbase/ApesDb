@@ -6,6 +6,8 @@ public interface ICatalogSyncOrchestrator
 
     Task StartFullSyncAsync(CancellationToken cancellationToken = default);
 
+    Task ResumeFailedAsync(Guid runId, CancellationToken cancellationToken = default);
+
     Task EnsureIncrementalAsync(CancellationToken cancellationToken = default);
 
     Task AdvanceAsync(
