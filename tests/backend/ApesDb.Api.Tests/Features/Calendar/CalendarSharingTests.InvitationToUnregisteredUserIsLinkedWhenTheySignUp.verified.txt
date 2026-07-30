@@ -25,28 +25,7 @@
       CreatedAt: DateTimeOffset_1
     }
   },
-  InvitationResponse: {
-    Response: {
-      StatusCode: 200,
-      ReasonPhrase: OK,
-      Version: 1.1,
-      ContentHeaders: {
-        Content-Type: [
-          application/json; charset=utf-8
-        ]
-      }
-    },
-    Content: {
-      Id: Guid_1,
-      InvitedBy: {
-        Id: Guid_2,
-        Name: Olivia Owner,
-        PictureUrl: https://images.apesdb.test/owner.png
-      },
-      CreatedAt: DateTimeOffset_1
-    }
-  },
-  SharingResponse: {
+  SharingBeforeSignupResponse: {
     Response: {
       StatusCode: 200,
       ReasonPhrase: OK,
@@ -72,7 +51,7 @@
       OutgoingInvitations: [
         {
           Id: Guid_1,
-          Email: outsider@apesdb.test,
+          Email: signup@apesdb.test,
           CreatedAt: DateTimeOffset_1
         },
         {
@@ -81,6 +60,45 @@
           CreatedAt: DateTimeOffset_2
         }
       ]
+    }
+  },
+  SignupResponse: {
+    Response: {
+      StatusCode: 200,
+      ReasonPhrase: OK,
+      Version: 1.1,
+      ContentHeaders: {
+        Content-Type: [
+          application/json; charset=utf-8
+        ]
+      }
+    },
+    Content: {
+      Id: Guid_6,
+      Email: signup@apesdb.test,
+      Name: Sasha Signup,
+      PictureUrl: https://images.apesdb.test/signup.png
+    }
+  },
+  InvitationResponse: {
+    Response: {
+      StatusCode: 200,
+      ReasonPhrase: OK,
+      Version: 1.1,
+      ContentHeaders: {
+        Content-Type: [
+          application/json; charset=utf-8
+        ]
+      }
+    },
+    Content: {
+      Id: Guid_1,
+      InvitedBy: {
+        Id: Guid_2,
+        Name: Olivia Owner,
+        PictureUrl: https://images.apesdb.test/owner.png
+      },
+      CreatedAt: DateTimeOffset_1
     }
   },
   NotificationsResponse: {
@@ -97,7 +115,7 @@
     Content: {
       Items: [
         {
-          Id: Guid_6,
+          Id: Guid_7,
           Type: CalendarInvite,
           ResourceId: Guid_1,
           CreatedAt: DateTime_1,
@@ -108,21 +126,13 @@
             Name: Olivia Owner,
             PictureUrl: https://images.apesdb.test/owner.png
           }
-        },
-        {
-          Id: Guid_7,
-          Type: CatalogImportCompleted,
-          ResourceId: Guid_8,
-          CreatedAt: DateTime_1,
-          IsUnread: true,
-          IsActionable: false
         }
       ],
       Metadata: {
-        TotalCount: 2,
-        UnreadCount: 2,
+        TotalCount: 1,
+        UnreadCount: 1,
         ActionableCount: 1,
-        AttentionCount: 2
+        AttentionCount: 1
       }
     }
   }

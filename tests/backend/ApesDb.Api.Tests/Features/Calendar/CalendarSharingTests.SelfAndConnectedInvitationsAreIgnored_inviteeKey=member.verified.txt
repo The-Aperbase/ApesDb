@@ -1,0 +1,56 @@
+﻿{
+  InviteResponse: {
+    Response: {
+      StatusCode: 202,
+      ReasonPhrase: Accepted,
+      Version: 1.1
+    }
+  },
+  SharingResponse: {
+    Response: {
+      StatusCode: 200,
+      ReasonPhrase: OK,
+      Version: 1.1,
+      ContentHeaders: {
+        Content-Type: [
+          application/json; charset=utf-8
+        ]
+      }
+    },
+    Content: {
+      Connections: [
+        {
+          Id: Guid_1,
+          User: {
+            Id: Guid_2,
+            Name: Mason Member,
+            PictureUrl: https://images.apesdb.test/member.png
+          },
+          CreatedAt: DateTimeOffset_1
+        }
+      ],
+      OutgoingInvitations: [
+        {
+          Id: Guid_3,
+          Email: invitee@apesdb.test,
+          CreatedAt: DateTimeOffset_1
+        }
+      ]
+    }
+  },
+  NotificationsResponse: {
+    Response: {
+      StatusCode: 200,
+      ReasonPhrase: OK,
+      Version: 1.1,
+      ContentHeaders: {
+        Content-Type: [
+          application/json; charset=utf-8
+        ]
+      }
+    },
+    Content: {
+      Metadata: {}
+    }
+  }
+}

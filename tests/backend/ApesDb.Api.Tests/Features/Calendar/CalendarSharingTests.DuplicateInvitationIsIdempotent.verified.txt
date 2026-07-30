@@ -1,5 +1,5 @@
 ﻿{
-  InviteResponse: {
+  FirstResponse: {
     Response: {
       StatusCode: 201,
       ReasonPhrase: Created,
@@ -25,25 +25,11 @@
       CreatedAt: DateTimeOffset_1
     }
   },
-  InvitationResponse: {
+  SecondResponse: {
     Response: {
-      StatusCode: 200,
-      ReasonPhrase: OK,
-      Version: 1.1,
-      ContentHeaders: {
-        Content-Type: [
-          application/json; charset=utf-8
-        ]
-      }
-    },
-    Content: {
-      Id: Guid_1,
-      InvitedBy: {
-        Id: Guid_2,
-        Name: Olivia Owner,
-        PictureUrl: https://images.apesdb.test/owner.png
-      },
-      CreatedAt: DateTimeOffset_1
+      StatusCode: 202,
+      ReasonPhrase: Accepted,
+      Version: 1.1
     }
   },
   SharingResponse: {

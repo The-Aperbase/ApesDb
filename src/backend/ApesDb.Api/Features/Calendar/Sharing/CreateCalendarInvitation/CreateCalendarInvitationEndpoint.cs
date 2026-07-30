@@ -1,3 +1,4 @@
+using ApesDb.Api.Features.Calendar.Sharing.GetCalendarInvitation;
 using ApesDb.Api.Features.Notifications.GetNotifications;
 using ApesDb.Api.Features.Notifications.NotificationsStream;
 using ApesDb.Common;
@@ -9,7 +10,8 @@ using Microsoft.EntityFrameworkCore;
 
 namespace ApesDb.Api.Features.Calendar.Sharing.CreateCalendarInvitation;
 
-public sealed class CreateCalendarInvitationEndpoint : Endpoint<CreateCalendarInvitationRequest>
+public sealed class CreateCalendarInvitationEndpoint
+    : Endpoint<CreateCalendarInvitationRequest, CalendarInvitationResponse>
 {
     private const string NotificationType = "CalendarInvite";
 
@@ -38,104 +40,154 @@ public sealed class CreateCalendarInvitationEndpoint : Endpoint<CreateCalendarIn
     {
         var inviterId = User.GetApesDbUserId();
         var normalizedEmail = request.Email.Trim().ToLowerInvariant();
-        var targetIds = await _dbContext
-            .Users.AsNoTracking()
-            .Where(user => user.Email.ToLower() == normalizedEmail)
-            .OrderBy(user => user.Id)
-            .Select(user => user.Id)
-            .Take(2)
-            .ToArrayAsync(ct);
-        Guid? targetId = null;
-        if (targetIds.Length == 1)
-        {
-            targetId = targetIds[0];
-        }
+        var inviteeUserId = await FindInviteeUserIdAsync(normalizedEmail, ct);
 
-        if (targetId == inviterId)
+        if (await ShouldIgnoreInvitationAsync(inviterId, inviteeUserId, ct))
         {
             await Send.AcceptedAsync();
             return;
         }
 
-        if (targetId is not null)
+        var pendingInvitation = await FindPendingInvitationAsync(inviterId, normalizedEmail, ct);
+        if (pendingInvitation is not null)
         {
-            var alreadyConnected = await _dbContext.CalendarConnections.AnyAsync(
-                connection =>
-                    (connection.FirstUserId == inviterId && connection.SecondUserId == targetId.Value)
-                    || (connection.FirstUserId == targetId.Value && connection.SecondUserId == inviterId),
-                ct
-            );
-            if (alreadyConnected)
+            if (pendingInvitation.InviteeUserId is null && inviteeUserId is not null)
             {
-                await Send.AcceptedAsync();
-                return;
+                await AttachInviteeAndNotifyAsync(pendingInvitation, inviteeUserId.Value, ct);
             }
+
+            await Send.AcceptedAsync();
+            return;
         }
 
-        var pending = await _dbContext.CalendarInvitations.SingleOrDefaultAsync(
+        var result = await CreateInvitationAsync(inviterId, inviteeUserId, normalizedEmail, ct);
+        await Send.CreatedAtAsync<GetCalendarInvitationEndpoint>(
+            new { inviteId = result.Invitation.Id },
+            new CalendarInvitationResponse(result.Invitation.Id, result.InvitedBy, result.Invitation.CreatedAt),
+            cancellation: ct
+        );
+    }
+
+    private async Task<Guid?> FindInviteeUserIdAsync(string normalizedEmail, CancellationToken ct)
+    {
+        return await _dbContext
+            .Users.AsNoTracking()
+            .Where(user => user.Email == normalizedEmail)
+            .Select(user => (Guid?)user.Id) //Guid is a value type, this stops getting an empty guid back
+            .FirstOrDefaultAsync(ct);
+    }
+
+    private async Task<bool> ShouldIgnoreInvitationAsync(Guid inviterId, Guid? inviteeUserId, CancellationToken ct)
+    {
+        if (inviteeUserId is null)
+        {
+            return false;
+        }
+
+        if (inviteeUserId.Value == inviterId)
+        {
+            return true;
+        }
+
+        return await _dbContext.CalendarConnections.AnyAsync(
+            connection =>
+                (connection.FirstUserId == inviterId && connection.SecondUserId == inviteeUserId.Value)
+                || (connection.FirstUserId == inviteeUserId.Value && connection.SecondUserId == inviterId),
+            ct
+        );
+    }
+
+    private Task<CalendarInvitation?> FindPendingInvitationAsync(
+        Guid inviterId,
+        string normalizedEmail,
+        CancellationToken ct
+    )
+    {
+        return _dbContext.CalendarInvitations.SingleOrDefaultAsync(
             invitation =>
                 invitation.InviterUserId == inviterId
                 && invitation.InviteeEmail == normalizedEmail
                 && invitation.StatusId == CalendarInvitationStatus.Pending,
             ct
         );
-        if (pending is not null)
-        {
-            if (pending.InviteeUserId is null && targetId is not null)
-            {
-                pending.InviteeUserId = targetId;
-                await AddNotificationAndSaveAsync(pending, targetId.Value, ct);
-            }
+    }
 
-            await Send.AcceptedAsync();
-            return;
-        }
+    private async Task AttachInviteeAndNotifyAsync(
+        CalendarInvitation invitation,
+        Guid inviteeUserId,
+        CancellationToken ct
+    )
+    {
+        var invitedBy = await GetInvitedByAsync(invitation.InviterUserId, ct);
+        var notification = CreateNotification(invitation, inviteeUserId);
+        invitation.InviteeUserId = inviteeUserId;
+        _dbContext.Notifications.Add(notification);
+        await _dbContext.SaveChangesAsync(ct);
+        PublishNotification(notification, invitedBy);
+    }
 
+    private async Task<CreatedInvitationResult> CreateInvitationAsync(
+        Guid inviterId,
+        Guid? inviteeUserId,
+        string normalizedEmail,
+        CancellationToken ct
+    )
+    {
         var now = _dateTimeProvider.OffsetUtcNow;
         var invitation = new CalendarInvitation
         {
             Id = Guid.CreateVersion7(),
             InviterUserId = inviterId,
-            InviteeUserId = targetId,
+            InviteeUserId = inviteeUserId,
             InviteeEmail = normalizedEmail,
             StatusId = CalendarInvitationStatus.Pending,
             CreatedAt = now,
         };
+        var invitedBy = await GetInvitedByAsync(inviterId, ct);
         _dbContext.CalendarInvitations.Add(invitation);
 
-        if (targetId is null)
+        Notification? notification = null;
+        if (inviteeUserId is not null)
         {
-            await _dbContext.SaveChangesAsync(ct);
-        }
-        else
-        {
-            await AddNotificationAndSaveAsync(invitation, targetId.Value, ct);
+            notification = CreateNotification(invitation, inviteeUserId.Value);
+            _dbContext.Notifications.Add(notification);
         }
 
-        await Send.AcceptedAsync();
+        await _dbContext.SaveChangesAsync(ct);
+        if (notification is not null)
+        {
+            PublishNotification(notification, invitedBy);
+        }
+
+        return new CreatedInvitationResult(invitation, invitedBy);
     }
 
-    private async Task AddNotificationAndSaveAsync(CalendarInvitation invitation, Guid targetId, CancellationToken ct)
+    private Task<CalendarUserResponse> GetInvitedByAsync(Guid inviterId, CancellationToken ct)
     {
-        var createdAt = invitation.CreatedAt.UtcDateTime;
-        var actor = await _dbContext
+        return _dbContext
             .Users.AsNoTracking()
-            .Where(user => user.Id == invitation.InviterUserId)
-            .Select(user => new NotificationActorResponse(user.Id, user.Name, user.PictureUrl))
+            .Where(user => user.Id == inviterId)
+            .Select(user => new CalendarUserResponse(user.Id, user.Name, user.PictureUrl))
             .SingleAsync(ct);
-        var notification = new Notification
+    }
+
+    private static Notification CreateNotification(CalendarInvitation invitation, Guid inviteeUserId)
+    {
+        return new Notification
         {
             Id = Guid.CreateVersion7(),
-            UserId = targetId,
+            UserId = inviteeUserId,
             Type = NotificationType,
             ResourceId = invitation.Id,
             IsActionable = true,
-            CreatedAt = createdAt,
+            CreatedAt = invitation.CreatedAt.UtcDateTime,
         };
-        _dbContext.Notifications.Add(notification);
-        await _dbContext.SaveChangesAsync(ct);
+    }
+
+    private void PublishNotification(Notification notification, CalendarUserResponse invitedBy)
+    {
         _streamService.Publish(
-            targetId,
+            notification.UserId,
             new NotificationStreamEvent(
                 NotificationStreamEventKinds.Created,
                 new NotificationResponse(
@@ -146,9 +198,11 @@ public sealed class CreateCalendarInvitationEndpoint : Endpoint<CreateCalendarIn
                     null,
                     true,
                     true,
-                    actor
+                    new NotificationActorResponse(invitedBy.Id, invitedBy.Name, invitedBy.PictureUrl)
                 )
             )
         );
     }
+
+    private sealed record CreatedInvitationResult(CalendarInvitation Invitation, CalendarUserResponse InvitedBy);
 }
