@@ -16,7 +16,7 @@ import {
   type EventCalendarSlotDraft,
   type EventCalendarSlotInfo,
 } from "@apesdb/ui/event-calendar";
-import { CalendarPlus, RefreshCw, Share2, UserRound } from "lucide-react";
+import { CalendarPlus, Moon, RefreshCw, Repeat, Share2, Sun, UserRound } from "lucide-react";
 import { toast } from "sonner";
 import {
   createCalendarEvent,
@@ -46,11 +46,41 @@ const resourceColors = [
   "oklch(0.62 0.15 95)",
 ];
 
+type ShiftKind = "early" | "late";
+
+const shiftIconColors: Record<ShiftKind, string> = {
+  early: "oklch(0.67 0.16 70)",
+  late: "oklch(0.57 0.18 285)",
+};
+
 type MutationInput =
   | { kind: "create"; input: CalendarEventInput }
   | { kind: "duplicate"; input: CalendarEventInput }
   | { kind: "update"; input: UpdateCalendarEventInput }
   | { kind: "delete"; input: DeleteCalendarEventInput };
+
+function getShiftKind(title: string): ShiftKind | null {
+  const normalizedTitle = title.trim().toLowerCase();
+  if (normalizedTitle === "early") {
+    return "early";
+  }
+
+  if (normalizedTitle === "late") {
+    return "late";
+  }
+
+  return null;
+}
+
+function ShiftIcon({ kind, className }: { kind: ShiftKind; className?: string }) {
+  if (kind === "early") {
+    return (
+      <Sun aria-hidden="true" className={className} style={{ color: shiftIconColors.early }} />
+    );
+  }
+
+  return <Moon aria-hidden="true" className={className} style={{ color: shiftIconColors.late }} />;
+}
 
 function initialRange() {
   const start = new Date();
@@ -266,40 +296,128 @@ export function CalendarPage() {
       }),
     [displayTimeZone],
   );
+  const eventDateFormatter = useMemo(
+    () =>
+      new Intl.DateTimeFormat("en-CA", {
+        year: "numeric",
+        month: "2-digit",
+        day: "2-digit",
+        timeZone: displayTimeZone,
+      }),
+    [displayTimeZone],
+  );
 
-  function renderConnectedEvent({
+  function renderCalendarEvent({
     occurrence,
     segment,
     view,
   }: EventCalendarRenderEventProps<CalendarEventContract>) {
     const source = occurrence.event.data;
-    if (!source?.readOnly || occurrence.allDay) {
+    if (!source) {
       return undefined;
     }
 
+    const shiftKind = getShiftKind(source.title);
     const inTimeGrid = view === "week" || view === "day" || view === "days";
     const durationMinutes = (segment.endMin ?? 0) - (segment.startMin ?? 0);
-    if (!inTimeGrid || durationMinutes < 60) {
-      return undefined;
+    const owner = resourcesById.get(source.resourceId);
+    const showConnectedDetails =
+      source.readOnly && !occurrence.allDay && inTimeGrid && durationMinutes >= 60 && owner;
+
+    if (showConnectedDetails) {
+      return (
+        <div className="flex min-w-0 flex-1 flex-col self-start">
+          <span className="flex min-w-0 items-center gap-1">
+            {shiftKind !== null && <ShiftIcon className="size-3.5 shrink-0" kind={shiftKind} />}
+            {shiftKind !== null && occurrence.isRecurring && (
+              <Repeat aria-hidden="true" className="size-2.5 shrink-0 opacity-70" />
+            )}
+            <span className="truncate font-medium leading-tight">{source.title}</span>
+          </span>
+          <span className="flex min-w-0 items-center gap-1 text-xs text-muted-foreground">
+            <UserRound className="size-3 shrink-0" aria-hidden="true" />
+            <span className="truncate">{owner.title}</span>
+          </span>
+          <span className="truncate text-muted-foreground">
+            {eventTimeFormatter.format(occurrence.start)} –{" "}
+            {eventTimeFormatter.format(occurrence.end)}
+          </span>
+        </div>
+      );
     }
 
-    const owner = resourcesById.get(source.resourceId);
-    if (!owner) {
+    if (shiftKind === null) {
       return undefined;
     }
 
     return (
-      <div className="flex min-w-0 flex-1 flex-col self-start">
-        <span className="truncate font-medium leading-tight">{source.title}</span>
-        <span className="flex min-w-0 items-center gap-1 text-xs text-muted-foreground">
-          <UserRound className="size-3 shrink-0" aria-hidden="true" />
-          <span className="truncate">{owner.title}</span>
+      <>
+        <ShiftIcon className="size-3.5 shrink-0" kind={shiftKind} />
+        {occurrence.isRecurring && (
+          <Repeat aria-hidden="true" className="size-2.5 shrink-0 opacity-70" />
+        )}
+        <span className="truncate font-medium">{occurrence.event.title}</span>
+        {!occurrence.allDay && segment.isStart && (
+          <span
+            className={
+              view === "month"
+                ? "shrink-0 text-muted-foreground"
+                : "hidden truncate text-muted-foreground @[8rem]:inline"
+            }
+          >
+            {view === "month"
+              ? eventTimeFormatter.format(occurrence.start)
+              : `${eventTimeFormatter.format(occurrence.start)} – ${eventTimeFormatter.format(
+                  occurrence.end,
+                )}`}
+          </span>
+        )}
+      </>
+    );
+  }
+
+  function renderAgendaEvent({
+    occurrence,
+    segment,
+  }: EventCalendarRenderEventProps<CalendarEventContract>) {
+    const source = occurrence.event.data;
+    if (!source) {
+      return undefined;
+    }
+
+    const shiftKind = getShiftKind(source.title);
+    if (shiftKind === null) {
+      return undefined;
+    }
+
+    let timeLabel = "All day";
+    if (!occurrence.allDay) {
+      const occurrenceStartDay = eventDateFormatter.format(occurrence.start);
+      const occurrenceEndDay = eventDateFormatter.format(occurrence.end);
+      const segmentDay = eventDateFormatter.format(segment.day);
+      const startTime = eventTimeFormatter.format(occurrence.start);
+      const endTime = eventTimeFormatter.format(occurrence.end);
+
+      if (occurrenceStartDay === segmentDay && occurrenceEndDay === segmentDay) {
+        timeLabel = `${startTime} – ${endTime}`;
+      } else if (occurrenceStartDay === segmentDay) {
+        timeLabel = `From ${startTime}`;
+      } else if (occurrenceEndDay === segmentDay) {
+        timeLabel = `Until ${endTime}`;
+      }
+    }
+
+    return (
+      <>
+        <span className="w-40 shrink-0 truncate text-muted-foreground tabular-nums">
+          {timeLabel}
         </span>
-        <span className="truncate text-muted-foreground">
-          {eventTimeFormatter.format(occurrence.start)} –{" "}
-          {eventTimeFormatter.format(occurrence.end)}
-        </span>
-      </div>
+        <ShiftIcon className="size-3.5 shrink-0" kind={shiftKind} />
+        <span className="truncate text-sm">{occurrence.event.title}</span>
+        {occurrence.isRecurring && (
+          <Repeat aria-hidden="true" className="size-2.5 shrink-0 text-muted-foreground" />
+        )}
+      </>
     );
   }
 
@@ -445,7 +563,8 @@ export function CalendarPage() {
           onRangeChange={handleRangeChange}
           onSelectSlot={handleSelectSlot}
           onSlotClick={handleSlotClick}
-          renderEvent={renderConnectedEvent}
+          renderAgendaEvent={renderAgendaEvent}
+          renderEvent={renderCalendarEvent}
           resources={resources}
           timeZone={displayTimeZone}
           views={["month", "week", "day", "agenda"]}
