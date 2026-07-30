@@ -45,7 +45,9 @@ public sealed class GameCompanyConfiguration : IEntityTypeConfiguration<GameComp
         gameCompany.ToTable(table =>
             table.HasCheckConstraint(
                 "CK_GameCompanies_Role",
-                "\"Developer\" OR \"Publisher\" OR \"Porting\" OR \"Supporting\""
+                """
+                "Developer" OR "Publisher" OR "Porting" OR "Supporting"
+                """
             )
         );
         gameCompany

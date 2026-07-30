@@ -50,7 +50,11 @@ public sealed class CalendarInvitationConfiguration : IEntityTypeConfiguration<C
         invitation
             .HasIndex(value => new { value.InviterUserId, value.InviteeEmail })
             .IsUnique()
-            .HasFilter($"\"StatusId\" = {CalendarInvitationStatus.Pending}");
+            .HasFilter(
+                $"""
+                "StatusId" = {CalendarInvitationStatus.Pending}
+                """
+            );
         invitation.HasIndex(value => new { value.InviteeUserId, value.StatusId });
         invitation.HasIndex(value => value.StatusId);
         invitation.Property(value => value.Id).HasDefaultValueSql("uuidv7()").ValueGeneratedOnAdd();
@@ -75,8 +79,9 @@ public sealed class CalendarInvitationConfiguration : IEntityTypeConfiguration<C
         {
             table.HasCheckConstraint(
                 "CK_CalendarInvitations_Resolution",
-                $"(\"StatusId\" = {CalendarInvitationStatus.Pending} AND \"ResolvedAt\" IS NULL) "
-                    + $"OR (\"StatusId\" <> {CalendarInvitationStatus.Pending} AND \"ResolvedAt\" IS NOT NULL)"
+                $"""
+                ("StatusId" = {CalendarInvitationStatus.Pending} AND "ResolvedAt" IS NULL) OR ("StatusId" <> {CalendarInvitationStatus.Pending} AND "ResolvedAt" IS NOT NULL)
+                """
             );
         });
     }

@@ -44,9 +44,24 @@ public sealed class PopularGameConfiguration : IEntityTypeConfiguration<PopularG
         popularGame.Property(value => value.SyncedAt).HasDefaultValueSql("now()");
         popularGame.ToTable(table =>
         {
-            table.HasCheckConstraint("CK_PopularGames_Rank", "\"Rank\" BETWEEN 1 AND 1000");
-            table.HasCheckConstraint("CK_PopularGames_SourceRank", "\"SourceRank\" > 0");
-            table.HasCheckConstraint("CK_PopularGames_Score", "\"Score\" >= 0");
+            table.HasCheckConstraint(
+                "CK_PopularGames_Rank",
+                """
+                "Rank" BETWEEN 1 AND 1000
+                """
+            );
+            table.HasCheckConstraint(
+                "CK_PopularGames_SourceRank",
+                """
+                "SourceRank" > 0
+                """
+            );
+            table.HasCheckConstraint(
+                "CK_PopularGames_Score",
+                """
+                "Score" >= 0
+                """
+            );
         });
         popularGame
             .HasOne(value => value.Game)

@@ -59,7 +59,11 @@ public sealed class CalendarEventConfiguration : IEntityTypeConfiguration<Calend
         calendarEvent
             .HasIndex(value => new { value.RecurringEventId, value.OriginalStartAt })
             .IsUnique()
-            .HasFilter("\"RecurringEventId\" IS NOT NULL");
+            .HasFilter(
+                """
+                "RecurringEventId" IS NOT NULL
+                """
+            );
         calendarEvent.Property(value => value.Id).HasDefaultValueSql("uuidv7()").ValueGeneratedOnAdd();
         calendarEvent.Property(value => value.Title).HasMaxLength(CalendarEvent.MaximumTitleLength);
         calendarEvent.Property(value => value.TimeZoneId).HasMaxLength(CalendarEvent.MaximumTimeZoneIdLength);
@@ -92,12 +96,17 @@ public sealed class CalendarEventConfiguration : IEntityTypeConfiguration<Calend
             .OnDelete(DeleteBehavior.Cascade);
         calendarEvent.ToTable(table =>
         {
-            table.HasCheckConstraint("CK_CalendarEvents_Duration", "\"EndAt\" > \"StartAt\"");
+            table.HasCheckConstraint(
+                "CK_CalendarEvents_Duration",
+                """
+                "EndAt" > "StartAt"
+                """
+            );
             table.HasCheckConstraint(
                 "CK_CalendarEvents_Exception",
-                "(\"RecurringEventId\" IS NULL AND \"OriginalStartAt\" IS NULL AND \"IsCancelled\" = false) "
-                    + "OR (\"RecurringEventId\" IS NOT NULL AND \"OriginalStartAt\" IS NOT NULL "
-                    + "AND \"RecurrenceJson\" IS NULL)"
+                """
+                ("RecurringEventId" IS NULL AND "OriginalStartAt" IS NULL AND "IsCancelled" = false) OR ("RecurringEventId" IS NOT NULL AND "OriginalStartAt" IS NOT NULL AND "RecurrenceJson" IS NULL)
+                """
             );
         });
     }

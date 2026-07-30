@@ -39,7 +39,12 @@ public sealed class CalendarConnectionConfiguration : IEntityTypeConfiguration<C
             .HasForeignKey(value => value.SecondUserId)
             .OnDelete(DeleteBehavior.Cascade);
         connection.ToTable(table =>
-            table.HasCheckConstraint("CK_CalendarConnections_DistinctUsers", "\"FirstUserId\" <> \"SecondUserId\"")
+            table.HasCheckConstraint(
+                "CK_CalendarConnections_DistinctUsers",
+                """
+                "FirstUserId" <> "SecondUserId"
+                """
+            )
         );
     }
 }

@@ -61,26 +61,55 @@ public sealed class IgdbSyncRunConfiguration : IEntityTypeConfiguration<IgdbSync
         run.HasIndex("CatalogLock")
             .IsUnique()
             .HasDatabaseName("UX_IgdbSyncRuns_Unfinished")
-            .HasFilter("\"Status\" <> 'Succeeded'");
+            .HasFilter(
+                """
+                "Status" <> 'Succeeded'
+                """
+            );
         run.HasIndex(value => new { value.Status, value.Through });
         run.ToTable(table =>
         {
-            table.HasCheckConstraint("CK_IgdbSyncRuns_Mode", "\"Mode\" IN ('Bootstrap', 'Incremental')");
+            table.HasCheckConstraint(
+                "CK_IgdbSyncRuns_Mode",
+                """
+                "Mode" IN ('Bootstrap', 'Incremental')
+                """
+            );
             table.HasCheckConstraint(
                 "CK_IgdbSyncRuns_Status",
-                "\"Status\" IN ('Pending', 'Running', 'Failed', 'Succeeded')"
+                """
+                "Status" IN ('Pending', 'Running', 'Failed', 'Succeeded')
+                """
             );
-            table.HasCheckConstraint("CK_IgdbSyncRuns_CatalogLock", "\"CatalogLock\" = 1");
+            table.HasCheckConstraint(
+                "CK_IgdbSyncRuns_CatalogLock",
+                """
+                "CatalogLock" = 1
+                """
+            );
             table.HasCheckConstraint(
                 "CK_IgdbSyncRuns_Window",
-                "(\"Mode\" = 'Bootstrap' AND \"From\" IS NULL) OR "
-                    + "(\"Mode\" = 'Incremental' AND \"From\" IS NOT NULL AND \"From\" < \"Through\")"
+                """
+                ("Mode" = 'Bootstrap' AND "From" IS NULL) OR ("Mode" = 'Incremental' AND "From" IS NOT NULL AND "From" < "Through")
+                """
             );
-            table.HasCheckConstraint("CK_IgdbSyncRuns_RowsProcessed", "\"RowsProcessed\" >= 0");
-            table.HasCheckConstraint("CK_IgdbSyncRuns_RowsSkipped", "\"RowsSkipped\" >= 0");
+            table.HasCheckConstraint(
+                "CK_IgdbSyncRuns_RowsProcessed",
+                """
+                "RowsProcessed" >= 0
+                """
+            );
+            table.HasCheckConstraint(
+                "CK_IgdbSyncRuns_RowsSkipped",
+                """
+                "RowsSkipped" >= 0
+                """
+            );
             table.HasCheckConstraint(
                 "CK_IgdbSyncRuns_Completion",
-                "(\"Status\" = 'Succeeded' AND \"CompletedAt\" IS NOT NULL) OR \"Status\" <> 'Succeeded'"
+                """
+                ("Status" = 'Succeeded' AND "CompletedAt" IS NOT NULL) OR "Status" <> 'Succeeded'
+                """
             );
         });
     }
