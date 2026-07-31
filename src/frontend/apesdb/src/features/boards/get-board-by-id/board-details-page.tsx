@@ -67,8 +67,8 @@ function BoardHeader({
   onDelete: () => void;
 }) {
   return (
-    <header className="flex flex-wrap items-center gap-4">
-      <Avatar className="size-20 rounded-xl">
+    <header className="grid grid-cols-[auto_minmax(0,1fr)] items-center gap-x-4 gap-y-2 sm:flex sm:flex-wrap sm:gap-4">
+      <Avatar className="row-span-2 size-20 rounded-xl sm:row-auto">
         <AvatarImage alt={board.name} src={board.pictureUrl ?? undefined} />
         <AvatarFallback className="rounded-xl bg-muted text-muted-foreground">
           <Library className="size-7" />
@@ -80,7 +80,7 @@ function BoardHeader({
           {gameCountLabel(gameCount)} · Created {formatDate(board.createdAt)}
         </p>
       </div>
-      <div className="flex w-full items-center gap-2 sm:w-auto">
+      <div className="col-start-2 flex items-center gap-2 sm:col-auto">
         <AddGameButton onClick={onAddGame} />
         <Button onClick={onEdit} type="button" variant="outline">
           <Pencil data-icon="inline-start" />
