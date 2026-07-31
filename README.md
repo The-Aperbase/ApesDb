@@ -200,3 +200,11 @@ The production compose file expects the following environment variables:
 - `TICKERQ_DASHBOARD_PASSWORD`
 
 The API and worker read database settings from `Database:*`; the worker reads IGDB credentials from `Igdb:*`; the API also reads cache settings from `Cache:*`, while the worker reads TickerQ dashboard settings from `TickerQ:Dashboard:*`. In Docker Compose, use the equivalent double-underscore environment variable names. The deployment compose file fails fast when required secrets are missing.
+
+## Zero-downtime app deployments
+
+The deployment Compose file keeps two app replicas running and replaces them one at a time with Docker Swarm's `start-first` update order. Each replacement must pass the anonymous `/health` probe before the rollout proceeds. The probe returns healthy only when both PostgreSQL and Redis are reachable.
+
+A rolling update briefly runs three app containers on the single-node swarm, so the node must have enough CPU and memory for that peak. If PostgreSQL or Redis becomes unavailable, the dependency-aware probe marks app tasks unhealthy and Swarm may restart them until the dependency recovers.
+
+Because old and new app versions overlap during a rollout, database migrations must remain compatible with both versions. Use expand-and-contract migrations for destructive schema changes instead of removing or renaming schema elements in the same deployment that stops using them.

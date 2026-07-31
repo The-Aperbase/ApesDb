@@ -16,6 +16,30 @@ services:
     depends_on:
       - migrations
       - redis
+    healthcheck:
+      test: ["CMD", "curl", "--fail", "--silent", "--show-error", "--max-time", "4", "http://127.0.0.1:8080/health"]
+      interval: 10s
+      timeout: 5s
+      start_period: 30s
+      retries: 3
+    stop_grace_period: 30s
+    deploy:
+      mode: replicated
+      replicas: 2
+      update_config:
+        parallelism: 1
+        delay: 0s
+        monitor: 60s
+        max_failure_ratio: 0
+        failure_action: rollback
+        order: start-first
+      rollback_config:
+        parallelism: 1
+        delay: 0s
+        monitor: 60s
+        max_failure_ratio: 0
+        failure_action: pause
+        order: start-first
 
   worker:
     image: ghcr.io/the-aperbase/apesdb/worker:latest
