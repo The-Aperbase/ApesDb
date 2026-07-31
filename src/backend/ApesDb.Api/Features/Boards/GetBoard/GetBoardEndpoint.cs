@@ -24,10 +24,14 @@ public sealed class GetBoardEndpoint : Endpoint<GetBoardRequest, BoardDetailsRes
         var userId = User.GetApesDbUserId();
         var board = await _dbContext
             .Boards.AsNoTracking()
-            .Where(board => board.Id == request.BoardId && board.OwnerUserId == userId)
+            .Where(board => board.Id == request.BoardId)
+            .WhereAccessibleTo(_dbContext, userId)
             .Select(board => new
             {
                 board.Id,
+                board.OwnerUserId,
+                OwnerName = board.OwnerUser.Name,
+                OwnerPictureUrl = board.OwnerUser.PictureUrl,
                 board.Name,
                 board.Picture,
                 board.CreatedAt,
@@ -53,6 +57,8 @@ public sealed class GetBoardEndpoint : Endpoint<GetBoardRequest, BoardDetailsRes
                     board.CreatedAt,
                     board.UpdatedAt,
                     BoardPictureResponse.From(board.Picture),
+                    new BoardUserResponse(board.OwnerUserId, board.OwnerName, board.OwnerPictureUrl),
+                    BoardRoles.From(board.OwnerUserId, userId),
                     games
                 ),
                 ct

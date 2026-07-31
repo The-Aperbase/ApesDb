@@ -67,6 +67,12 @@
         ContentType: image/webp,
         ByteLength: 8
       },
+      Owner: {
+        Id: Guid_2,
+        Name: Olivia Owner,
+        PictureUrl: https://images.apesdb.test/owner.png
+      },
+      Role: owner,
       Games: {
         completed: {
           0: {

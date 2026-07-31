@@ -37,13 +37,30 @@
             Name: Olivia Owner,
             PictureUrl: https://images.apesdb.test/owner.png
           }
+        },
+        {
+          Id: Guid_6,
+          Type: BoardInvite,
+          ResourceId: Guid_7,
+          CreatedAt: DateTime_3,
+          IsUnread: true,
+          IsActionable: true,
+          Actor: {
+            Id: Guid_5,
+            Name: Olivia Owner,
+            PictureUrl: https://images.apesdb.test/owner.png
+          },
+          Board: {
+            Id: Guid_8,
+            Name: Backlog
+          }
         }
       ],
       Metadata: {
-        TotalCount: 2,
-        UnreadCount: 2,
-        ActionableCount: 1,
-        AttentionCount: 2
+        TotalCount: 3,
+        UnreadCount: 3,
+        ActionableCount: 2,
+        AttentionCount: 3
       }
     }
   }

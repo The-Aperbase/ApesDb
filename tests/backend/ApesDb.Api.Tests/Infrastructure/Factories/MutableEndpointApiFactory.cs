@@ -27,6 +27,7 @@ public sealed class MutableEndpointApiFactory : ApiTestWebApplicationFactory
                 [
                     new Table("public", "BoardEntryStates"),
                     new Table("public", "CalendarInvitationStatuses"),
+                    new Table("public", "BoardInvitationStatuses"),
                 ],
             }
         );

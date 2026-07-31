@@ -11,12 +11,14 @@ import {
   ItemTitle,
   Skeleton,
 } from "@apesdb/ui";
-import { Library, Pencil, Plus, RefreshCw, Trash2 } from "lucide-react";
+import { Library, LogOut, Pencil, Plus, RefreshCw, Trash2, Users } from "lucide-react";
 import { formatDate } from "../../../lib/date";
 import { gameCountLabel } from "../board-labels";
 import { getAllBoardGames, type BoardDetails } from "../boards.schemas";
 import { DeleteBoardDialog } from "../delete-board/delete-board-dialog";
 import { EditBoardDialog } from "../edit-board/edit-board-dialog";
+import { BoardSharingSheet } from "../sharing/board-sharing-sheet";
+import { LeaveBoardDialog } from "../sharing/leave-board-dialog";
 import { BoardGamePickerDialog } from "./board-game-picker-dialog";
 import { BoardKanban } from "./board-kanban";
 import { useBoardDetails } from "./use-board-details";
@@ -59,12 +61,16 @@ function BoardHeader({
   onAddGame,
   onEdit,
   onDelete,
+  onShare,
+  onLeave,
 }: {
   board: BoardDetails;
   gameCount: number;
   onAddGame: () => void;
   onEdit: () => void;
   onDelete: () => void;
+  onShare: () => void;
+  onLeave: () => void;
 }) {
   return (
     <header className="grid grid-cols-[auto_minmax(0,1fr)] items-center gap-x-4 gap-y-2 sm:flex sm:flex-wrap sm:gap-4">
@@ -78,18 +84,32 @@ function BoardHeader({
         <h1 className="truncate text-2xl font-semibold tracking-tight">{board.name}</h1>
         <p className="text-sm text-muted-foreground">
           {gameCountLabel(gameCount)} · Created {formatDate(board.createdAt)}
+          {board.role === "collaborator" ? ` · Owned by ${board.owner.name}` : ""}
         </p>
       </div>
       <div className="col-start-2 flex items-center gap-2 sm:col-auto">
         <AddGameButton onClick={onAddGame} />
-        <Button onClick={onEdit} type="button" variant="outline">
-          <Pencil data-icon="inline-start" />
-          Edit
-        </Button>
-        <Button onClick={onDelete} type="button" variant="outline">
-          <Trash2 data-icon="inline-start" />
-          Delete
-        </Button>
+        {board.role === "owner" ? (
+          <>
+            <Button onClick={onShare} type="button" variant="outline">
+              <Users data-icon="inline-start" />
+              Share
+            </Button>
+            <Button onClick={onEdit} type="button" variant="outline">
+              <Pencil data-icon="inline-start" />
+              Edit
+            </Button>
+            <Button onClick={onDelete} type="button" variant="outline">
+              <Trash2 data-icon="inline-start" />
+              Delete
+            </Button>
+          </>
+        ) : (
+          <Button onClick={onLeave} type="button" variant="outline">
+            <LogOut data-icon="inline-start" />
+            Leave
+          </Button>
+        )}
       </div>
     </header>
   );
@@ -101,6 +121,8 @@ export function BoardDetailsPage() {
   const [isGamePickerOpen, setIsGamePickerOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [isSharingSheetOpen, setIsSharingSheetOpen] = useState(false);
+  const [isLeaveDialogOpen, setIsLeaveDialogOpen] = useState(false);
   const navigate = useNavigate();
 
   function handleDeleted() {
@@ -151,6 +173,8 @@ export function BoardDetailsPage() {
           onAddGame={() => setIsGamePickerOpen(true)}
           onEdit={() => setIsEditDialogOpen(true)}
           onDelete={() => setIsDeleteDialogOpen(true)}
+          onShare={() => setIsSharingSheetOpen(true)}
+          onLeave={() => setIsLeaveDialogOpen(true)}
         />
         {gameCount === 0 ? (
           <Item className="min-h-60 flex-col justify-center text-center" variant="outline">
@@ -169,13 +193,33 @@ export function BoardDetailsPage() {
         open={isGamePickerOpen}
         onOpenChange={setIsGamePickerOpen}
       />
-      <EditBoardDialog board={board} open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen} />
-      <DeleteBoardDialog
-        board={board}
-        open={isDeleteDialogOpen}
-        onOpenChange={setIsDeleteDialogOpen}
-        onDeleted={handleDeleted}
-      />
+      {board.role === "owner" ? (
+        <>
+          <BoardSharingSheet
+            board={board}
+            open={isSharingSheetOpen}
+            onOpenChange={setIsSharingSheetOpen}
+          />
+          <EditBoardDialog
+            board={board}
+            open={isEditDialogOpen}
+            onOpenChange={setIsEditDialogOpen}
+          />
+          <DeleteBoardDialog
+            board={board}
+            open={isDeleteDialogOpen}
+            onOpenChange={setIsDeleteDialogOpen}
+            onDeleted={handleDeleted}
+          />
+        </>
+      ) : (
+        <LeaveBoardDialog
+          board={board}
+          open={isLeaveDialogOpen}
+          onOpenChange={setIsLeaveDialogOpen}
+          onLeft={handleDeleted}
+        />
+      )}
     </div>
   );
 }

@@ -1,0 +1,60 @@
+﻿{
+  RevokeResponse: {
+    Response: {
+      StatusCode: 204,
+      ReasonPhrase: No Content,
+      Version: 1.1
+    }
+  },
+  RevokedBoardResponse: {
+    Response: {
+      StatusCode: 404,
+      ReasonPhrase: Not Found,
+      Version: 1.1
+    }
+  },
+  ReinviteResponse: {
+    Response: {
+      StatusCode: 201,
+      ReasonPhrase: Created,
+      Version: 1.1,
+      Headers: {
+        Location: [
+          /api/boards/{guid}/invitations/{guid}
+        ]
+      },
+      ContentHeaders: {
+        Content-Type: [
+          application/json; charset=utf-8
+        ]
+      }
+    },
+    Content: {
+      Id: Guid_1,
+      Board: {
+        Id: Guid_2,
+        Name: Backlog
+      },
+      InvitedBy: {
+        Id: Guid_3,
+        Name: Olivia Owner,
+        PictureUrl: https://images.apesdb.test/owner.png
+      },
+      CreatedAt: DateTime_1
+    }
+  },
+  LeaveResponse: {
+    Response: {
+      StatusCode: 204,
+      ReasonPhrase: No Content,
+      Version: 1.1
+    }
+  },
+  LeftBoardResponse: {
+    Response: {
+      StatusCode: 404,
+      ReasonPhrase: Not Found,
+      Version: 1.1
+    }
+  }
+}

@@ -28,14 +28,26 @@
             ContentType: image/webp,
             ByteLength: 8
           },
+          Owner: {
+            Id: Guid_2,
+            Name: Olivia Owner,
+            PictureUrl: https://images.apesdb.test/owner.png
+          },
+          Role: owner,
           GameCount: 2,
           ContainsGame: false
         },
         {
-          Id: Guid_2,
+          Id: Guid_3,
           Name: Completed,
           CreatedAt: DateTime_3,
           UpdatedAt: DateTime_4,
+          Owner: {
+            Id: Guid_2,
+            Name: Olivia Owner,
+            PictureUrl: https://images.apesdb.test/owner.png
+          },
+          Role: owner,
           ContainsGame: false
         }
       ],

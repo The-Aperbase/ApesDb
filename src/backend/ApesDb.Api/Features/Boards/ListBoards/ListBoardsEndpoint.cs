@@ -30,7 +30,7 @@ public sealed class ListBoardsEndpoint : Endpoint<ListBoardsRequest, Pagable<Boa
     {
         var userId = User.GetApesDbUserId();
 
-        var baseQuery = _dbContext.Boards.AsNoTracking().Where(board => board.OwnerUserId == userId);
+        var baseQuery = _dbContext.Boards.AsNoTracking().WhereAccessibleTo(_dbContext, userId);
         var query = baseQuery.WhereContains(request.Search, board => board.Name);
         var total = await baseQuery.CountAsync(ct);
         var filteredTotal = await query.CountAsync(ct);
@@ -40,6 +40,9 @@ public sealed class ListBoardsEndpoint : Endpoint<ListBoardsRequest, Pagable<Boa
             .Select(board => new
             {
                 board.Id,
+                board.OwnerUserId,
+                OwnerName = board.OwnerUser.Name,
+                OwnerPictureUrl = board.OwnerUser.PictureUrl,
                 board.Name,
                 board.Picture,
                 board.CreatedAt,
@@ -56,6 +59,8 @@ public sealed class ListBoardsEndpoint : Endpoint<ListBoardsRequest, Pagable<Boa
                 board.CreatedAt,
                 board.UpdatedAt,
                 BoardPictureResponse.From(board.Picture),
+                new BoardUserResponse(board.OwnerUserId, board.OwnerName, board.OwnerPictureUrl),
+                BoardRoles.From(board.OwnerUserId, userId),
                 board.GameCount,
                 board.ContainsGame
             ))

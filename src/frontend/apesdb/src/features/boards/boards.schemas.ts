@@ -6,6 +6,14 @@ export const boardPictureSchema = z.object({
   data: z.string(),
 });
 
+export const boardUserSchema = z.object({
+  id: z.string(),
+  name: z.string(),
+  pictureUrl: z.string().nullable(),
+});
+
+export const boardRoleSchema = z.enum(["owner", "collaborator"]);
+
 export const boardSummarySchema = z
   .object({
     id: z.string(),
@@ -13,6 +21,8 @@ export const boardSummarySchema = z
     createdAt: z.string(),
     updatedAt: z.string(),
     picture: boardPictureSchema.nullable(),
+    owner: boardUserSchema,
+    role: boardRoleSchema,
     gameCount: z.number().int().nonnegative(),
     containsGame: z.boolean(),
   })
@@ -101,6 +111,8 @@ export const boardDetailsSchema = z
     createdAt: z.string(),
     updatedAt: z.string(),
     picture: boardPictureSchema.nullable(),
+    owner: boardUserSchema,
+    role: boardRoleSchema,
     games: boardGamesSchema,
   })
   .transform(({ picture, ...board }) => ({
@@ -109,3 +121,21 @@ export const boardDetailsSchema = z
   }));
 
 export type BoardDetails = z.infer<typeof boardDetailsSchema>;
+
+export const boardSharingSchema = z.object({
+  collaborators: z.array(
+    z.object({
+      user: boardUserSchema,
+      joinedAt: z.string(),
+    }),
+  ),
+  outgoingInvitations: z.array(
+    z.object({
+      id: z.string(),
+      email: z.string(),
+      createdAt: z.string(),
+    }),
+  ),
+});
+
+export type BoardSharing = z.infer<typeof boardSharingSchema>;

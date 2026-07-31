@@ -62,6 +62,8 @@ export function withAllNotificationsRead(
       readAt: item.readAt ?? readAt,
       isUnread: false,
       isActionable: item.isActionable,
+      actor: item.actor,
+      board: item.board,
     };
   });
 

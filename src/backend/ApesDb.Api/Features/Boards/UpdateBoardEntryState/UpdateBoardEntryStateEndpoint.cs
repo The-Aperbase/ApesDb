@@ -38,7 +38,7 @@ public sealed class UpdateBoardEntryStateEndpoint : Endpoint<UpdateBoardEntrySta
             return;
         }
 
-        var board = await _dbContext.Boards.FindOwnedForUpdateAsync(request.BoardId, userId, ct);
+        var board = await _dbContext.Boards.FindAccessibleForUpdateAsync(request.BoardId, userId, ct);
         if (board is null)
         {
             await Send.NotFoundAsync(ct);

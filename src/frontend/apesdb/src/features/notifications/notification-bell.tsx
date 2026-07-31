@@ -16,6 +16,8 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Bell, Check, CheckCheck, Inbox, Loader2, RefreshCw, X } from "lucide-react";
 import { toast } from "sonner";
 import { formatDateTime } from "../../lib/date";
+import { respondToBoardInvitation } from "../boards/boards.api";
+import { boardQueryKeys } from "../boards/board-query-keys";
 import { respondToCalendarInvitation } from "../calendar/calendar.api";
 import { calendarQueryKeys } from "../calendar/calendar-query-keys";
 import { notificationQueryKeys } from "./notification-query-keys";
@@ -43,7 +45,7 @@ function NotificationSkeleton() {
 type NotificationRowProps = {
   notification: Notification;
   responding: boolean;
-  onRespond: (inviteId: string, accept: boolean) => void;
+  onRespond: (notification: Notification, accept: boolean) => void;
 };
 
 function initials(name: string): string {
@@ -57,11 +59,13 @@ function initials(name: string): string {
 
 function NotificationRow({ notification, responding, onRespond }: NotificationRowProps) {
   const isCalendarInvite = notification.type === "CalendarInvite" && notification.isActionable;
+  const isBoardInvite = notification.type === "BoardInvite" && notification.isActionable;
   const actor = notification.actor;
+  const board = notification.board;
 
   return (
     <div className="flex items-start gap-3 p-2">
-      {isCalendarInvite && actor ? (
+      {(isCalendarInvite || isBoardInvite) && actor ? (
         <Avatar className="size-8 shrink-0">
           <AvatarImage alt={actor.name} src={actor.pictureUrl ?? undefined} />
           <AvatarFallback>{initials(actor.name)}</AvatarFallback>
@@ -71,7 +75,13 @@ function NotificationRow({ notification, responding, onRespond }: NotificationRo
         <p className="text-xs">
           {isCalendarInvite && actor ? (
             <>
-              <span className="font-medium">{actor.name}</span> invited you to connect calendars.
+              <span className="font-medium">{actor.name}</span> invited you to collaborate on their
+              calendar.
+            </>
+          ) : isBoardInvite && actor && board ? (
+            <>
+              <span className="font-medium">{actor.name}</span> invited you to collaborate on{" "}
+              <span className="font-medium">{board.name}</span> board.
             </>
           ) : (
             "You have a new notification."
@@ -80,11 +90,11 @@ function NotificationRow({ notification, responding, onRespond }: NotificationRo
         <p className="text-[0.625rem] text-muted-foreground">
           {formatDateTime(notification.createdAt)}
         </p>
-        {isCalendarInvite ? (
+        {isCalendarInvite || isBoardInvite ? (
           <div className="mt-1 flex gap-2">
             <Button
               disabled={responding}
-              onClick={() => onRespond(notification.resourceId, false)}
+              onClick={() => onRespond(notification, false)}
               size="xs"
               type="button"
               variant="ghost"
@@ -94,7 +104,7 @@ function NotificationRow({ notification, responding, onRespond }: NotificationRo
             </Button>
             <Button
               disabled={responding}
-              onClick={() => onRespond(notification.resourceId, true)}
+              onClick={() => onRespond(notification, true)}
               size="xs"
               type="button"
             >
@@ -120,14 +130,38 @@ export function NotificationBell({ open, onOpenChange }: NotificationBellProps) 
   const notifications = useNotifications();
   const markRead = useMarkNotificationsRead();
   const respond = useMutation({
-    mutationFn: ({ inviteId, accept }: { inviteId: string; accept: boolean }) =>
-      respondToCalendarInvitation(inviteId, accept),
+    mutationFn: async ({
+      notification,
+      accept,
+    }: {
+      notification: Notification;
+      accept: boolean;
+    }) => {
+      if (notification.type === "BoardInvite" && notification.board) {
+        await respondToBoardInvitation({
+          boardId: notification.board.id,
+          invitationId: notification.resourceId,
+          accept,
+        });
+        return;
+      }
+
+      await respondToCalendarInvitation(notification.resourceId, accept);
+    },
     onSuccess: async (_result, input) => {
-      toast.success(input.accept ? "Calendars connected" : "Calendar invitation declined");
-      await Promise.all([
-        queryClient.invalidateQueries({ queryKey: notificationQueryKeys.list }),
-        queryClient.invalidateQueries({ queryKey: calendarQueryKeys.all }),
-      ]);
+      if (input.notification.type === "BoardInvite") {
+        toast.success(input.accept ? "Board added" : "Board invitation declined");
+        await Promise.all([
+          queryClient.invalidateQueries({ queryKey: notificationQueryKeys.list }),
+          queryClient.invalidateQueries({ queryKey: boardQueryKeys.all }),
+        ]);
+      } else {
+        toast.success(input.accept ? "Calendars connected" : "Calendar invitation declined");
+        await Promise.all([
+          queryClient.invalidateQueries({ queryKey: notificationQueryKeys.list }),
+          queryClient.invalidateQueries({ queryKey: calendarQueryKeys.all }),
+        ]);
+      }
     },
     onError: (error) => {
       toast.error(error instanceof Error ? error.message : "Unable to respond to the invitation.");
@@ -206,9 +240,12 @@ export function NotificationBell({ open, onOpenChange }: NotificationBellProps) 
                 key={notification.id}
                 notification={notification}
                 responding={
-                  respond.isPending && respond.variables?.inviteId === notification.resourceId
+                  respond.isPending &&
+                  respond.variables?.notification.resourceId === notification.resourceId
                 }
-                onRespond={(inviteId, accept) => respond.mutate({ inviteId, accept })}
+                onRespond={(selectedNotification, accept) =>
+                  respond.mutate({ notification: selectedNotification, accept })
+                }
               />
             ))}
           </div>

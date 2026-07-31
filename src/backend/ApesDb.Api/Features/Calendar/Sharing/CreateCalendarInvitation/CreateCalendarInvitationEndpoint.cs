@@ -198,7 +198,8 @@ public sealed class CreateCalendarInvitationEndpoint
                     null,
                     true,
                     true,
-                    new NotificationActorResponse(invitedBy.Id, invitedBy.Name, invitedBy.PictureUrl)
+                    new NotificationActorResponse(invitedBy.Id, invitedBy.Name, invitedBy.PictureUrl),
+                    null
                 )
             )
         );
