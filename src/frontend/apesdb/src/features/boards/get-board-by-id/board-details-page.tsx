@@ -68,7 +68,7 @@ function BoardHeader({
 }) {
   return (
     <header className="grid grid-cols-[auto_minmax(0,1fr)] items-center gap-x-4 gap-y-2 sm:flex sm:flex-wrap sm:gap-4">
-      <Avatar className="row-span-2 size-20 rounded-xl sm:row-auto">
+      <Avatar className="row-span-2 size-24 rounded-xl sm:row-auto sm:size-20">
         <AvatarImage alt={board.name} src={board.pictureUrl ?? undefined} />
         <AvatarFallback className="rounded-xl bg-muted text-muted-foreground">
           <Library className="size-7" />
