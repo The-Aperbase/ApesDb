@@ -33,9 +33,9 @@ export const boardSummariesResponseSchema: z.ZodType<Pageable<BoardSummary>> = z
 
 export type BoardsResponse = Pageable<BoardSummary>;
 
-export const boardEntryStateSchema = z
-  .enum(["todo", "in-progress", "completed", "dnf"])
-  .default("todo");
+export const boardEntryStates = ["todo", "in-progress", "completed", "dnf"] as const;
+
+export const boardEntryStateSchema = z.enum(boardEntryStates);
 
 export type BoardEntryState = z.infer<typeof boardEntryStateSchema>;
 
@@ -45,11 +45,54 @@ export const boardGameSchema = z.object({
   coverSmallUrl: z.string().nullable(),
   coverLargeUrl: z.string().nullable(),
   gameType: z.string().nullable(),
-  state: boardEntryStateSchema,
   addedAt: z.string(),
 });
 
 export type BoardGame = z.infer<typeof boardGameSchema>;
+
+const boardGameOrderSchema = z
+  .record(z.string().regex(/^(0|[1-9]\d*)$/), boardGameSchema)
+  .superRefine((games, context) => {
+    const positions = Object.keys(games)
+      .map((position) => Number.parseInt(position, 10))
+      .toSorted((left, right) => left - right);
+
+    for (const [expectedPosition, position] of positions.entries()) {
+      if (position !== expectedPosition) {
+        context.addIssue({
+          code: "custom",
+          message: "Game order must be contiguous and zero-based.",
+        });
+        return;
+      }
+    }
+  });
+
+export type BoardGameOrder = z.infer<typeof boardGameOrderSchema>;
+
+export const boardGamesSchema = z.object({
+  todo: boardGameOrderSchema,
+  "in-progress": boardGameOrderSchema,
+  completed: boardGameOrderSchema,
+  dnf: boardGameOrderSchema,
+});
+
+export type BoardGames = z.infer<typeof boardGamesSchema>;
+
+export function getOrderedBoardGames(games: BoardGameOrder): BoardGame[] {
+  return Object.entries(games)
+    .map(([order, game]) => ({ order: Number.parseInt(order, 10), game }))
+    .toSorted((left, right) => left.order - right.order)
+    .map(({ game }) => game);
+}
+
+export function getAllBoardGames(games: BoardGames): BoardGame[] {
+  return boardEntryStates.flatMap((state) => getOrderedBoardGames(games[state]));
+}
+
+export function createBoardGameOrder(games: BoardGame[]): BoardGameOrder {
+  return Object.fromEntries(games.map((game, position) => [position.toString(), game]));
+}
 
 export const boardDetailsSchema = z
   .object({
@@ -58,7 +101,7 @@ export const boardDetailsSchema = z
     createdAt: z.string(),
     updatedAt: z.string(),
     picture: boardPictureSchema.nullable(),
-    games: z.array(boardGameSchema),
+    games: boardGamesSchema,
   })
   .transform(({ picture, ...board }) => ({
     ...board,

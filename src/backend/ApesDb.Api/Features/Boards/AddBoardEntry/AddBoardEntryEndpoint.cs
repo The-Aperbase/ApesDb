@@ -26,10 +26,8 @@ public sealed class AddBoardEntryEndpoint : Endpoint<AddBoardEntryRequest, AddBo
     public override async Task HandleAsync(AddBoardEntryRequest request, CancellationToken ct)
     {
         var userId = User.GetApesDbUserId();
-        var board = await _dbContext.Boards.SingleOrDefaultAsync(
-            board => board.Id == request.BoardId && board.OwnerUserId == userId,
-            ct
-        );
+        await using var transaction = await _dbContext.Database.BeginTransactionAsync(ct);
+        var board = await _dbContext.Boards.FindOwnedForUpdateAsync(request.BoardId, userId, ct);
         if (board is null)
         {
             await Send.NotFoundAsync(ct);
@@ -49,9 +47,26 @@ public sealed class AddBoardEntryEndpoint : Endpoint<AddBoardEntryRequest, AddBo
                 );
                 if (!entryExists)
                 {
-                    _dbContext.BoardEntries.Add(new BoardEntry { BoardId = request.BoardId, GameId = request.GameId });
+                    var todoStateId = await _dbContext
+                        .BoardEntryStates.Where(state => state.Name == "todo")
+                        .Select(state => state.Id)
+                        .SingleAsync(ct);
+                    var position = await _dbContext.BoardEntries.CountAsync(
+                        entry => entry.BoardId == request.BoardId && entry.StateId == todoStateId,
+                        ct
+                    );
+                    _dbContext.BoardEntries.Add(
+                        new BoardEntry
+                        {
+                            BoardId = request.BoardId,
+                            GameId = request.GameId,
+                            StateId = todoStateId,
+                            Position = position,
+                        }
+                    );
                     board.UpdatedAt = _dateTimeProvider.UtcNow;
                     await _dbContext.SaveChangesAsync(ct);
+                    await transaction.CommitAsync(ct);
                 }
 
                 await Send.OkAsync(new AddBoardEntryResponse(request.GameId), ct);

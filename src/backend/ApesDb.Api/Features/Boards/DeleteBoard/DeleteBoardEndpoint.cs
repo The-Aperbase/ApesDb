@@ -23,23 +23,17 @@ public sealed class DeleteBoardEndpoint : Endpoint<DeleteBoardRequest>
     {
         var userId = User.GetApesDbUserId();
         await using var transaction = await _dbContext.Database.BeginTransactionAsync(ct);
-
-        await _dbContext
-            .BoardEntries.Where(entry => entry.BoardId == request.BoardId && entry.Board.OwnerUserId == userId)
-            .ExecuteDeleteAsync(ct);
-
-        var deleted = await _dbContext
-            .Boards.Where(board => board.Id == request.BoardId && board.OwnerUserId == userId)
-            .ExecuteDeleteAsync(ct);
-
-        if (deleted == 0)
+        var board = await _dbContext.Boards.FindOwnedForUpdateAsync(request.BoardId, userId, ct);
+        if (board is null)
         {
             await Send.NotFoundAsync(ct);
+            return;
         }
-        else
-        {
-            await transaction.CommitAsync(ct);
-            await Send.NoContentAsync(ct);
-        }
+
+        await _dbContext.BoardEntries.Where(entry => entry.BoardId == request.BoardId).ExecuteDeleteAsync(ct);
+
+        await _dbContext.Boards.Where(existingBoard => existingBoard.Id == board.Id).ExecuteDeleteAsync(ct);
+        await transaction.CommitAsync(ct);
+        await Send.NoContentAsync(ct);
     }
 }

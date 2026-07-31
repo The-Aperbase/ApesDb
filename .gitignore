@@ -39,3 +39,6 @@ Thumbs.db
 
 # Local containerized build output
 .build/
+/.pnpm-store/v11/index.db
+/.pnpm-store/v11/index.db-shm
+/.pnpm-store/v11/index.db-wal

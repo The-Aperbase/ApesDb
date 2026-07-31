@@ -37,8 +37,9 @@ export type BoardEntryInput = {
   gameId: number;
 };
 
-export type UpdateGameStateInput = BoardEntryInput & {
+export type UpdateBoardEntryInput = BoardEntryInput & {
   state: BoardEntryState;
+  position: number;
 };
 
 export type BoardsRequest = {
@@ -277,7 +278,7 @@ export async function addGameToBoard(input: BoardEntryInput): Promise<void> {
   }
 }
 
-export async function updateGameState(input: UpdateGameStateInput): Promise<void> {
+export async function updateBoardEntry(input: UpdateBoardEntryInput): Promise<void> {
   let response: Response;
 
   try {
@@ -287,14 +288,14 @@ export async function updateGameState(input: UpdateGameStateInput): Promise<void
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({ state: input.state }),
+      body: JSON.stringify({ state: input.state, position: input.position }),
     });
   } catch {
     throw new Error("Unable to reach the server. Check your connection and try again.");
   }
 
   if (!response.ok) {
-    throw new Error(`Unable to update the game state (status ${response.status}).`);
+    throw new Error(`Unable to move the game (status ${response.status}).`);
   }
 }
 

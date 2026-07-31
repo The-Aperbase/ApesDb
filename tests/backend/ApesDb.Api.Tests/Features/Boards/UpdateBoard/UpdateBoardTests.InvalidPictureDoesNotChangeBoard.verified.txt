@@ -27,7 +27,8 @@
       Id: Guid_1,
       Name: Completed,
       CreatedAt: DateTime_1,
-      UpdatedAt: DateTime_2
+      UpdatedAt: DateTime_2,
+      Games: {}
     }
   }
 }

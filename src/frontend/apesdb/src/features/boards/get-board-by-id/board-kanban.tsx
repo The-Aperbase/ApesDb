@@ -14,9 +14,15 @@ import {
 } from "@apesdb/ui";
 import { Gamepad2, GripVertical, Trash2 } from "lucide-react";
 import { toast } from "sonner";
-import type { BoardDetails, BoardEntryState, BoardGame } from "../boards.schemas";
+import {
+  boardEntryStates,
+  getOrderedBoardGames,
+  type BoardDetails,
+  type BoardEntryState,
+  type BoardGame,
+} from "../boards.schemas";
+import { useMoveGameOnBoard } from "./use-move-game-on-board";
 import { useRemoveGameFromBoard } from "./use-remove-game-from-board";
-import { useUpdateGameState } from "./use-update-game-state";
 
 type BoardKanbanProps = {
   board: BoardDetails;
@@ -31,14 +37,13 @@ const kanbanColumns: { state: BoardEntryState; label: string }[] = [
   { state: "dnf", label: "DNF" },
 ];
 
-function groupGames(games: BoardGame[]): BoardColumns {
-  const grouped: BoardColumns = { todo: [], "in-progress": [], completed: [], dnf: [] };
-
-  for (const game of games) {
-    grouped[game.state].push(game);
-  }
-
-  return grouped;
+function getBoardColumns(board: BoardDetails): BoardColumns {
+  return {
+    todo: getOrderedBoardGames(board.games.todo),
+    "in-progress": getOrderedBoardGames(board.games["in-progress"]),
+    completed: getOrderedBoardGames(board.games.completed),
+    dnf: getOrderedBoardGames(board.games.dnf),
+  };
 }
 
 function GameCover({ game }: { game: BoardGame }) {
@@ -64,11 +69,13 @@ function GameCover({ game }: { game: BoardGame }) {
 function GameCard({
   game,
   isOverlay = false,
+  isSortingDisabled,
   isRemoving,
   onRemove,
 }: {
   game: BoardGame;
   isOverlay?: boolean;
+  isSortingDisabled: boolean;
   isRemoving: boolean;
   onRemove: (game: BoardGame) => void;
 }) {
@@ -90,7 +97,7 @@ function GameCard({
       </div>
       <Button
         aria-label={`Remove ${game.name} from the board`}
-        disabled={isRemoving}
+        disabled={isRemoving || isSortingDisabled}
         onClick={() => onRemove(game)}
         size="icon-xs"
         type="button"
@@ -106,7 +113,7 @@ function GameCard({
   }
 
   return (
-    <KanbanItem value={game.gameId.toString()}>
+    <KanbanItem disabled={isSortingDisabled} value={game.gameId.toString()}>
       <KanbanItemHandle className="rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/30">
         {content}
       </KanbanItemHandle>
@@ -115,9 +122,9 @@ function GameCard({
 }
 
 export function BoardKanban({ board }: BoardKanbanProps) {
-  const groupedGames = useMemo(() => groupGames(board.games), [board.games]);
+  const groupedGames = useMemo(() => getBoardColumns(board), [board]);
   const [columns, setColumns] = useState(groupedGames);
-  const updateGameState = useUpdateGameState(board.id);
+  const moveGame = useMoveGameOnBoard(board.id);
   const removeGame = useRemoveGameFromBoard(board.id);
 
   useEffect(() => {
@@ -134,6 +141,10 @@ export function BoardKanban({ board }: BoardKanbanProps) {
   }
 
   function handleValueChange(value: Record<string, BoardGame[]>) {
+    if (moveGame.isPending) {
+      return;
+    }
+
     setColumns({
       todo: value.todo ?? [],
       "in-progress": value["in-progress"] ?? [],
@@ -143,22 +154,38 @@ export function BoardKanban({ board }: BoardKanbanProps) {
   }
 
   function handleMove({ activeContainer, overContainer, activeIndex, overIndex }: KanbanMoveEvent) {
-    if (activeContainer === overContainer) {
-      // Within-column ordering is not persisted, so the item snaps back.
+    if (moveGame.isPending || removeGame.isPending || activeIndex < 0 || overIndex < 0) {
       return;
     }
 
     const sourceState = activeContainer as BoardEntryState;
     const nextState = overContainer as BoardEntryState;
+    const previous = columns;
+
+    if (sourceState === nextState) {
+      const items = [...columns[sourceState]];
+      const [movedGame] = items.splice(activeIndex, 1);
+      const nextPosition = Math.min(overIndex, items.length);
+      if (activeIndex === nextPosition) {
+        return;
+      }
+
+      items.splice(nextPosition, 0, movedGame);
+      setColumns({ ...columns, [sourceState]: items });
+      moveGame.mutate(
+        { gameId: movedGame.gameId, state: nextState, position: nextPosition },
+        { onError: () => setColumns(previous) },
+      );
+      return;
+    }
+
     const sourceItems = [...columns[sourceState]];
     const [movedGame] = sourceItems.splice(activeIndex, 1);
     const targetItems = [...columns[nextState]];
     targetItems.splice(overIndex, 0, movedGame);
-
-    const previous = columns;
     setColumns({ ...columns, [sourceState]: sourceItems, [nextState]: targetItems });
-    updateGameState.mutate(
-      { gameId: movedGame.gameId, state: nextState },
+    moveGame.mutate(
+      { gameId: movedGame.gameId, state: nextState, position: overIndex },
       { onError: () => setColumns(previous) },
     );
   }
@@ -189,6 +216,7 @@ export function BoardKanban({ board }: BoardKanbanProps) {
                   <GameCard
                     key={game.gameId}
                     game={game}
+                    isSortingDisabled={moveGame.isPending || removeGame.isPending}
                     isRemoving={removeGame.isPending}
                     onRemove={handleRemoveGame}
                   />
@@ -207,13 +235,23 @@ export function BoardKanban({ board }: BoardKanbanProps) {
             return null;
           }
 
-          const game = board.games.find((entry) => entry.gameId.toString() === value);
+          const game = boardEntryStates
+            .flatMap((state) => columns[state])
+            .find((entry) => entry.gameId.toString() === value);
 
           if (!game) {
             return null;
           }
 
-          return <GameCard game={game} isOverlay isRemoving={false} onRemove={() => {}} />;
+          return (
+            <GameCard
+              game={game}
+              isOverlay
+              isSortingDisabled={false}
+              isRemoving={false}
+              onRemove={() => {}}
+            />
+          );
         }}
       </KanbanOverlay>
     </Kanban>

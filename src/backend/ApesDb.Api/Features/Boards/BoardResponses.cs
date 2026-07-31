@@ -29,7 +29,6 @@ public sealed record BoardGameResponse(
     string? CoverSmallUrl,
     string? CoverLargeUrl,
     string? GameType,
-    string State,
     DateTime AddedAt
 );
 
@@ -39,5 +38,5 @@ public sealed record BoardDetailsResponse(
     DateTime CreatedAt,
     DateTime UpdatedAt,
     BoardPictureResponse? Picture,
-    BoardGameResponse[] Games
+    Dictionary<string, Dictionary<int, BoardGameResponse>> Games
 );

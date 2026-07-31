@@ -14,7 +14,7 @@ import {
 import { Library, Pencil, Plus, RefreshCw, Trash2 } from "lucide-react";
 import { formatDate } from "../../../lib/date";
 import { gameCountLabel } from "../board-labels";
-import type { BoardDetails } from "../boards.schemas";
+import { getAllBoardGames, type BoardDetails } from "../boards.schemas";
 import { DeleteBoardDialog } from "../delete-board/delete-board-dialog";
 import { EditBoardDialog } from "../edit-board/edit-board-dialog";
 import { BoardGamePickerDialog } from "./board-game-picker-dialog";
@@ -55,11 +55,13 @@ function AddGameButton({ onClick }: { onClick: () => void }) {
 
 function BoardHeader({
   board,
+  gameCount,
   onAddGame,
   onEdit,
   onDelete,
 }: {
   board: BoardDetails;
+  gameCount: number;
   onAddGame: () => void;
   onEdit: () => void;
   onDelete: () => void;
@@ -75,7 +77,7 @@ function BoardHeader({
       <div className="grid min-w-0 flex-1 gap-1.5">
         <h1 className="truncate text-2xl font-semibold tracking-tight">{board.name}</h1>
         <p className="text-sm text-muted-foreground">
-          {gameCountLabel(board.games.length)} · Created {formatDate(board.createdAt)}
+          {gameCountLabel(gameCount)} · Created {formatDate(board.createdAt)}
         </p>
       </div>
       <div className="flex items-center gap-2">
@@ -138,17 +140,19 @@ export function BoardDetailsPage() {
   }
 
   const board = boardDetails.data;
+  const gameCount = getAllBoardGames(board.games).length;
 
   return (
     <div className="flex min-h-full w-full flex-col gap-4">
       <div className="mx-auto flex min-h-0 w-full max-w-7xl flex-1 flex-col gap-4">
         <BoardHeader
           board={board}
+          gameCount={gameCount}
           onAddGame={() => setIsGamePickerOpen(true)}
           onEdit={() => setIsEditDialogOpen(true)}
           onDelete={() => setIsDeleteDialogOpen(true)}
         />
-        {board.games.length === 0 ? (
+        {gameCount === 0 ? (
           <Item className="min-h-60 flex-col justify-center text-center" variant="outline">
             <ItemContent className="flex-none items-center">
               <ItemTitle>No games yet</ItemTitle>
