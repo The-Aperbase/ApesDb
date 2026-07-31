@@ -1,4 +1,5 @@
 using ApesDb.Api.Features.Games;
+using ApesDb.Api.Health;
 using ApesDb.Api.Options;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.HttpOverrides;
@@ -9,6 +10,16 @@ namespace ApesDb.Api;
 
 public static class ApesDbApiServiceCollectionExtensions
 {
+    public static IServiceCollection AddApesDbHealthChecks(this IServiceCollection services)
+    {
+        services
+            .AddHealthChecks()
+            .AddCheck<PostgresHealthCheck>("postgres", timeout: TimeSpan.FromSeconds(3))
+            .AddCheck<RedisHealthCheck>("redis", timeout: TimeSpan.FromSeconds(3));
+
+        return services;
+    }
+
     public static IServiceCollection AddApesDbCache(this IServiceCollection services, IConfiguration configuration)
     {
         services

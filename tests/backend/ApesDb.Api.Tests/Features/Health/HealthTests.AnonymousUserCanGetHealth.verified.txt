@@ -1,0 +1,24 @@
+﻿{
+  Response: {
+    StatusCode: 200,
+    ReasonPhrase: OK,
+    Version: 1.1,
+    Headers: {
+      Cache-Control: [
+        no-store, no-cache
+      ],
+      Pragma: [
+        no-cache
+      ]
+    },
+    ContentHeaders: {
+      Content-Type: [
+        text/plain
+      ],
+      Expires: [
+        Thu, 01 Jan 1970 00:00:00 GMT
+      ]
+    }
+  },
+  Content: Healthy
+}
