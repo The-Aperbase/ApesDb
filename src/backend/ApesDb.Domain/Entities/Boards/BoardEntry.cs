@@ -45,7 +45,14 @@ public sealed class BoardEntryConfiguration : IEntityTypeConfiguration<BoardEntr
             })
             .IsUnique()
             .HasDatabaseName("UQ_BoardEntries_BoardId_StateId_Position");
-        entry.ToTable(table => table.HasCheckConstraint("CK_BoardEntries_Position_NonNegative", "\"Position\" >= 0"));
+        entry.ToTable(table =>
+            table.HasCheckConstraint(
+                "CK_BoardEntries_Position_NonNegative",
+                """
+                "Position" >= 0
+                """
+            )
+        );
         entry.Property(value => value.AddedAt).HasDefaultValueSql("now()").ValueGeneratedOnAdd();
         entry
             .HasOne(value => value.Board)
