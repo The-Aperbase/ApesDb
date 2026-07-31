@@ -80,7 +80,7 @@ function BoardHeader({
           {gameCountLabel(gameCount)} · Created {formatDate(board.createdAt)}
         </p>
       </div>
-      <div className="flex items-center gap-2">
+      <div className="flex w-full items-center gap-2 sm:w-auto">
         <AddGameButton onClick={onAddGame} />
         <Button onClick={onEdit} type="button" variant="outline">
           <Pencil data-icon="inline-start" />
