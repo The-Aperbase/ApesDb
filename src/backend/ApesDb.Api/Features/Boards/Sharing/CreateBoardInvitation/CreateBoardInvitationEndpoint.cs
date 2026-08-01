@@ -11,8 +11,7 @@ using Npgsql;
 
 namespace ApesDb.Api.Features.Boards.Sharing.CreateBoardInvitation;
 
-public sealed class CreateBoardInvitationEndpoint
-    : Endpoint<CreateBoardInvitationRequest, BoardInvitationResponse>
+public sealed class CreateBoardInvitationEndpoint : Endpoint<CreateBoardInvitationRequest, BoardInvitationResponse>
 {
     private const string NotificationType = "BoardInvite";
 
@@ -133,9 +132,7 @@ public sealed class CreateBoardInvitationEndpoint
             board.Owner,
             invitation.CreatedAt
         );
-        await Send.ResultAsync(
-            TypedResults.Created($"/api/boards/{board.Id}/invitations/{invitation.Id}", response)
-        );
+        await Send.ResultAsync(TypedResults.Created($"/api/boards/{board.Id}/invitations/{invitation.Id}", response));
     }
 
     private async Task<bool> IsCollaboratorAsync(Guid boardId, Guid? inviteeUserId, CancellationToken ct)
@@ -164,12 +161,7 @@ public sealed class CreateBoardInvitationEndpoint
         };
     }
 
-    private void PublishCreated(
-        Notification notification,
-        BoardUserResponse owner,
-        Guid boardId,
-        string boardName
-    )
+    private void PublishCreated(Notification notification, BoardUserResponse owner, Guid boardId, string boardName)
     {
         _streamService.Publish(
             notification.UserId,

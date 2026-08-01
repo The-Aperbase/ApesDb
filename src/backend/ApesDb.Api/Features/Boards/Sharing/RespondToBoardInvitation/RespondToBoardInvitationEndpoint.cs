@@ -37,9 +37,7 @@ public sealed class RespondToBoardInvitationEndpoint : Endpoint<RespondToBoardIn
         var userId = User.GetApesDbUserId();
         var invitation = await _dbContext.BoardInvitations.SingleOrDefaultAsync(
             value =>
-                value.Id == request.InvitationId
-                && value.BoardId == request.BoardId
-                && value.InviteeUserId == userId,
+                value.Id == request.InvitationId && value.BoardId == request.BoardId && value.InviteeUserId == userId,
             ct
         );
         if (invitation is null)

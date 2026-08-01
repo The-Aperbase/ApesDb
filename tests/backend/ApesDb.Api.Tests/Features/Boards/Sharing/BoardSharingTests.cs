@@ -87,10 +87,7 @@ public sealed class BoardSharingTests : IClassFixture<MutableEndpointApiFactory>
             TestContext.Current.CancellationToken
         );
         using var signupClient = ApiTestClient.CreateAuthenticated(_factory, TestUsers.SignupCandidate);
-        using var signupResponse = await signupClient.GetAsync(
-            "/api/auth/me",
-            TestContext.Current.CancellationToken
-        );
+        using var signupResponse = await signupClient.GetAsync("/api/auth/me", TestContext.Current.CancellationToken);
         using var notificationsResponse = await signupClient.GetAsync(
             "/api/notifications",
             TestContext.Current.CancellationToken

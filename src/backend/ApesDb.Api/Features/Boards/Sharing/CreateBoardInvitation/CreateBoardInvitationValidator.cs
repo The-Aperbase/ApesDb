@@ -8,9 +8,6 @@ public sealed class CreateBoardInvitationValidator : Validator<CreateBoardInvita
 {
     public CreateBoardInvitationValidator()
     {
-        RuleFor(request => request.Email)
-            .NotEmpty()
-            .MaximumLength(BoardInvitation.MaximumEmailLength)
-            .EmailAddress();
+        RuleFor(request => request.Email).NotEmpty().MaximumLength(BoardInvitation.MaximumEmailLength).EmailAddress();
     }
 }
