@@ -23,9 +23,9 @@ public sealed class GetBoardEndpoint : Endpoint<GetBoardRequest, BoardDetailsRes
     {
         var userId = User.GetApesDbUserId();
         var board = await _dbContext
-            .Boards.AsNoTracking()
+            .BoardsAccessibleTo(userId)
+            .AsNoTracking()
             .Where(board => board.Id == request.BoardId)
-            .WhereAccessibleTo(_dbContext, userId)
             .Select(board => new
             {
                 board.Id,

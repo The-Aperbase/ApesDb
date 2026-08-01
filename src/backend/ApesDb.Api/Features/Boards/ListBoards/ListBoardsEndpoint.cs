@@ -30,7 +30,7 @@ public sealed class ListBoardsEndpoint : Endpoint<ListBoardsRequest, Pagable<Boa
     {
         var userId = User.GetApesDbUserId();
 
-        var baseQuery = _dbContext.Boards.AsNoTracking().WhereAccessibleTo(_dbContext, userId);
+        var baseQuery = _dbContext.BoardsAccessibleTo(userId).AsNoTracking();
         var query = baseQuery.WhereContains(request.Search, board => board.Name);
         var total = await baseQuery.CountAsync(ct);
         var filteredTotal = await query.CountAsync(ct);

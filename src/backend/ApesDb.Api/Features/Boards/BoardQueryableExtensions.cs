@@ -6,13 +6,9 @@ namespace ApesDb.Api.Features.Boards;
 
 internal static class BoardQueryableExtensions
 {
-    public static IQueryable<Board> WhereAccessibleTo(
-        this IQueryable<Board> boards,
-        ApplicationDbContext dbContext,
-        Guid userId
-    )
+    public static IQueryable<Board> BoardsAccessibleTo(this ApplicationDbContext dbContext, Guid userId)
     {
-        return boards.Where(board =>
+        return dbContext.Boards.Where(board =>
             board.OwnerUserId == userId
             || dbContext.BoardCollaborators.Any(collaborator =>
                 collaborator.BoardId == board.Id && collaborator.UserId == userId
