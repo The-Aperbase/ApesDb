@@ -1,6 +1,7 @@
 using System.Security.Claims;
 using ApesDb.Common;
 using ApesDb.Domain;
+using ApesDb.Domain.Entities.Boards;
 using ApesDb.Domain.Entities.Calendar;
 using Microsoft.EntityFrameworkCore;
 
@@ -69,6 +70,29 @@ public sealed class UserProvisioningService : IUserProvisioningService
             FROM "public"."CalendarInvitations" AS invitation
             WHERE invitation."InviteeUserId" = {provisionedUserId}
                 AND invitation."StatusId" = {CalendarInvitationStatus.Pending}
+            ON CONFLICT ("UserId", "Type", "ResourceId") DO NOTHING
+            """,
+            cancellationToken
+        );
+        await _dbContext.Database.ExecuteSqlInterpolatedAsync(
+            $"""
+            UPDATE "public"."BoardInvitations"
+            SET "InviteeUserId" = {provisionedUserId}
+            WHERE "InviteeUserId" IS NULL
+                AND "InviteeEmail" = {normalizedEmail}
+                AND "StatusId" = {BoardInvitationStatus.Pending}
+            """,
+            cancellationToken
+        );
+        await _dbContext.Database.ExecuteSqlInterpolatedAsync(
+            $"""
+            INSERT INTO "public"."Notifications" (
+                "Id", "UserId", "Type", "ResourceId", "IsActionable", "CreatedAt"
+            )
+            SELECT uuidv7(), {provisionedUserId}, 'BoardInvite', invitation."Id", true, {now}
+            FROM "public"."BoardInvitations" AS invitation
+            WHERE invitation."InviteeUserId" = {provisionedUserId}
+                AND invitation."StatusId" = {BoardInvitationStatus.Pending}
             ON CONFLICT ("UserId", "Type", "ResourceId") DO NOTHING
             """,
             cancellationToken

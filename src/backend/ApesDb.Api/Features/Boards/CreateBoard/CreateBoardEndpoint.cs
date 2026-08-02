@@ -3,6 +3,7 @@ using ApesDb.Common;
 using ApesDb.Domain;
 using ApesDb.Domain.Entities.Boards;
 using FastEndpoints;
+using Microsoft.EntityFrameworkCore;
 
 namespace ApesDb.Api.Features.Boards.CreateBoard;
 
@@ -68,6 +69,11 @@ public sealed class CreateBoardEndpoint : Endpoint<CreateBoardRequest, BoardSumm
 
             _dbContext.Boards.Add(board);
             await _dbContext.SaveChangesAsync(ct);
+            var owner = await _dbContext
+                .Users.AsNoTracking()
+                .Where(user => user.Id == userId)
+                .Select(user => new BoardUserResponse(user.Id, user.Name, user.PictureUrl))
+                .SingleAsync(ct);
 
             var response = new BoardSummaryResponse(
                 board.Id,
@@ -75,6 +81,8 @@ public sealed class CreateBoardEndpoint : Endpoint<CreateBoardRequest, BoardSumm
                 board.CreatedAt,
                 board.UpdatedAt,
                 BoardPictureResponse.From(board.Picture),
+                owner,
+                BoardRoles.Owner,
                 0,
                 false
             );

@@ -24,6 +24,12 @@
         ContentType: image/webp,
         ByteLength: 178
       },
+      Owner: {
+        Id: Guid_1,
+        Name: Olivia Owner,
+        PictureUrl: https://images.apesdb.test/owner.png
+      },
+      Role: owner,
       ContainsGame: false
     }
   },
@@ -47,6 +53,12 @@
         ContentType: image/webp,
         ByteLength: 178
       },
+      Owner: {
+        Id: Guid_1,
+        Name: Olivia Owner,
+        PictureUrl: https://images.apesdb.test/owner.png
+      },
+      Role: owner,
       Games: {}
     }
   }

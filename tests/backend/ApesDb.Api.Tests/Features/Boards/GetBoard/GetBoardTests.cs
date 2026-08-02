@@ -26,6 +26,18 @@ public sealed class GetBoardTests
         await Verify(await BoardTestSupport.DetailsSnapshotAsync(response));
     }
 
+    [Fact]
+    public async Task CollaboratorCanGetBoardWithOrderedGameDetails()
+    {
+        using var client = ApiTestClient.CreateAuthenticated(_factory, TestUsers.Member);
+        using var response = await client.GetAsync(
+            BoardTestSupport.BoardUrl(BoardTestData.BacklogId),
+            TestContext.Current.CancellationToken
+        );
+
+        await Verify(await BoardTestSupport.DetailsSnapshotAsync(response));
+    }
+
     [Theory]
     [InlineData("outsider")]
     [InlineData("unknown")]

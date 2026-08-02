@@ -24,6 +24,15 @@ public sealed class ListBoardsTests
     }
 
     [Fact]
+    public async Task CollaboratorSeesSharedBoardsWithCounts()
+    {
+        using var client = ApiTestClient.CreateAuthenticated(_factory, TestUsers.Member);
+        using var response = await client.GetAsync("/api/boards", TestContext.Current.CancellationToken);
+
+        await Verify(await BoardTestSupport.ListSnapshotAsync(response));
+    }
+
+    [Fact]
     public async Task GameFilterReportsWhichBoardsContainTheGame()
     {
         using var client = ApiTestClient.CreateAuthenticated(_factory, TestUsers.Owner);

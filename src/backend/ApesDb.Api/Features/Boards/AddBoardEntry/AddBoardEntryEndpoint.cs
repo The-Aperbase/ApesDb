@@ -27,7 +27,7 @@ public sealed class AddBoardEntryEndpoint : Endpoint<AddBoardEntryRequest, AddBo
     {
         var userId = User.GetApesDbUserId();
         await using var transaction = await _dbContext.Database.BeginTransactionAsync(ct);
-        var board = await _dbContext.Boards.FindOwnedForUpdateAsync(request.BoardId, userId, ct);
+        var board = await _dbContext.Boards.FindAccessibleForUpdateAsync(request.BoardId, userId, ct);
         if (board is null)
         {
             await Send.NotFoundAsync(ct);

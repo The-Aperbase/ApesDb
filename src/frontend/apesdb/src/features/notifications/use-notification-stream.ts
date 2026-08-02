@@ -50,8 +50,10 @@ function showNotificationToast(
       type: "button",
     },
     notification.type === "CalendarInvite" && notification.actor
-      ? `${notification.actor.name} invited you to connect calendars.`
-      : "You have a new notification.",
+      ? `${notification.actor.name} invited you to collaborate on their calendar.`
+      : notification.type === "BoardInvite" && notification.actor && notification.board
+        ? `${notification.actor.name} invited you to collaborate on ${notification.board.name} board.`
+        : "You have a new notification.",
   );
 
   toast(message, {

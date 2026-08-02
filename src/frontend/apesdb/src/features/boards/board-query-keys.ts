@@ -3,4 +3,5 @@ export const boardQueryKeys = {
   collection: (gameId?: number) => ["boards", "collection", gameId ?? null] as const,
   page: (url: string) => ["boards", "page", url] as const,
   details: (boardId: string) => ["boards", "details", boardId] as const,
+  sharing: (boardId: string) => ["boards", "sharing", boardId] as const,
 };

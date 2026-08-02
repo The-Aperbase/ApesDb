@@ -100,6 +100,8 @@ internal sealed record BoardPictureContract(string ContentType, byte[] Data)
     }
 }
 
+internal sealed record BoardUserContract(Guid Id, string Name, string? PictureUrl);
+
 internal sealed record PagableContract<T>(T[] Items, int Total, int FilteredTotal, int Page, int PageSize)
 {
     public PagableContract<TSnapshot> ToSnapshot<TSnapshot>(Func<T, TSnapshot> createSnapshot)
@@ -120,6 +122,8 @@ internal sealed record BoardSummaryContract(
     DateTime CreatedAt,
     DateTime UpdatedAt,
     BoardPictureContract? Picture,
+    BoardUserContract Owner,
+    string Role,
     int GameCount,
     bool ContainsGame
 )
@@ -132,7 +136,17 @@ internal sealed record BoardSummaryContract(
             id = "{created-board-id}";
         }
 
-        return new BoardSummarySnapshot(id, Name, CreatedAt, UpdatedAt, Picture?.ToSnapshot(), GameCount, ContainsGame);
+        return new BoardSummarySnapshot(
+            id,
+            Name,
+            CreatedAt,
+            UpdatedAt,
+            Picture?.ToSnapshot(),
+            Owner,
+            Role,
+            GameCount,
+            ContainsGame
+        );
     }
 }
 
@@ -151,6 +165,8 @@ internal sealed record BoardDetailsContract(
     DateTime CreatedAt,
     DateTime UpdatedAt,
     BoardPictureContract? Picture,
+    BoardUserContract Owner,
+    string Role,
     Dictionary<string, Dictionary<int, BoardGameContract>> Games
 )
 {
@@ -162,7 +178,7 @@ internal sealed record BoardDetailsContract(
             id = "{created-board-id}";
         }
 
-        return new BoardDetailsSnapshot(id, Name, CreatedAt, UpdatedAt, Picture?.ToSnapshot(), Games);
+        return new BoardDetailsSnapshot(id, Name, CreatedAt, UpdatedAt, Picture?.ToSnapshot(), Owner, Role, Games);
     }
 }
 
@@ -174,6 +190,8 @@ internal sealed record BoardSummarySnapshot(
     DateTime CreatedAt,
     DateTime UpdatedAt,
     BoardPictureSnapshot? Picture,
+    BoardUserContract Owner,
+    string Role,
     int GameCount,
     bool ContainsGame
 );
@@ -184,5 +202,7 @@ internal sealed record BoardDetailsSnapshot(
     DateTime CreatedAt,
     DateTime UpdatedAt,
     BoardPictureSnapshot? Picture,
+    BoardUserContract Owner,
+    string Role,
     Dictionary<string, Dictionary<int, BoardGameContract>> Games
 );
