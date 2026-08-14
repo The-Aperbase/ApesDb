@@ -1040,28 +1040,33 @@ public sealed class CatalogStageRunner : ICatalogStageRunner
                 break;
             }
 
-            var relations = await _dbContext
+            var pendingRelations = await _dbContext
                 .IgdbSyncPendingGameRelations.AsNoTracking()
                 .Where(value => value.RunId == run.Id && gameIds.Contains(value.GameId))
-                .Select(value => new GameRelation
-                {
-                    GameId = value.GameId,
-                    RelatedGameId = value.RelatedGameId,
-                    RelationType = value.RelationType,
-                    CreatedAt = _dateTimeProvider.UtcNow,
-                })
                 .ToListAsync(cancellationToken);
             var nextCursor = gameIds[^1];
             var now = _dateTimeProvider.UtcNow;
+            var preparedPage = await PrepareGameRelationsPageAsync(stage.Id, pendingRelations, now, cancellationToken);
 
             await using var transaction = await _dbContext.Database.BeginTransactionAsync(cancellationToken);
             await _dbContext
                 .GameRelations.Where(value => gameIds.Contains(value.GameId))
                 .ExecuteDeleteAsync(cancellationToken);
-            await BulkInsertAsync(relations, cancellationToken);
-            UpdatePageProgress(run, stage, nextCursor, relations.Count, now);
+            await BulkInsertAsync(preparedPage.Entities.ToList(), cancellationToken);
+            if (preparedPage.SkippedRows.Count > 0)
+            {
+                await _dbContext.BulkInsertOrUpdateAsync(
+                    preparedPage.SkippedRows,
+                    SkippedRowUpsertConfig,
+                    cancellationToken: cancellationToken
+                );
+            }
+
+            UpdatePageProgress(run, stage, nextCursor, pendingRelations.Count, now);
+            UpdateSkippedProgress(run, stage, preparedPage.SkippedEntityCount);
             await _dbContext.SaveChangesAsync(cancellationToken);
             await transaction.CommitAsync(cancellationToken);
+            LogSkippedRows(run.Id, stage.Kind, preparedPage);
             cursor = nextCursor;
         }
 
@@ -1077,6 +1082,63 @@ public sealed class CatalogStageRunner : ICatalogStageRunner
             await _dbContext.SaveChangesAsync(cancellationToken);
             await transaction.CommitAsync(cancellationToken);
         }
+    }
+
+    private async Task<ValidatedDependentPage<GameRelation>> PrepareGameRelationsPageAsync(
+        Guid stageId,
+        IReadOnlyList<IgdbSyncPendingGameRelation> pendingRelations,
+        DateTime now,
+        CancellationToken cancellationToken
+    )
+    {
+        var requestedRelatedGameIds = pendingRelations.Select(value => value.RelatedGameId).Distinct().ToArray();
+        var storedRelatedGameIds = await _dbContext
+            .Games.AsNoTracking()
+            .Where(value => requestedRelatedGameIds.Contains(value.Id))
+            .Select(value => value.Id)
+            .ToHashSetAsync(cancellationToken);
+        var relations = new List<GameRelation>(pendingRelations.Count);
+        var skippedRows = new List<IgdbSyncSkippedRow>();
+        var skippedRelationCount = 0;
+
+        foreach (var pendingRelation in pendingRelations)
+        {
+            if (!storedRelatedGameIds.Contains(pendingRelation.RelatedGameId))
+            {
+                skippedRows.Add(
+                    CreateSkippedRow(
+                        stageId,
+                        pendingRelation.GameId,
+                        IgdbSyncSkipReason.MissingGame,
+                        pendingRelation.RelatedGameId,
+                        now
+                    )
+                );
+                skippedRelationCount++;
+                continue;
+            }
+
+            relations.Add(
+                new GameRelation
+                {
+                    GameId = pendingRelation.GameId,
+                    RelatedGameId = pendingRelation.RelatedGameId,
+                    RelationType = pendingRelation.RelationType,
+                    CreatedAt = now,
+                }
+            );
+        }
+
+        var distinctSkippedRows = skippedRows
+            .DistinctBy(value => new
+            {
+                value.StageId,
+                value.EntityId,
+                value.Reason,
+                value.MissingDependencyId,
+            })
+            .ToList();
+        return new ValidatedDependentPage<GameRelation>(relations, distinctSkippedRows, skippedRelationCount);
     }
 
     private async Task DeleteGameJoinsAsync(long[] gameIds, CancellationToken cancellationToken)
