@@ -1046,12 +1046,7 @@ public sealed class CatalogStageRunner : ICatalogStageRunner
                 .ToListAsync(cancellationToken);
             var nextCursor = gameIds[^1];
             var now = _dateTimeProvider.UtcNow;
-            var preparedPage = await PrepareGameRelationsPageAsync(
-                stage.Id,
-                pendingRelations,
-                now,
-                cancellationToken
-            );
+            var preparedPage = await PrepareGameRelationsPageAsync(stage.Id, pendingRelations, now, cancellationToken);
 
             await using var transaction = await _dbContext.Database.BeginTransactionAsync(cancellationToken);
             await _dbContext
@@ -1135,7 +1130,13 @@ public sealed class CatalogStageRunner : ICatalogStageRunner
         }
 
         var distinctSkippedRows = skippedRows
-            .DistinctBy(value => new { value.StageId, value.EntityId, value.Reason, value.MissingDependencyId })
+            .DistinctBy(value => new
+            {
+                value.StageId,
+                value.EntityId,
+                value.Reason,
+                value.MissingDependencyId,
+            })
             .ToList();
         return new ValidatedDependentPage<GameRelation>(relations, distinctSkippedRows, skippedRelationCount);
     }
