@@ -1,5 +1,23 @@
 namespace ApesDb.Api.Features.Boards;
 
+public static class BoardRoles
+{
+    public const string Owner = "owner";
+    public const string Collaborator = "collaborator";
+
+    public static string From(Guid ownerUserId, Guid currentUserId)
+    {
+        if (ownerUserId == currentUserId)
+        {
+            return Owner;
+        }
+
+        return Collaborator;
+    }
+}
+
+public sealed record BoardUserResponse(Guid Id, string Name, string? PictureUrl);
+
 public sealed record BoardPictureResponse(string ContentType, byte[] Data)
 {
     public static BoardPictureResponse? From(byte[]? data)
@@ -19,6 +37,8 @@ public sealed record BoardSummaryResponse(
     DateTime CreatedAt,
     DateTime UpdatedAt,
     BoardPictureResponse? Picture,
+    BoardUserResponse Owner,
+    string Role,
     int GameCount,
     bool ContainsGame
 );
@@ -29,7 +49,6 @@ public sealed record BoardGameResponse(
     string? CoverSmallUrl,
     string? CoverLargeUrl,
     string? GameType,
-    string State,
     DateTime AddedAt
 );
 
@@ -39,5 +58,7 @@ public sealed record BoardDetailsResponse(
     DateTime CreatedAt,
     DateTime UpdatedAt,
     BoardPictureResponse? Picture,
-    BoardGameResponse[] Games
+    BoardUserResponse Owner,
+    string Role,
+    Dictionary<string, Dictionary<int, BoardGameResponse>> Games
 );

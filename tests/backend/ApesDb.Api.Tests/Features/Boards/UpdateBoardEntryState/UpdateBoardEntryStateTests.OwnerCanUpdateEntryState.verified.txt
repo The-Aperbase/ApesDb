@@ -1,9 +1,50 @@
 ﻿{
-  UpdateResponse: {
-    Response: {
-      StatusCode: 204,
-      ReasonPhrase: No Content,
-      Version: 1.1
+  MutationResponses: {
+    Add: [
+      {
+        Response: {
+          StatusCode: 200,
+          ReasonPhrase: OK,
+          Version: 1.1,
+          ContentHeaders: {
+            Content-Type: [
+              application/json; charset=utf-8
+            ]
+          }
+        },
+        Content: {
+          GameId: 547
+        }
+      },
+      {
+        Response: {
+          StatusCode: 200,
+          ReasonPhrase: OK,
+          Version: 1.1,
+          ContentHeaders: {
+            Content-Type: [
+              application/json; charset=utf-8
+            ]
+          }
+        },
+        Content: {
+          GameId: 534
+        }
+      }
+    ],
+    Reorder: {
+      Response: {
+        StatusCode: 204,
+        ReasonPhrase: No Content,
+        Version: 1.1
+      }
+    },
+    Move: {
+      Response: {
+        StatusCode: 204,
+        ReasonPhrase: No Content,
+        Version: 1.1
+      }
     }
   },
   BoardResponse: {
@@ -26,26 +67,50 @@
         ContentType: image/webp,
         ByteLength: 8
       },
-      Games: [
-        {
-          GameId: 11156,
-          Name: Horizon Zero Dawn,
-          CoverSmallUrl: https://images.igdb.com/igdb/image/upload/t_cover_small_2x/co2una.jpg,
-          CoverLargeUrl: https://images.igdb.com/igdb/image/upload/t_cover_big_2x/co2una.jpg,
-          GameType: Main Game,
-          State: dnf,
-          AddedAt: DateTime_3
+      Owner: {
+        Id: Guid_2,
+        Name: Olivia Owner,
+        PictureUrl: https://images.apesdb.test/owner.png
+      },
+      Role: owner,
+      Games: {
+        completed: {
+          0: {
+            GameId: 11156,
+            Name: Horizon Zero Dawn,
+            CoverSmallUrl: https://images.igdb.com/igdb/image/upload/t_cover_small_2x/co2una.jpg,
+            CoverLargeUrl: https://images.igdb.com/igdb/image/upload/t_cover_big_2x/co2una.jpg,
+            GameType: Main Game,
+            AddedAt: DateTime_3
+          },
+          1: {
+            GameId: 492,
+            Name: Gears of War 3,
+            CoverSmallUrl: https://images.igdb.com/igdb/image/upload/t_cover_small_2x/co2a21.jpg,
+            CoverLargeUrl: https://images.igdb.com/igdb/image/upload/t_cover_big_2x/co2a21.jpg,
+            GameType: Main Game,
+            AddedAt: DateTime_4
+          }
         },
-        {
-          GameId: 492,
-          Name: Gears of War 3,
-          CoverSmallUrl: https://images.igdb.com/igdb/image/upload/t_cover_small_2x/co2a21.jpg,
-          CoverLargeUrl: https://images.igdb.com/igdb/image/upload/t_cover_big_2x/co2a21.jpg,
-          GameType: Main Game,
-          State: completed,
-          AddedAt: DateTime_4
+        todo: {
+          0: {
+            GameId: 534,
+            Name: The Legend of Zelda: Skyward Sword,
+            CoverSmallUrl: https://images.igdb.com/igdb/image/upload/t_cover_small_2x/co5wrj.jpg,
+            CoverLargeUrl: https://images.igdb.com/igdb/image/upload/t_cover_big_2x/co5wrj.jpg,
+            GameType: Main Game,
+            AddedAt: DateTime_5
+          },
+          1: {
+            GameId: 547,
+            Name: Gears of War,
+            CoverSmallUrl: https://images.igdb.com/igdb/image/upload/t_cover_small_2x/co8rkr.jpg,
+            CoverLargeUrl: https://images.igdb.com/igdb/image/upload/t_cover_big_2x/co8rkr.jpg,
+            GameType: Main Game,
+            AddedAt: DateTime_6
+          }
         }
-      ]
+      }
     }
   }
 }

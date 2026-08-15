@@ -7,6 +7,7 @@ namespace ApesDb.Api.Features.Notifications.GetNotifications;
 public sealed class GetNotificationsEndpoint : EndpointWithoutRequest<NotificationsResponse>
 {
     private const string CalendarInviteNotificationType = "CalendarInvite";
+    private const string BoardInviteNotificationType = "BoardInvite";
 
     private readonly ApplicationDbContext _dbContext;
 
@@ -56,6 +57,23 @@ public sealed class GetNotificationsEndpoint : EndpointWithoutRequest<Notificati
                 ),
             })
             .ToDictionaryAsync(row => row.Id, row => row.Actor, ct);
+        var boardInvitationIds = rows.Where(row => row.Type == BoardInviteNotificationType)
+            .Select(row => row.ResourceId)
+            .ToArray();
+        var boardInvitationsById = await _dbContext
+            .BoardInvitations.AsNoTracking()
+            .Where(invitation => boardInvitationIds.Contains(invitation.Id))
+            .Select(invitation => new
+            {
+                invitation.Id,
+                Actor = new NotificationActorResponse(
+                    invitation.Board.OwnerUserId,
+                    invitation.Board.OwnerUser.Name,
+                    invitation.Board.OwnerUser.PictureUrl
+                ),
+                Board = new NotificationBoardResponse(invitation.BoardId, invitation.Board.Name),
+            })
+            .ToDictionaryAsync(row => row.Id, ct);
 
         var items = new NotificationResponse[rows.Length];
         var unreadCount = 0;
@@ -81,12 +99,21 @@ public sealed class GetNotificationsEndpoint : EndpointWithoutRequest<Notificati
             }
 
             NotificationActorResponse? actor = null;
+            NotificationBoardResponse? board = null;
             if (
                 row.Type == CalendarInviteNotificationType
                 && actorsByInvitationId.TryGetValue(row.ResourceId, out var invitationActor)
             )
             {
                 actor = invitationActor;
+            }
+            else if (
+                row.Type == BoardInviteNotificationType
+                && boardInvitationsById.TryGetValue(row.ResourceId, out var boardInvitation)
+            )
+            {
+                actor = boardInvitation.Actor;
+                board = boardInvitation.Board;
             }
 
             items[index] = new NotificationResponse(
@@ -97,7 +124,8 @@ public sealed class GetNotificationsEndpoint : EndpointWithoutRequest<Notificati
                 row.ReadAt,
                 isUnread,
                 row.IsActionable,
-                actor
+                actor,
+                board
             );
         }
 

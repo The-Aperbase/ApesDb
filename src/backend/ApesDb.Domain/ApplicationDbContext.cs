@@ -25,6 +25,12 @@ public sealed class ApplicationDbContext : DbContext
 
     public DbSet<BoardEntryState> BoardEntryStates => Set<BoardEntryState>();
 
+    public DbSet<BoardInvitationStatus> BoardInvitationStatuses => Set<BoardInvitationStatus>();
+
+    public DbSet<BoardInvitation> BoardInvitations => Set<BoardInvitation>();
+
+    public DbSet<BoardCollaborator> BoardCollaborators => Set<BoardCollaborator>();
+
     public DbSet<CalendarEvent> CalendarEvents => Set<CalendarEvent>();
 
     public DbSet<CalendarInvitationStatus> CalendarInvitationStatuses => Set<CalendarInvitationStatus>();

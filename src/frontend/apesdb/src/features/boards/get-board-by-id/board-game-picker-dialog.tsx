@@ -20,7 +20,7 @@ import {
 import { Gamepad2, LoaderCircle, RefreshCw } from "lucide-react";
 import { toast } from "sonner";
 import type { Game } from "../../games/list-games/games.schemas";
-import type { BoardDetails } from "../boards.schemas";
+import { getAllBoardGames, type BoardDetails } from "../boards.schemas";
 import { useAddGameToBoard } from "./use-add-game-to-board";
 import { boardGamePickerQueryKey, useBoardGamePicker } from "./use-board-game-picker";
 
@@ -63,7 +63,7 @@ export function BoardGamePickerDialog({ board, open, onOpenChange }: BoardGamePi
   const loadMoreRef = useRef<HTMLDivElement>(null);
   const queryClient = useQueryClient();
   const existingGameIds = useMemo(
-    () => new Set(board.games.map((game) => game.gameId)),
+    () => new Set(getAllBoardGames(board.games).map((game) => game.gameId)),
     [board.games],
   );
   const picker = useBoardGamePicker(search, open);

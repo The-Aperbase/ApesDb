@@ -6,6 +6,11 @@ const notificationActorSchema = z.object({
   pictureUrl: z.string().nullable(),
 });
 
+const notificationBoardSchema = z.object({
+  id: z.string(),
+  name: z.string(),
+});
+
 export const notificationSchema = z.object({
   id: z.string(),
   type: z.string().min(1),
@@ -15,6 +20,7 @@ export const notificationSchema = z.object({
   isUnread: z.boolean(),
   isActionable: z.boolean(),
   actor: notificationActorSchema.nullable().optional(),
+  board: notificationBoardSchema.nullable().optional(),
 });
 
 export const notificationMetadataSchema = z.object({

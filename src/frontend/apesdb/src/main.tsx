@@ -28,7 +28,7 @@ createRoot(rootElement).render(
           <AuthGate>{(auth) => <RouterProvider router={router} context={{ auth }} />}</AuthGate>
         </AuthProvider>
       </QueryClientProvider>
-      <Toaster />
+      <Toaster position="bottom-center" />
     </ThemeProvider>
   </StrictMode>,
 );

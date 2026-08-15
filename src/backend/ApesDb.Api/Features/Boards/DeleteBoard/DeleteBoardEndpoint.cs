@@ -1,3 +1,5 @@
+using ApesDb.Api.Features.Notifications.NotificationsStream;
+using ApesDb.Common;
 using ApesDb.Domain;
 using FastEndpoints;
 using Microsoft.EntityFrameworkCore;
@@ -6,11 +8,21 @@ namespace ApesDb.Api.Features.Boards.DeleteBoard;
 
 public sealed class DeleteBoardEndpoint : Endpoint<DeleteBoardRequest>
 {
-    private readonly ApplicationDbContext _dbContext;
+    private const string BoardInviteNotificationType = "BoardInvite";
 
-    public DeleteBoardEndpoint(ApplicationDbContext dbContext)
+    private readonly ApplicationDbContext _dbContext;
+    private readonly IDateTimeProvider _dateTimeProvider;
+    private readonly NotificationStreamService _streamService;
+
+    public DeleteBoardEndpoint(
+        ApplicationDbContext dbContext,
+        IDateTimeProvider dateTimeProvider,
+        NotificationStreamService streamService
+    )
     {
         _dbContext = dbContext;
+        _dateTimeProvider = dateTimeProvider;
+        _streamService = streamService;
     }
 
     public override void Configure()
@@ -23,23 +35,48 @@ public sealed class DeleteBoardEndpoint : Endpoint<DeleteBoardRequest>
     {
         var userId = User.GetApesDbUserId();
         await using var transaction = await _dbContext.Database.BeginTransactionAsync(ct);
-
-        await _dbContext
-            .BoardEntries.Where(entry => entry.BoardId == request.BoardId && entry.Board.OwnerUserId == userId)
-            .ExecuteDeleteAsync(ct);
-
-        var deleted = await _dbContext
-            .Boards.Where(board => board.Id == request.BoardId && board.OwnerUserId == userId)
-            .ExecuteDeleteAsync(ct);
-
-        if (deleted == 0)
+        var board = await _dbContext.Boards.FindOwnedForUpdateAsync(request.BoardId, userId, ct);
+        if (board is null)
         {
             await Send.NotFoundAsync(ct);
+            return;
         }
-        else
+
+        var invitationIds = await _dbContext
+            .BoardInvitations.Where(invitation => invitation.BoardId == request.BoardId)
+            .Select(invitation => invitation.Id)
+            .ToArrayAsync(ct);
+        var notifications = await _dbContext
+            .Notifications.Where(notification =>
+                notification.Type == BoardInviteNotificationType
+                && invitationIds.Contains(notification.ResourceId)
+                && notification.ResolvedAt == null
+            )
+            .ToArrayAsync(ct);
+        var now = _dateTimeProvider.UtcNow;
+        foreach (var notification in notifications)
         {
-            await transaction.CommitAsync(ct);
-            await Send.NoContentAsync(ct);
+            notification.IsActionable = false;
+            notification.ReadAt = now;
+            notification.ResolvedAt = now;
         }
+
+        await _dbContext.BoardEntries.Where(entry => entry.BoardId == request.BoardId).ExecuteDeleteAsync(ct);
+
+        await _dbContext.SaveChangesAsync(ct);
+        await _dbContext.Boards.Where(existingBoard => existingBoard.Id == board.Id).ExecuteDeleteAsync(ct);
+        await transaction.CommitAsync(ct);
+        foreach (var notification in notifications)
+        {
+            _streamService.Publish(
+                notification.UserId,
+                new NotificationStreamEvent(
+                    NotificationStreamEventKinds.Resolved,
+                    new NotificationResolvedEventData(notification.Id)
+                )
+            );
+        }
+
+        await Send.NoContentAsync(ct);
     }
 }

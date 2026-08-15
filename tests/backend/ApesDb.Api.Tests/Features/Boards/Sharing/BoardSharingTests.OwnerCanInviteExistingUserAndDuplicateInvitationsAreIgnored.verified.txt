@@ -1,0 +1,136 @@
+﻿{
+  FirstResponse: {
+    Response: {
+      StatusCode: 201,
+      ReasonPhrase: Created,
+      Version: 1.1,
+      Headers: {
+        Location: [
+          /api/boards/{guid}/invitations/{guid}
+        ]
+      },
+      ContentHeaders: {
+        Content-Type: [
+          application/json; charset=utf-8
+        ]
+      }
+    },
+    Content: {
+      Id: Guid_1,
+      Board: {
+        Id: Guid_2,
+        Name: Backlog
+      },
+      InvitedBy: {
+        Id: Guid_3,
+        Name: Olivia Owner,
+        PictureUrl: https://images.apesdb.test/owner.png
+      },
+      CreatedAt: DateTime_1
+    }
+  },
+  DuplicateResponse: {
+    Response: {
+      StatusCode: 202,
+      ReasonPhrase: Accepted,
+      Version: 1.1
+    }
+  },
+  SelfResponse: {
+    Response: {
+      StatusCode: 202,
+      ReasonPhrase: Accepted,
+      Version: 1.1
+    }
+  },
+  CollaboratorResponse: {
+    Response: {
+      StatusCode: 202,
+      ReasonPhrase: Accepted,
+      Version: 1.1
+    }
+  },
+  SharingResponse: {
+    Response: {
+      StatusCode: 200,
+      ReasonPhrase: OK,
+      Version: 1.1,
+      ContentHeaders: {
+        Content-Type: [
+          application/json; charset=utf-8
+        ]
+      }
+    },
+    Content: {
+      Collaborators: [
+        {
+          User: {
+            Id: Guid_4,
+            Name: Mason Member,
+            PictureUrl: https://images.apesdb.test/member.png
+          },
+          JoinedAt: DateTime_2
+        }
+      ],
+      OutgoingInvitations: [
+        {
+          Id: Guid_1,
+          Email: outsider@apesdb.test,
+          CreatedAt: DateTime_1
+        },
+        {
+          Id: Guid_5,
+          Email: invitee@apesdb.test,
+          CreatedAt: DateTime_3
+        }
+      ]
+    }
+  },
+  NotificationsResponse: {
+    Response: {
+      StatusCode: 200,
+      ReasonPhrase: OK,
+      Version: 1.1,
+      ContentHeaders: {
+        Content-Type: [
+          application/json; charset=utf-8
+        ]
+      }
+    },
+    Content: {
+      Items: [
+        {
+          Id: Guid_6,
+          Type: BoardInvite,
+          ResourceId: Guid_1,
+          CreatedAt: DateTime_1,
+          IsUnread: true,
+          IsActionable: true,
+          Actor: {
+            Id: Guid_3,
+            Name: Olivia Owner,
+            PictureUrl: https://images.apesdb.test/owner.png
+          },
+          Board: {
+            Id: Guid_2,
+            Name: Backlog
+          }
+        },
+        {
+          Id: Guid_7,
+          Type: CatalogImportCompleted,
+          ResourceId: Guid_8,
+          CreatedAt: DateTime_1,
+          IsUnread: true,
+          IsActionable: false
+        }
+      ],
+      Metadata: {
+        TotalCount: 2,
+        UnreadCount: 2,
+        ActionableCount: 1,
+        AttentionCount: 2
+      }
+    }
+  }
+}

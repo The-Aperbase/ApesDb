@@ -1,0 +1,4 @@
+interface:
+  display_name: "GitHub Stack Workflow"
+  short_description: "Create and manage GitHub stacked pull requests"
+  default_prompt: "Use $gh-stack to create and manage this repository’s stacked pull requests."

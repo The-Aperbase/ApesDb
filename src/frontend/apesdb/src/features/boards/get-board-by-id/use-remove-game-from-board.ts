@@ -1,7 +1,12 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { boardQueryKeys } from "../board-query-keys";
 import { removeGameFromBoard } from "../boards.api";
-import type { BoardDetails } from "../boards.schemas";
+import {
+  boardEntryStates,
+  createBoardGameOrder,
+  getOrderedBoardGames,
+  type BoardDetails,
+} from "../boards.schemas";
 
 export function useRemoveGameFromBoard(boardId: string) {
   const queryClient = useQueryClient();
@@ -14,10 +19,15 @@ export function useRemoveGameFromBoard(boardId: string) {
           return details;
         }
 
-        return {
-          ...details,
-          games: details.games.filter((game) => game.gameId !== gameId),
-        };
+        const games = { ...details.games };
+
+        for (const state of boardEntryStates) {
+          games[state] = createBoardGameOrder(
+            getOrderedBoardGames(games[state]).filter((game) => game.gameId !== gameId),
+          );
+        }
+
+        return { ...details, games };
       });
 
       void queryClient.invalidateQueries({ queryKey: boardQueryKeys.all });

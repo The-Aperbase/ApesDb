@@ -1,11 +1,13 @@
 import { z } from "zod";
 import {
   boardDetailsSchema,
+  boardSharingSchema,
   boardSummariesResponseSchema,
   boardSummarySchema,
   type BoardDetails,
   type BoardEntryState,
   type BoardSummary,
+  type BoardSharing,
   type BoardsResponse,
 } from "./boards.schemas";
 
@@ -37,8 +39,30 @@ export type BoardEntryInput = {
   gameId: number;
 };
 
-export type UpdateGameStateInput = BoardEntryInput & {
+export type UpdateBoardEntryInput = BoardEntryInput & {
   state: BoardEntryState;
+  position: number;
+};
+
+export type BoardInvitationInput = {
+  boardId: string;
+  email: string;
+};
+
+export type RespondToBoardInvitationInput = {
+  boardId: string;
+  invitationId: string;
+  accept: boolean;
+};
+
+export type BoardInvitationTarget = {
+  boardId: string;
+  invitationId: string;
+};
+
+export type BoardCollaboratorTarget = {
+  boardId: string;
+  userId: string;
 };
 
 export type BoardsRequest = {
@@ -277,7 +301,7 @@ export async function addGameToBoard(input: BoardEntryInput): Promise<void> {
   }
 }
 
-export async function updateGameState(input: UpdateGameStateInput): Promise<void> {
+export async function updateBoardEntry(input: UpdateBoardEntryInput): Promise<void> {
   let response: Response;
 
   try {
@@ -287,14 +311,14 @@ export async function updateGameState(input: UpdateGameStateInput): Promise<void
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({ state: input.state }),
+      body: JSON.stringify({ state: input.state, position: input.position }),
     });
   } catch {
     throw new Error("Unable to reach the server. Check your connection and try again.");
   }
 
   if (!response.ok) {
-    throw new Error(`Unable to update the game state (status ${response.status}).`);
+    throw new Error(`Unable to move the game (status ${response.status}).`);
   }
 }
 
@@ -312,5 +336,82 @@ export async function removeGameFromBoard(input: BoardEntryInput): Promise<void>
 
   if (!response.ok) {
     throw new Error(`Unable to remove the game from the board (status ${response.status}).`);
+  }
+}
+
+export async function fetchBoardSharing(
+  boardId: string,
+  signal?: AbortSignal,
+): Promise<BoardSharing> {
+  const response = await fetch(`${boardUrl(boardId)}/sharing`, {
+    credentials: "include",
+    signal,
+  });
+
+  if (response.status === 404) {
+    throw new BoardNotFoundError();
+  }
+
+  if (!response.ok) {
+    throw new Error(`Unable to load board sharing (status ${response.status}).`);
+  }
+
+  return boardSharingSchema.parse(await response.json());
+}
+
+export async function inviteToBoard(input: BoardInvitationInput): Promise<void> {
+  const response = await fetch(`${boardUrl(input.boardId)}/invitations`, {
+    method: "POST",
+    credentials: "include",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ email: input.email }),
+  });
+
+  if (response.status === 404) {
+    throw new BoardNotFoundError();
+  }
+
+  if (!response.ok) {
+    throw await mutationRequestError(response, "Unable to send the board invitation");
+  }
+}
+
+export async function respondToBoardInvitation(
+  input: RespondToBoardInvitationInput,
+): Promise<void> {
+  const response = await fetch(
+    `${boardUrl(input.boardId)}/invitations/${encodeURIComponent(input.invitationId)}/respond`,
+    {
+      method: "POST",
+      credentials: "include",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ accept: input.accept }),
+    },
+  );
+
+  if (!response.ok) {
+    throw new Error(`Unable to respond to the board invitation (status ${response.status}).`);
+  }
+}
+
+export async function cancelBoardInvitation(input: BoardInvitationTarget): Promise<void> {
+  const response = await fetch(
+    `${boardUrl(input.boardId)}/invitations/${encodeURIComponent(input.invitationId)}`,
+    { method: "DELETE", credentials: "include" },
+  );
+
+  if (!response.ok) {
+    throw new Error(`Unable to cancel the board invitation (status ${response.status}).`);
+  }
+}
+
+export async function removeBoardCollaborator(input: BoardCollaboratorTarget): Promise<void> {
+  const response = await fetch(
+    `${boardUrl(input.boardId)}/collaborators/${encodeURIComponent(input.userId)}`,
+    { method: "DELETE", credentials: "include" },
+  );
+
+  if (!response.ok) {
+    throw new Error(`Unable to remove board access (status ${response.status}).`);
   }
 }

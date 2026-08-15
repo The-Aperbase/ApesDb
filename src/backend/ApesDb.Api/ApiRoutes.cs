@@ -28,6 +28,12 @@ public static class ApiRoutes
         public const string ById = $"{List}/{{boardId:guid}}";
         public const string Entries = $"{ById}/entries";
         public const string EntryByGame = $"{Entries}/{{gameId:long}}";
+        public const string Sharing = $"{ById}/sharing";
+        public const string Invitations = $"{ById}/invitations";
+        public const string InvitationById = $"{Invitations}/{{invitationId:guid}}";
+        public const string RespondToInvitation = $"{InvitationById}/respond";
+        public const string Collaborators = $"{ById}/collaborators";
+        public const string CollaboratorByUser = $"{Collaborators}/{{collaboratorUserId:guid}}";
     }
 
     public static class Calendar

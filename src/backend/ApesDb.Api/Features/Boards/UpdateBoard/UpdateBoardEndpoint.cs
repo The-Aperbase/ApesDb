@@ -86,6 +86,11 @@ public sealed class UpdateBoardEndpoint : Endpoint<UpdateBoardRequest, BoardDeta
                     .BoardEntries.AsNoTracking()
                     .Where(entry => entry.BoardId == board.Id)
                     .ToBoardGameResponsesAsync(ct);
+                var owner = await _dbContext
+                    .Users.AsNoTracking()
+                    .Where(user => user.Id == board.OwnerUserId)
+                    .Select(user => new BoardUserResponse(user.Id, user.Name, user.PictureUrl))
+                    .SingleAsync(ct);
 
                 await Send.OkAsync(
                     new BoardDetailsResponse(
@@ -94,6 +99,8 @@ public sealed class UpdateBoardEndpoint : Endpoint<UpdateBoardRequest, BoardDeta
                         board.CreatedAt,
                         board.UpdatedAt,
                         BoardPictureResponse.From(board.Picture),
+                        owner,
+                        BoardRoles.Owner,
                         games
                     ),
                     ct

@@ -11,12 +11,14 @@ import {
   ItemTitle,
   Skeleton,
 } from "@apesdb/ui";
-import { Library, Pencil, Plus, RefreshCw, Trash2 } from "lucide-react";
+import { Library, LogOut, Pencil, Plus, RefreshCw, Trash2, Users } from "lucide-react";
 import { formatDate } from "../../../lib/date";
 import { gameCountLabel } from "../board-labels";
-import type { BoardDetails } from "../boards.schemas";
+import { getAllBoardGames, type BoardDetails } from "../boards.schemas";
 import { DeleteBoardDialog } from "../delete-board/delete-board-dialog";
 import { EditBoardDialog } from "../edit-board/edit-board-dialog";
+import { BoardSharingSheet } from "../sharing/board-sharing-sheet";
+import { LeaveBoardDialog } from "../sharing/leave-board-dialog";
 import { BoardGamePickerDialog } from "./board-game-picker-dialog";
 import { BoardKanban } from "./board-kanban";
 import { useBoardDetails } from "./use-board-details";
@@ -55,18 +57,24 @@ function AddGameButton({ onClick }: { onClick: () => void }) {
 
 function BoardHeader({
   board,
+  gameCount,
   onAddGame,
   onEdit,
   onDelete,
+  onShare,
+  onLeave,
 }: {
   board: BoardDetails;
+  gameCount: number;
   onAddGame: () => void;
   onEdit: () => void;
   onDelete: () => void;
+  onShare: () => void;
+  onLeave: () => void;
 }) {
   return (
-    <header className="flex flex-wrap items-center gap-4">
-      <Avatar className="size-20 rounded-xl">
+    <header className="grid grid-cols-[auto_minmax(0,1fr)] items-center gap-x-4 gap-y-2 sm:flex sm:flex-wrap sm:gap-4">
+      <Avatar className="row-span-2 size-24 rounded-xl sm:row-auto sm:size-20">
         <AvatarImage alt={board.name} src={board.pictureUrl ?? undefined} />
         <AvatarFallback className="rounded-xl bg-muted text-muted-foreground">
           <Library className="size-7" />
@@ -75,19 +83,33 @@ function BoardHeader({
       <div className="grid min-w-0 flex-1 gap-1.5">
         <h1 className="truncate text-2xl font-semibold tracking-tight">{board.name}</h1>
         <p className="text-sm text-muted-foreground">
-          {gameCountLabel(board.games.length)} · Created {formatDate(board.createdAt)}
+          {gameCountLabel(gameCount)} · Created {formatDate(board.createdAt)}
+          {board.role === "collaborator" ? ` · Owned by ${board.owner.name}` : ""}
         </p>
       </div>
-      <div className="flex items-center gap-2">
+      <div className="col-start-2 flex items-center gap-2 sm:col-auto">
         <AddGameButton onClick={onAddGame} />
-        <Button onClick={onEdit} type="button" variant="outline">
-          <Pencil data-icon="inline-start" />
-          Edit
-        </Button>
-        <Button onClick={onDelete} type="button" variant="outline">
-          <Trash2 data-icon="inline-start" />
-          Delete
-        </Button>
+        {board.role === "owner" ? (
+          <>
+            <Button onClick={onShare} type="button" variant="outline">
+              <Users data-icon="inline-start" />
+              Share
+            </Button>
+            <Button onClick={onEdit} type="button" variant="outline">
+              <Pencil data-icon="inline-start" />
+              Edit
+            </Button>
+            <Button onClick={onDelete} type="button" variant="outline">
+              <Trash2 data-icon="inline-start" />
+              Delete
+            </Button>
+          </>
+        ) : (
+          <Button onClick={onLeave} type="button" variant="outline">
+            <LogOut data-icon="inline-start" />
+            Leave
+          </Button>
+        )}
       </div>
     </header>
   );
@@ -99,6 +121,8 @@ export function BoardDetailsPage() {
   const [isGamePickerOpen, setIsGamePickerOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [isSharingSheetOpen, setIsSharingSheetOpen] = useState(false);
+  const [isLeaveDialogOpen, setIsLeaveDialogOpen] = useState(false);
   const navigate = useNavigate();
 
   function handleDeleted() {
@@ -138,17 +162,21 @@ export function BoardDetailsPage() {
   }
 
   const board = boardDetails.data;
+  const gameCount = getAllBoardGames(board.games).length;
 
   return (
     <div className="flex min-h-full w-full flex-col gap-4">
       <div className="mx-auto flex min-h-0 w-full max-w-7xl flex-1 flex-col gap-4">
         <BoardHeader
           board={board}
+          gameCount={gameCount}
           onAddGame={() => setIsGamePickerOpen(true)}
           onEdit={() => setIsEditDialogOpen(true)}
           onDelete={() => setIsDeleteDialogOpen(true)}
+          onShare={() => setIsSharingSheetOpen(true)}
+          onLeave={() => setIsLeaveDialogOpen(true)}
         />
-        {board.games.length === 0 ? (
+        {gameCount === 0 ? (
           <Item className="min-h-60 flex-col justify-center text-center" variant="outline">
             <ItemContent className="flex-none items-center">
               <ItemTitle>No games yet</ItemTitle>
@@ -165,13 +193,33 @@ export function BoardDetailsPage() {
         open={isGamePickerOpen}
         onOpenChange={setIsGamePickerOpen}
       />
-      <EditBoardDialog board={board} open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen} />
-      <DeleteBoardDialog
-        board={board}
-        open={isDeleteDialogOpen}
-        onOpenChange={setIsDeleteDialogOpen}
-        onDeleted={handleDeleted}
-      />
+      {board.role === "owner" ? (
+        <>
+          <BoardSharingSheet
+            board={board}
+            open={isSharingSheetOpen}
+            onOpenChange={setIsSharingSheetOpen}
+          />
+          <EditBoardDialog
+            board={board}
+            open={isEditDialogOpen}
+            onOpenChange={setIsEditDialogOpen}
+          />
+          <DeleteBoardDialog
+            board={board}
+            open={isDeleteDialogOpen}
+            onOpenChange={setIsDeleteDialogOpen}
+            onDeleted={handleDeleted}
+          />
+        </>
+      ) : (
+        <LeaveBoardDialog
+          board={board}
+          open={isLeaveDialogOpen}
+          onOpenChange={setIsLeaveDialogOpen}
+          onLeft={handleDeleted}
+        />
+      )}
     </div>
   );
 }

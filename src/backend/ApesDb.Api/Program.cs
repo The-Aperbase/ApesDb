@@ -5,6 +5,8 @@ using ApesDb.Common;
 using ApesDb.Domain;
 using ApesDb.Shared;
 using FastEndpoints;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -14,6 +16,7 @@ builder.Services.AddApesDbCommon();
 builder.Services.AddApesDbCache(builder.Configuration);
 builder.Services.AddApesDbDataProtection();
 builder.Services.AddApesDbDomain(builder.Configuration);
+builder.Services.AddApesDbHealthChecks();
 builder.Services.AddApesDbShared();
 builder.Services.AddApesDbAuth(builder.Configuration);
 
@@ -41,6 +44,7 @@ app.Use(
 
 app.UseApesDbAuth();
 app.UseApesDbSwagger();
+app.MapHealthChecks("/health").AllowAnonymous();
 app.UseFastEndpoints(config => config.Endpoints.RoutePrefix = ApiRoutes.Api.Prefix);
 app.MapApesDbApiTelemetry();
 app.UseEndpoints(_ => { });

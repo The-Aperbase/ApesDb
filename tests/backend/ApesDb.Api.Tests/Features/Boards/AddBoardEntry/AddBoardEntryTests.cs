@@ -28,6 +28,11 @@ public sealed class AddBoardEntryTests : IClassFixture<MutableEndpointApiFactory
     public async Task AddingGameIsIdempotent()
     {
         using var client = ApiTestClient.CreateAuthenticated(_factory, TestUsers.Owner);
+        using var predecessorResponse = await client.PostAsJsonAsync(
+            BoardTestSupport.EntriesUrl(BoardTestData.BacklogId),
+            new { GameId = BoardEntryTestData.AppendPredecessorGameId },
+            TestContext.Current.CancellationToken
+        );
         var request = new { GameId = BoardEntryTestData.AddableGameId };
         using var firstResponse = await client.PostAsJsonAsync(
             BoardTestSupport.EntriesUrl(BoardTestData.BacklogId),
@@ -41,6 +46,7 @@ public sealed class AddBoardEntryTests : IClassFixture<MutableEndpointApiFactory
         );
         var addResponses = new[]
         {
+            await HttpResponseSnapshot.CreateAsync<AddBoardEntryContract>(predecessorResponse),
             await HttpResponseSnapshot.CreateAsync<AddBoardEntryContract>(firstResponse),
             await HttpResponseSnapshot.CreateAsync<AddBoardEntryContract>(secondResponse),
         };

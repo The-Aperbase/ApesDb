@@ -53,8 +53,15 @@ const columns: ColumnDef<BoardSummary>[] = [
         to="/boards/$boardId"
       >
         <BoardAvatar board={row.original} />
-        <span className="font-medium whitespace-normal group-hover:underline group-hover:underline-offset-4">
-          {row.original.name}
+        <span className="grid min-w-0 gap-0.5">
+          <span className="font-medium whitespace-normal group-hover:underline group-hover:underline-offset-4">
+            {row.original.name}
+          </span>
+          {row.original.role === "collaborator" ? (
+            <span className="text-xs text-muted-foreground">
+              Owned by {row.original.owner.name}
+            </span>
+          ) : null}
         </span>
       </Link>
     ),
@@ -102,6 +109,9 @@ function BoardGridCard({ board }: { board: BoardSummary }) {
               {board.name}
             </CardTitle>
             <CardDescription>{gameCountLabel(board.gameCount)}</CardDescription>
+            {board.role === "collaborator" ? (
+              <CardDescription>Owned by {board.owner.name}</CardDescription>
+            ) : null}
           </div>
         </CardContent>
       </Card>

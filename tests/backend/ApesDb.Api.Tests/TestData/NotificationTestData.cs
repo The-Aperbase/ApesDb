@@ -53,6 +53,16 @@ internal static class NotificationTestData
                 IsActionable = true,
                 CreatedAt = TestClock.UtcNow.AddMinutes(-2),
             },
+            new Notification
+            {
+                Id = Guid.Parse("01910000-0000-7000-8000-000000005005"),
+                UserId = inviteeId,
+                User = usersById[inviteeId],
+                Type = "BoardInvite",
+                ResourceId = BoardCollaborationTestData.PendingInvitationId,
+                IsActionable = true,
+                CreatedAt = TestClock.UtcNow.AddMinutes(-3),
+            },
         ];
     }
 }

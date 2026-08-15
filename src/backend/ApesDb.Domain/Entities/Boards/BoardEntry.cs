@@ -4,13 +4,6 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace ApesDb.Domain.Entities.Boards;
 
-public sealed class BoardEntryState
-{
-    public int Id { get; set; }
-
-    public required string Name { get; set; }
-}
-
 public sealed class BoardEntry
 {
     public Guid BoardId { get; init; }
@@ -25,6 +18,8 @@ public sealed class BoardEntry
 
     public BoardEntryState State { get; set; } = null!;
 
+    public int Position { get; set; }
+
     public DateTime AddedAt { get; init; }
 }
 
@@ -34,6 +29,23 @@ public sealed class BoardEntryConfiguration : IEntityTypeConfiguration<BoardEntr
     {
         entry.HasKey(value => new { value.BoardId, value.GameId });
         entry.HasIndex(value => value.GameId);
+        entry
+            .HasIndex(value => new
+            {
+                value.BoardId,
+                value.StateId,
+                value.Position,
+            })
+            .IsUnique()
+            .HasDatabaseName("UQ_BoardEntries_BoardId_StateId_Position");
+        entry.ToTable(table =>
+            table.HasCheckConstraint(
+                "CK_BoardEntries_Position_NonNegative",
+                """
+                "Position" >= 0
+                """
+            )
+        );
         entry.Property(value => value.AddedAt).HasDefaultValueSql("now()").ValueGeneratedOnAdd();
         entry
             .HasOne(value => value.Board)
@@ -50,17 +62,5 @@ public sealed class BoardEntryConfiguration : IEntityTypeConfiguration<BoardEntr
             .WithMany()
             .HasForeignKey(value => value.StateId)
             .OnDelete(DeleteBehavior.Restrict);
-    }
-}
-
-public sealed class BoardEntryStateConfiguration : IEntityTypeConfiguration<BoardEntryState>
-{
-    public void Configure(EntityTypeBuilder<BoardEntryState> state)
-    {
-        state.ToTable("BoardEntryStates");
-        state.HasKey(value => value.Id);
-        state.Property(value => value.Id).ValueGeneratedOnAdd();
-        state.Property(value => value.Name).HasMaxLength(16);
-        state.HasIndex(value => value.Name).IsUnique();
     }
 }

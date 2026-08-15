@@ -8,5 +8,6 @@ public sealed class UpdateBoardEntryStateValidator : Validator<UpdateBoardEntryS
     public UpdateBoardEntryStateValidator()
     {
         RuleFor(request => request.State).NotEmpty().MaximumLength(16);
+        RuleFor(request => request.Position).GreaterThanOrEqualTo(0);
     }
 }
