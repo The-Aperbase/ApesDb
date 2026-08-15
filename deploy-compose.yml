@@ -15,7 +15,7 @@ services:
       OpenTelemetry__Otlp__Protocol: Grpc
       OpenTelemetry__ResourceAttributes__deployment.environment: production
       OpenTelemetry__ResourceAttributes__service.namespace: apesdb
-      OTEL_EXPORTER_OTLP_HTTP_ENDPOINT: ${OTEL_EXPORTER_OTLP_HTTP_ENDPOINT:-http://apesdb-observability_alloy:4318}
+      OpenTelemetry__OtlpProxy__Endpoint: ${OTEL_EXPORTER_OTLP_HTTP_ENDPOINT:-http://apesdb-observability_alloy:4318}
     ports:
       - "8080"
     depends_on:

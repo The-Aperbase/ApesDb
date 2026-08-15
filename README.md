@@ -204,7 +204,7 @@ The production compose file expects the following environment variables:
 The deployment also supports these optional observability settings:
 
 - `OTEL_EXPORTER_OTLP_ENDPOINT` defaults to `http://apesdb-observability_alloy:4317`.
-- `OTEL_EXPORTER_OTLP_HTTP_ENDPOINT` defaults to `http://apesdb-observability_alloy:4318` for browser traces proxied by the API.
+- `OTEL_EXPORTER_OTLP_HTTP_ENDPOINT` defaults to `http://apesdb-observability_alloy:4318` and maps to `OpenTelemetry:OtlpProxy:Endpoint` for browser traces proxied by the API.
 - `TELEMETRY_NETWORK` defaults to the external Swarm overlay network `apesdb-telemetry`.
 
 Deploy the observability stack before the first ApesDb deployment so it can create the shared `apesdb-telemetry` overlay network. The API and worker export OTLP traces, metrics, and logs when `OpenTelemetry:Otlp:Endpoint` is configured. Deployment maps `OTEL_EXPORTER_OTLP_ENDPOINT` to that setting.

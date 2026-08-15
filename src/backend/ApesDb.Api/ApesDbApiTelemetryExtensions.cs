@@ -10,10 +10,10 @@ public static class ApesDbApiTelemetryExtensions
     {
         builder.AddApesDbObservability("apesdb-api");
 
-        var otlpHttpEndpoint = builder.Configuration["OTEL_EXPORTER_OTLP_HTTP_ENDPOINT"];
-        if (string.IsNullOrWhiteSpace(otlpHttpEndpoint))
+        var otlpProxyEndpoint = builder.Configuration["OpenTelemetry:OtlpProxy:Endpoint"];
+        if (!Uri.TryCreate(otlpProxyEndpoint, UriKind.Absolute, out _))
         {
-            otlpHttpEndpoint = "http://localhost:4318";
+            throw new InvalidOperationException("OpenTelemetry:OtlpProxy:Endpoint must be an absolute URI.");
         }
 
         builder
@@ -33,7 +33,7 @@ public static class ApesDbApiTelemetryExtensions
                         ClusterId = "otlp",
                         Destinations = new Dictionary<string, DestinationConfig>
                         {
-                            ["collector"] = new() { Address = otlpHttpEndpoint },
+                            ["collector"] = new() { Address = otlpProxyEndpoint },
                         },
                     },
                 ]
