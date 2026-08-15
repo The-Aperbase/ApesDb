@@ -11,9 +11,10 @@ services:
       Auth0__ClientSecret: ${AUTH0_CLIENT_SECRET:?AUTH0_CLIENT_SECRET is required}
       Auth0__CallbackPath: /api/auth/callback
       Auth0__PostLogoutRedirectUri: /
-      OTEL_EXPORTER_OTLP_ENDPOINT: ${OTEL_EXPORTER_OTLP_ENDPOINT:-http://apesdb-observability_alloy:4317}
-      OTEL_EXPORTER_OTLP_PROTOCOL: grpc
-      OTEL_RESOURCE_ATTRIBUTES: deployment.environment=production,service.namespace=apesdb
+      OpenTelemetry__Otlp__Endpoint: ${OTEL_EXPORTER_OTLP_ENDPOINT:-http://apesdb-observability_alloy:4317}
+      OpenTelemetry__Otlp__Protocol: Grpc
+      OpenTelemetry__ResourceAttributes__deployment.environment: production
+      OpenTelemetry__ResourceAttributes__service.namespace: apesdb
       OTEL_EXPORTER_OTLP_HTTP_ENDPOINT: ${OTEL_EXPORTER_OTLP_HTTP_ENDPOINT:-http://apesdb-observability_alloy:4318}
     ports:
       - "8080"
@@ -61,9 +62,10 @@ services:
       TickerQ__Dashboard__BasePath: /tickerq/dashboard
       TickerQ__Dashboard__Username: ${TICKERQ_DASHBOARD_USERNAME:?TICKERQ_DASHBOARD_USERNAME is required}
       TickerQ__Dashboard__Password: ${TICKERQ_DASHBOARD_PASSWORD:?TICKERQ_DASHBOARD_PASSWORD is required}
-      OTEL_EXPORTER_OTLP_ENDPOINT: ${OTEL_EXPORTER_OTLP_ENDPOINT:-http://apesdb-observability_alloy:4317}
-      OTEL_EXPORTER_OTLP_PROTOCOL: grpc
-      OTEL_RESOURCE_ATTRIBUTES: deployment.environment=production,service.namespace=apesdb
+      OpenTelemetry__Otlp__Endpoint: ${OTEL_EXPORTER_OTLP_ENDPOINT:-http://apesdb-observability_alloy:4317}
+      OpenTelemetry__Otlp__Protocol: Grpc
+      OpenTelemetry__ResourceAttributes__deployment.environment: production
+      OpenTelemetry__ResourceAttributes__service.namespace: apesdb
     ports:
       - "8081"
     depends_on:

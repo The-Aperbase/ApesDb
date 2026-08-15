@@ -8,10 +8,7 @@
       "launchUrl": "tickerq/dashboard",
       "applicationUrl": "https://localhost:7251",
       "environmentVariables": {
-        "ASPNETCORE_ENVIRONMENT": "Development",
-        "OTEL_EXPORTER_OTLP_ENDPOINT": "http://localhost:4317",
-        "OTEL_EXPORTER_OTLP_PROTOCOL": "grpc",
-        "OTEL_RESOURCE_ATTRIBUTES": "deployment.environment=development,service.namespace=apesdb"
+        "ASPNETCORE_ENVIRONMENT": "Development"
       }
     }
   }

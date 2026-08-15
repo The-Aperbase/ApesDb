@@ -2,6 +2,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using OpenTelemetry.Exporter;
 using OpenTelemetry.Logs;
 using OpenTelemetry.Metrics;
 using OpenTelemetry.Resources;
@@ -16,15 +17,24 @@ public static class ApesDbObservabilityExtensions
         string serviceName
     )
     {
-        var endpoint = builder.Configuration["OTEL_EXPORTER_OTLP_ENDPOINT"];
+        var otlpSection = builder.Configuration.GetSection("OpenTelemetry:Otlp");
+        var endpoint = otlpSection["Endpoint"];
         if (string.IsNullOrWhiteSpace(endpoint))
         {
             return builder;
         }
 
+        var resourceAttributes = builder
+            .Configuration.GetSection("OpenTelemetry:ResourceAttributes")
+            .GetChildren()
+            .Where(attribute => !string.IsNullOrWhiteSpace(attribute.Value))
+            .ToDictionary(attribute => attribute.Key, attribute => (object)attribute.Value!);
+
+        builder.Services.Configure<OtlpExporterOptions>(otlpSection);
+
         builder
             .Services.AddOpenTelemetry()
-            .ConfigureResource(resource => resource.AddService(serviceName))
+            .ConfigureResource(resource => resource.AddService(serviceName).AddAttributes(resourceAttributes))
             .WithTracing(tracing =>
             {
                 tracing

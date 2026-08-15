@@ -185,7 +185,7 @@ The local and deployment compose files run the `flyway` service against Postgres
 docker compose run --rm flyway
 ```
 
-Local Compose also runs Grafana OTEL LGTM at `http://localhost:3000` and exposes OTLP on ports `4317` and `4318`. The API and worker launch profiles export telemetry to it, and the Grafana instance provisions the dashboards in `observability/grafana`.
+Local Compose also runs Grafana OTEL LGTM at `http://localhost:3000` and exposes OTLP on ports `4317` and `4318`. The API and worker app settings export telemetry to it, and the Grafana instance provisions the dashboards in `observability/grafana`.
 
 ## Deployment environment variables
 
@@ -207,7 +207,7 @@ The deployment also supports these optional observability settings:
 - `OTEL_EXPORTER_OTLP_HTTP_ENDPOINT` defaults to `http://apesdb-observability_alloy:4318` for browser traces proxied by the API.
 - `TELEMETRY_NETWORK` defaults to the external Swarm overlay network `apesdb-telemetry`.
 
-Deploy the observability stack before the first ApesDb deployment so it can create the shared `apesdb-telemetry` overlay network. The API and worker export OTLP traces, metrics, and logs only when `OTEL_EXPORTER_OTLP_ENDPOINT` is configured.
+Deploy the observability stack before the first ApesDb deployment so it can create the shared `apesdb-telemetry` overlay network. The API and worker export OTLP traces, metrics, and logs when `OpenTelemetry:Otlp:Endpoint` is configured. Deployment maps `OTEL_EXPORTER_OTLP_ENDPOINT` to that setting.
 
 Application-owned Grafana dashboards and Git Sync setup instructions are in [`observability/`](observability/README.md).
 
