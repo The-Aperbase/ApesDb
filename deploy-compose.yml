@@ -114,4 +114,4 @@ volumes:
 networks:
   telemetry:
     external: true
-    name: ${TELEMETRY_NETWORK:-apesdb-telemetry}
+    name: ${TELEMETRY_NETWORK:-observability-telemetry}
