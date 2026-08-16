@@ -1,0 +1,437 @@
+{
+  "apiVersion": "dashboard.grafana.app/v1",
+  "kind": "Dashboard",
+  "metadata": {
+    "name": "apesdb-game-list"
+  },
+  "spec": {
+    "uid": "apesdb-game-list",
+    "title": "ApesDb Game List",
+    "description": "Request volume, latency, and failures for GET /api/games.",
+    "tags": ["apesdb", "api", "games"],
+    "timezone": "browser",
+    "editable": true,
+    "graphTooltip": 1,
+    "refresh": "30s",
+    "schemaVersion": 42,
+    "version": 1,
+    "time": {
+      "from": "now-6h",
+      "to": "now"
+    },
+    "timepicker": {
+      "refresh_intervals": ["10s", "30s", "1m", "5m", "15m"]
+    },
+    "templating": {
+      "list": [
+        {
+          "name": "environment",
+          "label": "Environment",
+          "type": "query",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "query": {
+            "query": "label_values(target_info{job=\"apesdb/apesdb-api\"}, deployment_environment)",
+            "refId": "PrometheusVariableQueryEditor-Environment"
+          },
+          "definition": "label_values(target_info{job=\"apesdb/apesdb-api\"}, deployment_environment)",
+          "refresh": 1,
+          "sort": 1,
+          "multi": false,
+          "includeAll": true,
+          "allValue": ".*",
+          "current": {
+            "selected": true,
+            "text": "All",
+            "value": "$__all"
+          },
+          "options": []
+        }
+      ]
+    },
+    "panels": [
+      {
+        "id": 1,
+        "type": "stat",
+        "title": "Requests / second",
+        "description": "Average game-list request rate over the dashboard rate interval.",
+        "datasource": {
+          "type": "prometheus",
+          "uid": "prometheus"
+        },
+        "gridPos": {
+          "h": 5,
+          "w": 8,
+          "x": 0,
+          "y": 0
+        },
+        "targets": [
+          {
+            "refId": "A",
+            "expr": "sum(rate(http_server_request_duration_seconds_count{job=\"apesdb/apesdb-api\",http_route=\"/api/games\"}[$__rate_interval]) * on (job, instance) group_left(deployment_environment) target_info{job=\"apesdb/apesdb-api\",deployment_environment=~\"$environment\"})",
+            "legendFormat": "requests / second"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "unit": "reqps",
+            "decimals": 2,
+            "color": {
+              "mode": "thresholds"
+            },
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {
+                  "color": "green",
+                  "value": null
+                }
+              ]
+            }
+          },
+          "overrides": []
+        },
+        "options": {
+          "colorMode": "value",
+          "graphMode": "area",
+          "justifyMode": "auto",
+          "orientation": "auto",
+          "reduceOptions": {
+            "calcs": ["lastNotNull"],
+            "fields": "",
+            "values": false
+          },
+          "textMode": "auto",
+          "wideLayout": true
+        }
+      },
+      {
+        "id": 2,
+        "type": "stat",
+        "title": "P95 latency",
+        "description": "95th percentile server request duration.",
+        "datasource": {
+          "type": "prometheus",
+          "uid": "prometheus"
+        },
+        "gridPos": {
+          "h": 5,
+          "w": 8,
+          "x": 8,
+          "y": 0
+        },
+        "targets": [
+          {
+            "refId": "A",
+            "expr": "histogram_quantile(0.95, sum by (le) (rate(http_server_request_duration_seconds_bucket{job=\"apesdb/apesdb-api\",http_route=\"/api/games\"}[$__rate_interval]) * on (job, instance) group_left(deployment_environment) target_info{job=\"apesdb/apesdb-api\",deployment_environment=~\"$environment\"}))",
+            "legendFormat": "p95"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "unit": "s",
+            "decimals": 3,
+            "color": {
+              "mode": "thresholds"
+            },
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {
+                  "color": "green",
+                  "value": null
+                },
+                {
+                  "color": "orange",
+                  "value": 0.5
+                },
+                {
+                  "color": "red",
+                  "value": 1
+                }
+              ]
+            }
+          },
+          "overrides": []
+        },
+        "options": {
+          "colorMode": "value",
+          "graphMode": "area",
+          "justifyMode": "auto",
+          "orientation": "auto",
+          "reduceOptions": {
+            "calcs": ["lastNotNull"],
+            "fields": "",
+            "values": false
+          },
+          "textMode": "auto",
+          "wideLayout": true
+        }
+      },
+      {
+        "id": 3,
+        "type": "stat",
+        "title": "5xx error rate",
+        "description": "Percentage of game-list requests returning a server error.",
+        "datasource": {
+          "type": "prometheus",
+          "uid": "prometheus"
+        },
+        "gridPos": {
+          "h": 5,
+          "w": 8,
+          "x": 16,
+          "y": 0
+        },
+        "targets": [
+          {
+            "refId": "A",
+            "expr": "100 * sum(rate(http_server_request_duration_seconds_count{job=\"apesdb/apesdb-api\",http_route=\"/api/games\",http_response_status_code=~\"5..\"}[$__rate_interval]) * on (job, instance) group_left(deployment_environment) target_info{job=\"apesdb/apesdb-api\",deployment_environment=~\"$environment\"}) / clamp_min(sum(rate(http_server_request_duration_seconds_count{job=\"apesdb/apesdb-api\",http_route=\"/api/games\"}[$__rate_interval]) * on (job, instance) group_left(deployment_environment) target_info{job=\"apesdb/apesdb-api\",deployment_environment=~\"$environment\"}), 0.000001)",
+            "legendFormat": "5xx"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "unit": "percent",
+            "decimals": 2,
+            "min": 0,
+            "max": 100,
+            "color": {
+              "mode": "thresholds"
+            },
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {
+                  "color": "green",
+                  "value": null
+                },
+                {
+                  "color": "orange",
+                  "value": 1
+                },
+                {
+                  "color": "red",
+                  "value": 5
+                }
+              ]
+            }
+          },
+          "overrides": []
+        },
+        "options": {
+          "colorMode": "value",
+          "graphMode": "area",
+          "justifyMode": "auto",
+          "orientation": "auto",
+          "reduceOptions": {
+            "calcs": ["lastNotNull"],
+            "fields": "",
+            "values": false
+          },
+          "textMode": "auto",
+          "wideLayout": true
+        }
+      },
+      {
+        "id": 4,
+        "type": "timeseries",
+        "title": "Request latency percentiles",
+        "description": "Server-side latency across successful and unsuccessful game-list requests.",
+        "datasource": {
+          "type": "prometheus",
+          "uid": "prometheus"
+        },
+        "gridPos": {
+          "h": 10,
+          "w": 16,
+          "x": 0,
+          "y": 5
+        },
+        "targets": [
+          {
+            "refId": "A",
+            "expr": "histogram_quantile(0.50, sum by (le) (rate(http_server_request_duration_seconds_bucket{job=\"apesdb/apesdb-api\",http_route=\"/api/games\"}[$__rate_interval]) * on (job, instance) group_left(deployment_environment) target_info{job=\"apesdb/apesdb-api\",deployment_environment=~\"$environment\"}))",
+            "legendFormat": "p50"
+          },
+          {
+            "refId": "B",
+            "expr": "histogram_quantile(0.95, sum by (le) (rate(http_server_request_duration_seconds_bucket{job=\"apesdb/apesdb-api\",http_route=\"/api/games\"}[$__rate_interval]) * on (job, instance) group_left(deployment_environment) target_info{job=\"apesdb/apesdb-api\",deployment_environment=~\"$environment\"}))",
+            "legendFormat": "p95"
+          },
+          {
+            "refId": "C",
+            "expr": "histogram_quantile(0.99, sum by (le) (rate(http_server_request_duration_seconds_bucket{job=\"apesdb/apesdb-api\",http_route=\"/api/games\"}[$__rate_interval]) * on (job, instance) group_left(deployment_environment) target_info{job=\"apesdb/apesdb-api\",deployment_environment=~\"$environment\"}))",
+            "legendFormat": "p99"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "unit": "s",
+            "decimals": 3,
+            "color": {
+              "mode": "palette-classic"
+            },
+            "custom": {
+              "axisCenteredZero": false,
+              "axisColorMode": "text",
+              "axisLabel": "",
+              "axisPlacement": "auto",
+              "drawStyle": "line",
+              "fillOpacity": 12,
+              "gradientMode": "none",
+              "hideFrom": {
+                "legend": false,
+                "tooltip": false,
+                "viz": false
+              },
+              "lineInterpolation": "smooth",
+              "lineWidth": 2,
+              "pointSize": 5,
+              "scaleDistribution": {
+                "type": "linear"
+              },
+              "showPoints": "never",
+              "spanNulls": false,
+              "stacking": {
+                "group": "A",
+                "mode": "none"
+              },
+              "thresholdsStyle": {
+                "mode": "off"
+              }
+            },
+            "mappings": [],
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {
+                  "color": "green",
+                  "value": null
+                }
+              ]
+            }
+          },
+          "overrides": []
+        },
+        "options": {
+          "legend": {
+            "calcs": ["lastNotNull", "max"],
+            "displayMode": "table",
+            "placement": "bottom",
+            "showLegend": true
+          },
+          "tooltip": {
+            "hideZeros": false,
+            "mode": "multi",
+            "sort": "desc"
+          }
+        }
+      },
+      {
+        "id": 5,
+        "type": "timeseries",
+        "title": "Request rate by status",
+        "description": "Game-list throughput split by HTTP response status.",
+        "datasource": {
+          "type": "prometheus",
+          "uid": "prometheus"
+        },
+        "gridPos": {
+          "h": 10,
+          "w": 8,
+          "x": 16,
+          "y": 5
+        },
+        "targets": [
+          {
+            "refId": "A",
+            "expr": "sum by (http_response_status_code) (rate(http_server_request_duration_seconds_count{job=\"apesdb/apesdb-api\",http_route=\"/api/games\"}[$__rate_interval]) * on (job, instance) group_left(deployment_environment) target_info{job=\"apesdb/apesdb-api\",deployment_environment=~\"$environment\"})",
+            "legendFormat": "{{http_response_status_code}}"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "unit": "reqps",
+            "decimals": 2,
+            "color": {
+              "mode": "palette-classic"
+            },
+            "custom": {
+              "axisCenteredZero": false,
+              "axisColorMode": "text",
+              "axisLabel": "",
+              "axisPlacement": "auto",
+              "drawStyle": "line",
+              "fillOpacity": 20,
+              "gradientMode": "none",
+              "hideFrom": {
+                "legend": false,
+                "tooltip": false,
+                "viz": false
+              },
+              "lineInterpolation": "linear",
+              "lineWidth": 2,
+              "pointSize": 5,
+              "scaleDistribution": {
+                "type": "linear"
+              },
+              "showPoints": "never",
+              "spanNulls": false,
+              "stacking": {
+                "group": "A",
+                "mode": "normal"
+              },
+              "thresholdsStyle": {
+                "mode": "off"
+              }
+            },
+            "mappings": [],
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {
+                  "color": "green",
+                  "value": null
+                }
+              ]
+            }
+          },
+          "overrides": []
+        },
+        "options": {
+          "legend": {
+            "calcs": ["lastNotNull"],
+            "displayMode": "table",
+            "placement": "bottom",
+            "showLegend": true
+          },
+          "tooltip": {
+            "hideZeros": false,
+            "mode": "multi",
+            "sort": "desc"
+          }
+        }
+      }
+    ],
+    "annotations": {
+      "list": [
+        {
+          "builtIn": 1,
+          "datasource": {
+            "type": "grafana",
+            "uid": "-- Grafana --"
+          },
+          "enable": true,
+          "hide": true,
+          "iconColor": "rgba(0, 211, 255, 1)",
+          "name": "Annotations & Alerts",
+          "type": "dashboard"
+        }
+      ]
+    },
+    "links": []
+  }
+}

@@ -11,6 +11,11 @@ services:
       Auth0__ClientSecret: ${AUTH0_CLIENT_SECRET:?AUTH0_CLIENT_SECRET is required}
       Auth0__CallbackPath: /api/auth/callback
       Auth0__PostLogoutRedirectUri: /
+      OpenTelemetry__Otlp__Endpoint: ${OTEL_EXPORTER_OTLP_ENDPOINT:-http://apesdb-observability_alloy:4317}
+      OpenTelemetry__Otlp__Protocol: Grpc
+      OpenTelemetry__ResourceAttributes__deployment.environment: production
+      OpenTelemetry__ResourceAttributes__service.namespace: apesdb
+      OpenTelemetry__OtlpProxy__Endpoint: ${OTEL_EXPORTER_OTLP_HTTP_ENDPOINT:-http://apesdb-observability_alloy:4318}
     ports:
       - "8080"
     depends_on:
@@ -40,6 +45,9 @@ services:
         max_failure_ratio: 0
         failure_action: pause
         order: start-first
+    networks:
+      - default
+      - telemetry
 
   worker:
     image: ghcr.io/the-aperbase/apesdb/worker:latest
@@ -54,11 +62,18 @@ services:
       TickerQ__Dashboard__BasePath: /tickerq/dashboard
       TickerQ__Dashboard__Username: ${TICKERQ_DASHBOARD_USERNAME:?TICKERQ_DASHBOARD_USERNAME is required}
       TickerQ__Dashboard__Password: ${TICKERQ_DASHBOARD_PASSWORD:?TICKERQ_DASHBOARD_PASSWORD is required}
+      OpenTelemetry__Otlp__Endpoint: ${OTEL_EXPORTER_OTLP_ENDPOINT:-http://apesdb-observability_alloy:4317}
+      OpenTelemetry__Otlp__Protocol: Grpc
+      OpenTelemetry__ResourceAttributes__deployment.environment: production
+      OpenTelemetry__ResourceAttributes__service.namespace: apesdb
     ports:
       - "8081"
     depends_on:
       - migrations
       - redis
+    networks:
+      - default
+      - telemetry
 
   postgres:
     image: postgres:18
@@ -95,3 +110,8 @@ services:
 volumes:
   postgres-data:
   redis-data:
+
+networks:
+  telemetry:
+    external: true
+    name: ${TELEMETRY_NETWORK:-apesdb-telemetry}

@@ -1,4 +1,5 @@
 using ApesDb.Shared.Services.Users;
+using ApesDb.Worker.Telemetry;
 using TickerQ.Utilities.Base;
 
 namespace ApesDb.Worker.Users;
@@ -18,6 +19,10 @@ public sealed class AllowedUserJobs
         CancellationToken cancellationToken
     )
     {
-        await _allowedUserService.AddAsync(context.Request.Email, cancellationToken);
+        await TickerQTelemetry.RunAsync(
+            AllowedUserFunctions.Add,
+            context.RetryCount,
+            () => _allowedUserService.AddAsync(context.Request.Email, cancellationToken)
+        );
     }
 }

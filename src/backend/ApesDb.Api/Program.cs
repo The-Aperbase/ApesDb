@@ -10,6 +10,7 @@ using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 
 var builder = WebApplication.CreateBuilder(args);
 
+builder.AddApesDbApiTelemetry();
 builder.Services.AddApesDbForwardedHeaders();
 builder.Services.AddApesDbCommon();
 builder.Services.AddApesDbCache(builder.Configuration);
@@ -45,6 +46,7 @@ app.UseApesDbAuth();
 app.UseApesDbSwagger();
 app.MapHealthChecks("/health").AllowAnonymous();
 app.UseFastEndpoints(config => config.Endpoints.RoutePrefix = ApiRoutes.Api.Prefix);
+app.MapApesDbApiTelemetry();
 app.UseEndpoints(_ => { });
 
 if (!app.Environment.IsDevelopment())
